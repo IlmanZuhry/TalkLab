@@ -1,3 +1,9 @@
+<?php
+require_once 'core.php';
+if (session_status() == PHP_SESSION_NONE) session_start();
+$app = new manz();
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 

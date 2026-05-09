@@ -1,3 +1,33 @@
+<?php
+require_once 'core.php';
+$app = new manz();
+$error = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+
+    if ($username === '' || $password === '') {
+        $error = 'Username dan kata sandi wajib diisi.';
+    } else {
+        
+        // Cek apakah username ada
+        $userRow = $app->getUserByUsername($username);
+        if ($userRow === false) {
+            $error = 'Username tidak ditemukan.';
+        } else {
+            // Username ada, periksa password
+            if (password_verify($password, $userRow['Password'])) {
+                $app->setSessionFromUser($userRow);
+                header('Location: Beranda.php');
+                exit;
+            } else {
+                $error = 'Kata sandi Anda salah.';
+            }
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 
@@ -67,23 +97,29 @@
             <p style="font-size: 25px;">Silahkan masuk untuk melanjutkan.</p>
 
             <div class="form-wrapper">
-                <form>
+                
+            <?php if (!empty($error)): ?>
+                    <div style="background:#fee2e2;color:#991b1b;padding:10px;border-radius:6px;margin-bottom:12px;">
+                        <?= htmlspecialchars($error) ?>
+                    </div>
+                <?php endif; ?>
+
+                <form method="POST" action="login.php">
 
                     <label>Username</label>
-                    <input type="text" placeholder="Ketik username anda">
+                    <input type="text" name="username" placeholder="Ketik username anda" required>
 
                     <label>Kata Sandi</label>
                     <div class="password-wrapper">
-                        <input id="password-input" type="password" placeholder="Ketik kata sandi anda">
+                        <input id="password-input" type="password" name="password" placeholder="Ketik kata sandi anda" required>
 
                         <img class="eye-toggle" id="toggle-eye" src="icon/pw.svg" style="width:32px; height:32px;">
                     </div>
 
                     <a class="lost-password" href="#">Lupa kata sandi?</a>
-                    <button type="button" class="btn-login" onclick="location.href='Beranda.php'">Masuk</button>
+                    <button type="submit" class="btn-login">Masuk</button>
 
                     <p class="register-text">Belum punya akun? <a href="regis.php">Daftar sekarang</a></p>
-                </form>
             </div>
 
             <div class="login-options">
