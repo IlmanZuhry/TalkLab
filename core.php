@@ -4,13 +4,14 @@ class manz{
     var $user = "root";
     var $pass = "";
     var $dbname = "talklab";
-	var $koneksi ="";
+	public mysqli $koneksi;
 	
 	function __construct(){
 		$this->koneksi=mysqli_connect($this->talkhost,$this->user,$this->pass,$this->dbname);
 		if(mysqli_connect_errno()){
 			echo"Koneksi gagal:".mysqli_connect_error();
 		}
+		$this->ensureCommunityPostsTable();
 	}
 
 	// Generate ID unik 6 karakter (huruf kapital + angka)
@@ -127,4 +128,77 @@ class manz{
 		if ($user !== false && !empty($user['Username'])) return htmlspecialchars($user['Username']);
 		return '';
 	}
+
+	// Pastikan tabel komunitas ada di database
+	public function ensureCommunityPostsTable(){
+	$create = "CREATE TABLE IF NOT EXISTS Komunitas (
+		Id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		Id_User VARCHAR(6) NOT NULL,
+		Isi TEXT NOT NULL,
+		Dibuat DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		Update_Post DATETIME NULL DEFAULT NULL
+		ON UPDATE CURRENT_TIMESTAMP,
+		PRIMARY KEY (Id),
+
+		KEY idx_user_id (Id_User),
+
+		CONSTRAINT fk_community_user FOREIGN KEY (Id_User) REFERENCES users(Id_User)
+		ON DELETE CASCADE
+		ON UPDATE CASCADE
+
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+	mysqli_query($this->koneksi, $create);
+}
+
+	public function getCommunityPosts(){
+	$sql = "SELECT p.Id,p.Id_User,p.Isi,p.Dibuat,
+		u.Nama AS name,u.Username AS username
+		FROM Komunitas p LEFT JOIN users u ON p.Id_User = u.Id_User ORDER BY p.Dibuat DESC";
+
+	$res = mysqli_query($this->koneksi, $sql);
+
+	$posts = [];
+	if ($res){
+		while ($row = mysqli_fetch_assoc($res)){
+			$posts[] = $row;
+		}
+	}
+	return $posts;
+}
+
+	public function getCommunityPostById($postId){
+	$postIdEsc = (int) $postId;
+	$sql = "SELECT Id,Id_User,Isi,Dibuat
+		FROM Komunitas WHERE Id = $postIdEsc LIMIT 1";
+	$res = mysqli_query($this->koneksi, $sql);
+
+	if ($res && mysqli_num_rows($res) > 0){
+		return mysqli_fetch_assoc($res);
+	}
+	return false;
+}
+
+	public function createCommunityPost($userId, $content){
+	$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+	$contentEsc = mysqli_real_escape_string($this->koneksi, $content);
+	$sql = "INSERT INTO Komunitas (Id_User, Isi) VALUES ('$userIdEsc', '$contentEsc')";
+	return mysqli_query($this->koneksi, $sql);
+}
+
+	public function updateCommunityPost($postId, $userId,$content){
+	$postIdEsc = (int) $postId;
+	$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+	$contentEsc = mysqli_real_escape_string($this->koneksi, $content);
+	$sql = "UPDATE Komunitas SET Isi = '$contentEsc'
+		WHERE Id = $postIdEsc
+		AND Id_User = '$userIdEsc'
+		LIMIT 1";
+	return mysqli_query($this->koneksi, $sql);
+}
+	public function deleteCommunityPost($postId, $userId){
+	$postIdEsc = (int) $postId;
+	$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+	$sql = "DELETE FROM Komunitas WHERE Id = $postIdEsc AND Id_User = '$userIdEsc' LIMIT 1";
+	return mysqli_query($this->koneksi, $sql);
+}
 }
