@@ -2,6 +2,79 @@
 require_once 'core.php';
 if (session_status() == PHP_SESSION_NONE) session_start();
 $app = new manz();
+$app->ensureSession();
+$currentUser = $app->getCurrentUser();
+
+$feedback = '';
+$feedbackType = 'info';
+$editPost = null;
+
+function redirectWith(array $params = []){
+    $url = 'Komunitas.php';
+    if (!empty($params)){
+        $url .= '?' . http_build_query($params);
+    }
+    header('Location: ' . $url);
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!$app->isLoggedIn()) {
+        redirectWith(['error' => 'Anda harus masuk untuk melakukan aksi ini.']);
+    }
+
+    $action = $_POST['action'] ?? '';
+    $content = trim($_POST['content'] ?? '');
+
+    if ($action === 'create') {
+        if ($content === '') {
+            redirectWith(['error' => 'Isi postingan tidak boleh kosong.']);
+        }
+        if ($app->createCommunityPost($currentUser['Id_User'],$content)) {
+            redirectWith(['success' => 'Postingan berhasil dibuat.']);
+        }
+        redirectWith(['error' => 'Gagal membuat postingan. Silakan coba lagi.']);
+    }
+
+    if ($action === 'update') {
+        $postId = $_POST['post_id'] ?? '';
+        if ($postId === '' || $title === '' || $content === '') {
+            redirectWith(['error' => 'Data tidak lengkap untuk memperbarui postingan.']);
+        }
+        if ($app->updateCommunityPost($postId, $currentUser['Id_User'],$content)) {
+            redirectWith(['success' => 'Postingan berhasil diperbarui.']);
+        }
+        redirectWith(['error' => 'Gagal memperbarui postingan.']);
+    }
+
+    if ($action === 'delete') {
+        $postId = $_POST['post_id'] ?? '';
+        if ($postId === '') {
+            redirectWith(['error' => 'Postingan tidak ditemukan.']);
+        }
+        if ($app->deleteCommunityPost($postId, $currentUser['Id_User'])) {
+            redirectWith(['success' => 'Postingan berhasil dihapus.']);
+        }
+        redirectWith(['error' => 'Gagal menghapus postingan.']);
+    }
+}
+
+if (!empty($_GET['success'])) {
+    $feedback = htmlspecialchars($_GET['success']);
+    $feedbackType = 'success';
+} elseif (!empty($_GET['error'])) {
+    $feedback = htmlspecialchars($_GET['error']);
+    $feedbackType = 'error';
+}
+
+if (!empty($_GET['edit']) && $currentUser) {
+    $post = $app->getCommunityPostById($_GET['edit']);
+    if ($post && $post['Id_User'] === $currentUser['Id_User']) {
+        $editPost = $post;
+    }
+}
+
+$posts = $app->getCommunityPosts();
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -51,6 +124,21 @@ $app = new manz();
       margin-bottom: 24px;
       margin-top: -55px;
     }
+
+    .btn-submit{
+  background-color: #bca451;
+  color: white;
+  padding: 10px 25px;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.btn-submit:hover{
+  background-color: #a5924a;
+}
 
     .btn-posting:hover { background-color: #a5924a; }
 
@@ -104,10 +192,11 @@ $app = new manz();
       color: #434445;
       background-color: #f5f5f5;
       border-radius: 12px;
-      padding: 18px 0;
+      padding: 20px;
       white-space: pre-wrap;
       user-select: text;
       text-align: left;
+      
     }
 
     .post-footer {
@@ -139,6 +228,129 @@ $app = new manz();
     }
 
     .post-share:hover { color: #bca451; }
+
+    .alert {
+      padding: 16px 20px;
+      border-radius: 14px;
+      margin-bottom: 24px;
+      font-size: 15px;
+      max-width: 900px;
+    }
+
+    .alert.success { background-color: #e6f4ea; color: #175c3f; }
+    .alert.error { background-color: #fce8e6; color: #9a2a22; }
+
+    .post-form {
+      background: white;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgb(0 0 0 / 0.08);
+      margin-bottom: 30px;
+      max-width: 900px;
+    }
+
+    .post-form h2 {
+      margin-top: 0;
+      margin-bottom: 18px;
+      font-size: 22px;
+      color: #101828;
+    }
+
+    .form-group { margin-bottom: 18px; }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #4b5563;
+      font-weight: 600;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 15px;
+      color: #111827;
+      background: #f8fafc;
+    }
+
+    .form-group textarea { min-height: 140px; resize: vertical; }
+
+    .form-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-cancel {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 24px;
+      color: #374151;
+      background: #f3f4f6;
+      border-radius: 12px;
+      text-decoration: none;
+      font-size: 15px;
+    }
+
+    .info-box {
+      background: white;
+      max-width: 900px;
+      padding: 18px 22px;
+      border-radius: 16px;
+      box-shadow: 0 2px 10px rgb(0 0 0 / 0.05);
+      margin-bottom: 30px;
+      color: #334155;
+      font-size: 15px;
+    }
+
+    .post-list { display: flex; flex-direction: column; gap: 20px; }
+
+    .post-actions {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .post-action,
+    .post-action.delete {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      padding: 6px 10px;
+      border-radius: 10px;
+    }
+
+    .post-action.delete { color: #b91c1c; }
+
+    .post-title {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .empty-state {
+      padding: 24px;
+      border-radius: 16px;
+      background: white;
+      border: 1px dashed #cbd5e1;
+      color: #334155;
+      max-width: 900px;
+    }
+
+    @media (max-width: 1024px) {
+      main { padding: 24px; margin-left: 0; }
+      .btn-posting { float: none; display: block; width: 100%; margin-top: 12px; }
+    }
   </style>
 </head>
 
@@ -150,141 +362,86 @@ $app = new manz();
     <div class="clearfix">
       <h1 style="font-size:40px; font-weight:700; color:#000;">Komunitas</h1>
       <p style="color:#777; font-size:20px; margin-bottom:30px;">Berbagi pengalaman dan belajar bersama</p>
-      <button class="btn-posting" type="button" aria-label="Buat Postingan">Buat Postingan</button>
+      <?php if ($currentUser): ?>
+        <button class="btn-posting" id="toggle-post-form" type="button" aria-label="Buat Postingan">Buat Postingan</button>
+      <?php endif; ?>
     </div>
 
+    <?php if ($feedback): ?>
+      <div class="alert <?= $feedbackType ?>"><?= $feedback ?></div>
+    <?php endif; ?>
+
+    <?php if ($currentUser): ?>
+      <section class="post-form" id="post-form" style="<?= $editPost ? 'display:block;' : 'display:none;' ?>">
+        <h2><?= $editPost ? 'Sunting Postingan' : 'Tulis Postingan Baru' ?></h2>
+        <form action="Komunitas.php" method="post">
+          <input type="hidden" name="action" value="<?= $editPost ? 'update' : 'create' ?>">
+          <?php if ($editPost): ?>
+            <input type="hidden" name="post_id" value="<?= htmlspecialchars($editPost['Id']) ?>">
+          <?php endif; ?>
+
+          <div class="form-group">
+            <label for="content">Isi</label>
+            <textarea id="content" name="content" required><?= htmlspecialchars($editPost['Isi'] ?? '') ?></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn-submit" type="submit"><?= $editPost ? 'Simpan Perubahan' : 'Posting' ?></button>
+            <?php if ($editPost): ?>
+              <a href="Komunitas.php" class="btn-cancel">Batal</a>
+            <?php endif; ?>
+          </div>
+        </form>
+      </section>
+    <?php else: ?>
+      <div class="info-box">Silakan <a href="login.php">masuk</a> atau <a href="regis.php">daftar</a> untuk membuat postingan komunitas.</div>
+    <?php endif; ?>
+
     <section class="post-list" aria-label="Daftar posting komunitas">
+      <?php if (empty($posts)): ?>
+        <div class="empty-state">Belum ada postingan. Jadilah yang pertama untuk berbagi!</div>
+      <?php endif; ?>
 
-      <article class="post" tabindex="0">
-        <header class="post-header">
-          <img src="https://i.pravatar.cc/44?u=fathul" alt="Avatar Fathul Khairah" class="post-avatar" width="44" height="44" />
-          <div class="post-author-info">
-            <div class="post-author">Fathul Khairah</div>
-            <div class="post-username-time">@fathulimoet • 3 hari lalu</div>
-          </div>
-          <button class="post-menu" aria-label="Opsi postingan">&#8942;</button>
-        </header>
-        <p class="post-text">
-          Kalian biasanya belajar sendiri apa bareng-bareng guys? Aku lebih suka bareng
-          temen soalnya bisa saling kasih feedback
-        </p>
-        <footer class="post-footer">
-          <div class="reactions" aria-label="Reaksi postingan">
-            <div class="reaction-icon" aria-label="20 likes">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              20
+      <?php foreach ($posts as $post): ?>
+        <article class="post" tabindex="0">
+          <header class="post-header">
+            <img src="https://i.pravatar.cc/44?u=<?= urlencode($post['username'] ?: $post['Id_User']) ?>" alt="Avatar <?= htmlspecialchars($post['name'] ?: 'Pengguna') ?>" class="post-avatar" width="44" height="44">
+            <div class="post-author-info">
+              <div class="post-author"><?= htmlspecialchars($post['name'] ?: 'Pengguna') ?></div>
+              <div class="post-username-time">@<?= htmlspecialchars($post['username'] ?: 'guest') ?> • <?= htmlspecialchars(date('d M Y H:i', strtotime($post['Dibuat']))) ?></div>
             </div>
-            <div class="reaction-icon" aria-label="15 komentar">
-              <img src="icon/komen.svg" style="width:18px; height:18px;">
-              15 komentar
-            </div>
-          </div>
-          <button class="post-share" aria-label="Bagikan postingan">
-            <img src="icon/share.svg" style="width:18px; height:18px;"> Bagikan
-          </button>
-        </footer>
-      </article>
+            <?php if ($currentUser && $post['Id_User'] === $currentUser['Id_User']): ?>
+              <div class="post-actions">
+                <a class="post-action" href="Komunitas.php?edit=<?= urlencode($post['Id']) ?>">Edit</a>
+                <form action="Komunitas.php" method="post" onsubmit="return confirm('Hapus postingan ini?');">
+                  <input type="hidden" name="action" value="delete">
+                  <input type="hidden" name="post_id" value="<?= htmlspecialchars($post['Id']) ?>">
+                  <button type="submit" class="post-action delete">Hapus</button>
+                </form>
+              </div>
+            <?php endif; ?>
+          </header>
 
-      <article class="post" tabindex="0">
-        <header class="post-header">
-          <img src="https://i.pravatar.cc/44?u=ilman" alt="Avatar Ilman Ethanol" class="post-avatar" width="44" height="44" />
-          <div class="post-author-info">
-            <div class="post-author">Ilman Ethanol</div>
-            <div class="post-username-time">@ilmannol • 4 hari lalu</div>
-          </div>
-          <button class="post-menu" aria-label="Opsi postingan">&#8942;</button>
-        </header>
-        <p class="post-text">
-          Baru aja selesai latihan vokal! Rasanya progress banget dari minggu kemarin. Tips:
-          jangan lupa warming up dulu ya sebelum latihan!
-        </p>
-        <footer class="post-footer">
-          <div class="reactions" aria-label="Reaksi postingan">
-            <div class="reaction-icon" aria-label="20 likes">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              20
-            </div>
-            <div class="reaction-icon" aria-label="15 komentar">
-              <img src="icon/komen.svg" style="width:18px; height:18px;">
-              15 komentar
-            </div>
-          </div>
-          <button class="post-share" aria-label="Bagikan postingan">
-            <img src="icon/share.svg" style="width:18px; height:18px;"> Bagikan
-          </button>
-        </footer>
-      </article>
-
-      <article class="post" tabindex="0">
-        <header class="post-header">
-          <img src="https://i.pravatar.cc/44?u=riski" alt="Avatar Riski Galon" class="post-avatar" width="44" height="44" />
-          <div class="post-author-info">
-            <div class="post-author">Riski Galon</div>
-            <div class="post-username-time">@kanggalon • 1 minggu lalu</div>
-          </div>
-          <button class="post-menu" aria-label="Opsi postingan">&#8942;</button>
-        </header>
-        <p class="post-text">
-          Yang masih grogi pas speaking di depan umum, kalian gak sendirian! Aku dulu super
-          gugup, tapi dengan latihan terus jadi lebih PD. Semangat teman-teman!
-        </p>
-        <footer class="post-footer">
-          <div class="reactions" aria-label="Reaksi postingan">
-            <div class="reaction-icon" aria-label="20 likes">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              20
-            </div>
-            <div class="reaction-icon" aria-label="15 komentar">
-              <img src="icon/komen.svg" style="width:18px; height:18px;">
-              15 komentar
-            </div>
-          </div>
-          <button class="post-share" aria-label="Bagikan postingan">
-            <img src="icon/share.svg" style="width:18px; height:18px;"> Bagikan
-          </button>
-        </footer>
-      </article>
-
-      <article class="post" tabindex="0">
-        <header class="post-header">
-          <img src="https://i.pravatar.cc/44?u=fadhillah" alt="Avatar Fadhillah" class="post-avatar" width="44" height="44" />
-          <div class="post-author-info">
-            <div class="post-author">Fadhillah</div>
-            <div class="post-username-time">@fadhillah • 3 jam lalu</div>
-          </div>
-          <button class="post-menu" aria-label="Opsi postingan">&#8942;</button>
-        </header>
-        <p class="post-text">
-          Ada yang mau practice partner gak? Lagi cari temen buat latihan bareng virtual setiap
-          weekend. Drop DM ya!
-        </p>
-        <footer class="post-footer">
-          <div class="reactions" aria-label="Reaksi postingan">
-            <div class="reaction-icon" aria-label="20 likes">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
-              </svg>
-              20
-            </div>
-            <div class="reaction-icon" aria-label="15 komentar">
-              <img src="icon/komen.svg" style="width:18px; height:18px;">
-              15 komentar
-            </div>
-          </div>
-          <button class="post-share" aria-label="Bagikan postingan">
-            <img src="icon/share.svg" style="width:18px; height:18px;"> Bagikan
-          </button>
-        </footer>
-      </article>
-
+          
+          <p class="post-text"><?= nl2br(htmlspecialchars($post['Isi'])) ?></p>
+          <footer class="post-footer">
+            <span>Diposting pada <?= htmlspecialchars(date('d M Y H:i', strtotime($post['Dibuat']))) ?></span>
+          </footer>
+        </article>
+      <?php endforeach; ?>
     </section>
   </main>
+
+  <script>
+    document.getElementById('toggle-post-form')?.addEventListener('click', function () {
+      const form = document.getElementById('post-form');
+      if (!form) return;
+      const isHidden = form.style.display === 'none' || form.style.display === '';
+      form.style.display = isHidden ? 'block' : 'none';
+      this.textContent = isHidden ? 'Batalkan' : 'Buat Postingan';
+      this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    });
+  </script>
 </body>
 
 </html>
