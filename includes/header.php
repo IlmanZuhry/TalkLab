@@ -1,3 +1,9 @@
+<?php
+require_once __DIR__ . '/../core.php';
+$app = new manz();
+$app->ensureSession();
+?>
+
 <header class="header">
     <div class="header-left">
         <img src="assets/ayooo.png" class="logo-header" alt="Logo">
@@ -14,11 +20,22 @@
             </svg>
         </div>
 
-        <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTF9kb4Z-541wLQd0fNTOTUyExgV9kJG6TXDw&s"
-            class="avatar">
-        <div class="user-info">
-            <div class="name">Bahenol</div>
-            <div class="username">@bahlulethanol</div>
-        </div>
+        <?php if ($app->isLoggedIn()):
+            $displayName = $app->getDisplayName();
+            $displayUsername = $app->getDisplayUsername();
+        ?>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTF9kb4Z-541wLQd0fNTOTUyExgV9kJG6TXDw&s" class="avatar">
+            <div class="user-info">
+                <div class="name"><?= $displayName ?></div>
+                <div class="username">@<?= $displayUsername ?></div>
+            </div>
+        <?php else: ?>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTF9kb4Z-541wLQd0fNTOTUyExgV9kJG6TXDw&s" class="avatar">
+            <div class="user-info">
+                <div class="name">Tamu</div>
+                <div class="username">@guest</div>
+                <div style="margin-top:6px"><a href="/login.php" style="color:#fff;opacity:0.9;text-decoration:underline;">Masuk</a> &nbsp; <a href="/regis.php" style="color:#fff;opacity:0.9;text-decoration:underline;">Daftar</a></div>
+            </div>
+        <?php endif; ?>
     </div>
 </header>
