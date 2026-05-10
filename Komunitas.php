@@ -110,6 +110,18 @@ $posts = $app->getCommunityPosts();
       margin-bottom: 24px;
     }
 
+    .heart-icon{
+    width:20px;
+    height:20px;
+
+    stroke:#6b7280;
+    fill:transparent;
+
+    transition:all .2s ease;
+
+    flex-shrink:0;
+}
+
     .btn-posting {
       float: right;
       background-color: #bca451;
@@ -230,6 +242,29 @@ $posts = $app->getCommunityPosts();
       border-color: #d1d5db;
       color: #bca451;
     }
+    .heart-icon{
+  width:20px;
+  height:20px;
+
+  stroke:#6b7280;
+  fill:transparent;
+
+  transition:all .2s ease;
+}
+
+.like-btn.liked{
+  background:#fee2e2;
+  border-color:#fecaca;
+}
+
+.like-btn.liked .heart-icon{
+  fill:#ef4444;
+  stroke:#ef4444;
+}
+
+.like-btn.liked .like-count{
+  color:#ef4444;
+}
 
     .reaction-btn span {
       min-width: 20px;
@@ -426,7 +461,16 @@ $posts = $app->getCommunityPosts();
       <?php endif; ?>
 
       <?php foreach ($posts as $post): ?>
-        
+        <?php
+$isLiked = false;
+
+if($currentUser){
+    $isLiked = $app->getUserLikeStatus(
+        $post['Id'],
+        $currentUser['Id_User']
+    );
+}
+?>
         <article class="post" tabindex="0">
           <header class="post-header">
             <img src="https://i.pravatar.cc/44?u=<?= urlencode($post['username'] ?: $post['Id_User']) ?>" alt="Avatar <?= htmlspecialchars($post['name'] ?: 'Pengguna') ?>" class="post-avatar" width="44" height="44">
@@ -450,8 +494,23 @@ $posts = $app->getCommunityPosts();
           <p class="post-text"><?= nl2br(htmlspecialchars($post['Isi'])) ?></p>
           <footer class="post-footer">
             <div class="reactions" aria-label="Reaksi postingan">
-              <button type="button" class="reaction-btn like-btn" data-post-id="<?= $post['Id'] ?>" data-action="like" aria-label="Suka">
-                <img src="icon/like.svg" style="width:20px; height:20px;" alt="Like">
+              <button
+    type="button"
+    class="reaction-btn like-btn <?= $isLiked ? 'liked' : '' ?>" data-post-id="<?= $post['Id'] ?>" data-action="like" aria-label="Suka">
+                <svg
+    class="heart-icon"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+>
+
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+
+</svg>
                 <span class="like-count"><?= $app->getLikeCount($post['Id']) ?></span>
               </button>
               <button type="button" class="reaction-btn comment-btn" data-post-id="<?= $post['Id'] ?>" data-action="comment" aria-label="Komentar">
@@ -491,10 +550,19 @@ $posts = $app->getCommunityPosts();
 
           const data = await response.json();
 
-          if (data.status) {
-            const countSpan = this.querySelector('.like-count');
-            countSpan.textContent = data.like_count;
-          } else {
+         if (data.status) {
+
+    const countSpan = this.querySelector('.like-count');
+
+    countSpan.textContent = data.like_count;
+
+    if(data.is_liked){
+        this.classList.add('liked');
+    }else{
+        this.classList.remove('liked');
+    }
+
+}else {
             if (response.status === 401) {
               window.location.href = 'login.php';
             } else {
