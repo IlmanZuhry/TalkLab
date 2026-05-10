@@ -12,6 +12,7 @@ class manz{
 			echo"Koneksi gagal:".mysqli_connect_error();
 		}
 		$this->ensureCommunityPostsTable();
+		$this->ensureLikesAndCommentsTable();
 	}
 
 	// Generate ID unik 6 karakter (huruf kapital + angka)
@@ -201,4 +202,104 @@ class manz{
 	$sql = "DELETE FROM Komunitas WHERE Id = $postIdEsc AND Id_User = '$userIdEsc' LIMIT 1";
 	return mysqli_query($this->koneksi, $sql);
 }
+
+	// Pastikan tabel likes dan comments ada di database
+	public function ensureLikesAndCommentsTable(){
+	// Tabel untuk likes
+	$createLikes = "CREATE TABLE IF NOT EXISTS post_likes (
+		id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		post_id INT UNSIGNED NOT NULL,
+		user_id VARCHAR(6) NOT NULL,
+		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (id),
+		UNIQUE KEY unique_like (post_id, user_id),
+		KEY idx_post (post_id),
+		KEY idx_user (user_id),
+		CONSTRAINT fk_like_post FOREIGN KEY (post_id) REFERENCES Komunitas(Id) ON DELETE CASCADE,
+		CONSTRAINT fk_like_user FOREIGN KEY (user_id) REFERENCES users(Id_User) ON DELETE CASCADE
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+	mysqli_query($this->koneksi, $createLikes);
+
+	// Tabel untuk comments
+	$createComments = "CREATE TABLE IF NOT EXISTS post_comments (
+		id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+		post_id INT UNSIGNED NOT NULL,
+		user_id VARCHAR(6) NOT NULL,
+		content TEXT NOT NULL,
+		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+		PRIMARY KEY (id),
+		KEY idx_post (post_id),
+		KEY idx_user (user_id),
+		CONSTRAINT fk_comment_post FOREIGN KEY (post_id) REFERENCES Komunitas(Id) ON DELETE CASCADE,
+		CONSTRAINT fk_comment_user FOREIGN KEY (user_id) REFERENCES users(Id_User) ON DELETE CASCADE
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+	mysqli_query($this->koneksi, $createComments);
+}
+
+	// Toggle like (add or remove)
+	public function toggleLike($postId, $userId){
+	$postIdEsc = (int) $postId;
+	$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+
+	// Cek apakah sudah like
+	$cek = mysqli_query($this->koneksi, "SELECT id FROM post_likes WHERE post_id = $postIdEsc AND user_id = '$userIdEsc'");
+
+	if (mysqli_num_rows($cek) > 0) {
+		// Jika sudah like, hapus
+		$sql = "DELETE FROM post_likes WHERE post_id = $postIdEsc AND user_id = '$userIdEsc'";
+		return mysqli_query($this->koneksi, $sql);
+	} else {
+		// Jika belum, tambah
+		$sql = "INSERT INTO post_likes (post_id, user_id) VALUES ($postIdEsc, '$userIdEsc')";
+		return mysqli_query($this->koneksi, $sql);
+	}
+}
+
+	// Ambil jumlah like
+	public function getLikeCount($postId){
+	$postIdEsc = (int) $postId;
+	$sql = "SELECT COUNT(*) as count FROM post_likes WHERE post_id = $postIdEsc";
+	$res = mysqli_query($this->koneksi, $sql);
+	if ($res) {
+		$row = mysqli_fetch_assoc($res);
+		return (int) $row['count'];
+	}
+	return 0;
+}
+
+	// Cek apakah user sudah like
+	public function getUserLikeStatus($postId, $userId){
+	if (empty($userId)) return false;
+	$postIdEsc = (int) $postId;
+	$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+	$sql = "SELECT id FROM post_likes WHERE post_id = $postIdEsc AND user_id = '$userIdEsc' LIMIT 1";
+	$res = mysqli_query($this->koneksi, $sql);
+	return mysqli_num_rows($res) > 0;
+}
+
+	// Tambah comment
+	public function addComment($postId, $userId, $content){
+	$postIdEsc = (int) $postId;
+	$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+	$contentEsc = mysqli_real_escape_string($this->koneksi, trim($content));
+
+	if (empty($contentEsc)) return false;
+
+	$sql = "INSERT INTO post_comments (post_id, user_id, content) VALUES ($postIdEsc, '$userIdEsc', '$contentEsc')";
+	return mysqli_query($this->koneksi, $sql);
+}
+
+	// Ambil jumlah comment
+	public function getCommentCount($postId){
+	$postIdEsc = (int) $postId;
+	$sql = "SELECT COUNT(*) as count FROM post_comments WHERE post_id = $postIdEsc";
+	$res = mysqli_query($this->koneksi, $sql);
+	if ($res) {
+		$row = mysqli_fetch_assoc($res);
+		return (int) $row['count'];
+	}
+	return 0;
+}
+
 }

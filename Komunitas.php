@@ -205,13 +205,36 @@ $posts = $app->getCommunityPosts();
       justify-content: space-between;
       font-size: 13px;
       color: #8f95a6;
+      gap: 16px;
+      flex-wrap: wrap;
     }
 
-    .post-footer .reactions { display: flex; gap: 20px; user-select: none; }
+    .post-footer .reactions { display: flex; gap: 35px; user-select: none; align-items: center; }
 
-    .reaction-icon { display: flex; align-items: center; gap: 6px; }
-    .reaction-icon svg { width: 16px; height: 16px; fill: #8f95a6; }
-    .reaction-icon img { width: 18px; height: 18px; display: inline-block; }
+    .reaction-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      background: #f8fafc;
+      color: #4b5563;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    }
+
+    .reaction-btn:hover {
+      background-color: #f3f4f6;
+      border-color: #d1d5db;
+      color: #bca451;
+    }
+
+    .reaction-btn span {
+      min-width: 20px;
+      text-align: center;
+    }
 
     .post-share {
       cursor: pointer;
@@ -403,6 +426,7 @@ $posts = $app->getCommunityPosts();
       <?php endif; ?>
 
       <?php foreach ($posts as $post): ?>
+        
         <article class="post" tabindex="0">
           <header class="post-header">
             <img src="https://i.pravatar.cc/44?u=<?= urlencode($post['username'] ?: $post['Id_User']) ?>" alt="Avatar <?= htmlspecialchars($post['name'] ?: 'Pengguna') ?>" class="post-avatar" width="44" height="44">
@@ -425,7 +449,16 @@ $posts = $app->getCommunityPosts();
           
           <p class="post-text"><?= nl2br(htmlspecialchars($post['Isi'])) ?></p>
           <footer class="post-footer">
-            <span>Diposting pada <?= htmlspecialchars(date('d M Y H:i', strtotime($post['Dibuat']))) ?></span>
+            <div class="reactions" aria-label="Reaksi postingan">
+              <button type="button" class="reaction-btn like-btn" data-post-id="<?= $post['Id'] ?>" data-action="like" aria-label="Suka">
+                <img src="icon/like.svg" style="width:20px; height:20px;" alt="Like">
+                <span class="like-count"><?= $app->getLikeCount($post['Id']) ?></span>
+              </button>
+              <button type="button" class="reaction-btn comment-btn" data-post-id="<?= $post['Id'] ?>" data-action="comment" aria-label="Komentar">
+                <img src="icon/komen.svg" style="width:20px; height:20px;" alt="Komentar">
+                <span class="comment-count"><?= $app->getCommentCount($post['Id']) ?></span>
+              </button>
+            </div>
           </footer>
         </article>
       <?php endforeach; ?>
@@ -441,6 +474,87 @@ $posts = $app->getCommunityPosts();
       this.textContent = isHidden ? 'Batalkan' : 'Buat Postingan';
       this.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
     });
+
+    // Handle like button
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        const postId = this.dataset.postId;
+        const formData = new FormData();
+        formData.append('action', 'toggle_like');
+        formData.append('post_id', postId);
+
+        try {
+          const response = await fetch('api_komunitas.php', {
+            method: 'POST',
+            body: formData
+          });
+
+          const data = await response.json();
+
+          if (data.status) {
+            const countSpan = this.querySelector('.like-count');
+            countSpan.textContent = data.like_count;
+          } else {
+            if (response.status === 401) {
+              window.location.href = 'login.php';
+            } else {
+              alert(data.message || 'Gagal mengubah like');
+            }
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan');
+        }
+      });
+    });
+
+    // Handle comment button
+    document.querySelectorAll('.comment-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const postId = this.dataset.postId;
+        const commentForm = prompt('Tulis komentar Anda:');
+        
+        if (commentForm === null) return; // User cancel
+
+        if (commentForm.trim() === '') {
+          alert('Komentar tidak boleh kosong');
+          return;
+        }
+
+        submitComment(postId, commentForm, this);
+      });
+    });
+
+    async function submitComment(postId, content, btn) {
+      const formData = new FormData();
+      formData.append('action', 'add_comment');
+      formData.append('post_id', postId);
+      formData.append('content', content);
+
+      try {
+        const response = await fetch('api_komunitas.php', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (data.status) {
+          const countSpan = btn.querySelector('.comment-count');
+          countSpan.textContent = data.comment_count;
+          alert('Komentar berhasil ditambahkan');
+        } else {
+          if (response.status === 401) {
+            window.location.href = 'login.php';
+          } else {
+            alert(data.message || 'Gagal menambahkan komentar');
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Terjadi kesalahan');
+      }
+    }
   </script>
 </body>
 
