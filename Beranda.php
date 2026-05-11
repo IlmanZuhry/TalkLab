@@ -60,13 +60,13 @@ $app = new manz();
                 <p>Klik untuk memulai</p>
             </div>
 
-            <div class="quick-card">
+            <a href="Latihan.php" class="quick-card" style="text-decoration:none;">
                 <div class="icon-box latihan-icon">
                     <img src="icon/ngomong.svg" alt="">
                 </div>
                 <h3>Latihan</h3>
                 <p>Klik untuk memulai</p>
-            </div>
+            </a>
 
             <div class="quick-card">
                 <div class="icon-box ebook-icon">
