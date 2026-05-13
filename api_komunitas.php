@@ -44,7 +44,7 @@ if ($action === 'toggle_like') {
 
 if ($action === 'add_comment') {
     $content = trim($_POST['content'] ?? '');
-    
+
     if (empty($content)) {
         http_response_code(400);
         echo json_encode(['status' => false, 'message' => 'Komentar tidak boleh kosong']);
@@ -53,7 +53,7 @@ if ($action === 'add_comment') {
 
     $result = $app->addComment($postId, $currentUser['Id_User'], $content);
     $commentCount = $app->getCommentCount($postId);
-    
+
     if ($result) {
         echo json_encode([
             'status' => true,
@@ -64,6 +64,15 @@ if ($action === 'add_comment') {
         http_response_code(500);
         echo json_encode(['status' => false, 'message' => 'Gagal menambahkan komentar']);
     }
+    exit;
+}
+
+if ($action === 'get_comments') {
+    $comments = $app->getComments($postId);
+    echo json_encode([
+        'status' => true,
+        'comments' => $comments
+    ]);
     exit;
 }
 

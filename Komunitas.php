@@ -405,9 +405,206 @@ $posts = $app->getCommunityPosts();
       max-width: 900px;
     }
 
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal.active { display: flex; align-items: center; justify-content: center; }
+
+    .modal-content {
+      background-color: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.16);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: #101828;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover { color: #111827; }
+
+    .modal-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .comments-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .comment-item {
+      background-color: #f8fafc;
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .comment-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #bca451;
+    }
+
+    .comment-author {
+      font-weight: 700;
+      font-size: 14px;
+      color: #101828;
+    }
+
+    .comment-time {
+      font-size: 12px;
+      color: #8f95a6;
+    }
+
+    .comment-content {
+      font-size: 14px;
+      color: #434445;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    .empty-comments {
+      text-align: center;
+      padding: 32px 16px;
+      color: #8f95a6;
+      font-size: 14px;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #e5e7eb;
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .comment-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .comment-form textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #111827;
+      background: #f8fafc;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+    }
+
+    .comment-form textarea:focus {
+      outline: none;
+      border-color: #bca451;
+      background: white;
+    }
+
+    .comment-form-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .btn-comment-cancel {
+      padding: 8px 16px;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 8px;
+      color: #374151;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-comment-submit {
+      padding: 8px 16px;
+      background: #bca451;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-comment-submit:hover { background: #a5924a; }
+    .btn-comment-cancel:hover { background: #e5e7eb; }
+
+    .comment-loading {
+      text-align: center;
+      padding: 24px;
+      color: #8f95a6;
+    }
+
     @media (max-width: 1024px) {
       main { padding: 24px; margin-left: 0; }
       .btn-posting { float: none; display: block; width: 100%; margin-top: 12px; }
+      .modal-content { width: 95%; max-height: 90vh; }
     }
   </style>
 </head>
@@ -524,6 +721,28 @@ if($currentUser){
     </section>
   </main>
 
+  <!-- Modal Komentar -->
+  <div id="commentModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Komentar</h2>
+        <button class="modal-close" id="closeCommentModal" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="comments-list" id="commentsList"></div>
+      </div>
+      <div class="modal-footer">
+        <form class="comment-form" id="commentForm">
+          <textarea id="commentInput" placeholder="Tulis komentar Anda..." required></textarea>
+          <div class="comment-form-actions">
+            <button type="button" class="btn-comment-cancel" id="cancelComment">Batal</button>
+            <button type="submit" class="btn-comment-submit">Posting</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script>
     document.getElementById('toggle-post-form')?.addEventListener('click', function () {
       const form = document.getElementById('post-form');
@@ -580,23 +799,124 @@ if($currentUser){
     document.querySelectorAll('.comment-btn').forEach(btn => {
       btn.addEventListener('click', function() {
         const postId = this.dataset.postId;
-        const commentForm = prompt('Tulis komentar Anda:');
-        
-        if (commentForm === null) return; // User cancel
-
-        if (commentForm.trim() === '') {
-          alert('Komentar tidak boleh kosong');
-          return;
-        }
-
-        submitComment(postId, commentForm, this);
+        openCommentModal(postId, this);
       });
     });
 
-    async function submitComment(postId, content, btn) {
+    let currentPostId = null;
+    let currentCommentBtn = null;
+
+    function openCommentModal(postId, btn) {
+      currentPostId = postId;
+      currentCommentBtn = btn;
+      const modal = document.getElementById('commentModal');
+      const commentsList = document.getElementById('commentsList');
+
+      commentsList.innerHTML = '<div class="comment-loading">Memuat komentar...</div>';
+      modal.classList.add('active');
+
+      // Ambil daftar komentar
+      const formData = new FormData();
+      formData.append('action', 'get_comments');
+      formData.append('post_id', postId);
+
+      fetch('api_komunitas.php', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status && data.comments) {
+          renderComments(data.comments);
+        } else {
+          commentsList.innerHTML = '<div class="empty-comments">Belum ada komentar</div>';
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        commentsList.innerHTML = '<div class="empty-comments">Gagal memuat komentar</div>';
+      });
+    }
+
+    function renderComments(comments) {
+      const commentsList = document.getElementById('commentsList');
+
+      if (comments.length === 0) {
+        commentsList.innerHTML = '<div class="empty-comments">Belum ada komentar</div>';
+        return;
+      }
+
+      commentsList.innerHTML = comments.map(comment => `
+        <div class="comment-item">
+          <div class="comment-header">
+            <img src="https://i.pravatar.cc/32?u=${encodeURIComponent(comment.Username || comment.Id_User)}" alt="Avatar" class="comment-avatar">
+            <div style="flex-grow: 1;">
+              <div class="comment-author">${escapeHtml(comment.Nama || 'Pengguna')}</div>
+              <div style="font-size: 12px; color: #8f95a6;">@${escapeHtml(comment.Username || 'guest')} • ${formatDate(comment.created_at)}</div>
+            </div>
+          </div>
+          <div class="comment-content">${escapeHtml(comment.content)}</div>
+        </div>
+      `).join('');
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = now - date;
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+
+      if (minutes < 1) return 'Baru saja';
+      if (minutes < 60) return `${minutes}m lalu`;
+      if (hours < 24) return `${hours}j lalu`;
+      if (days < 7) return `${days}h lalu`;
+
+      return date.toLocaleDateString('id-ID', { day: 'short', month: 'short', year: 'numeric' });
+    }
+
+    const commentModal = document.getElementById('commentModal');
+    const closeCommentModal = document.getElementById('closeCommentModal');
+    const cancelCommentBtn = document.getElementById('cancelComment');
+    const commentForm = document.getElementById('commentForm');
+    const commentInput = document.getElementById('commentInput');
+
+    closeCommentModal.addEventListener('click', () => {
+      commentModal.classList.remove('active');
+      commentForm.reset();
+    });
+
+    cancelCommentBtn.addEventListener('click', () => {
+      commentModal.classList.remove('active');
+      commentForm.reset();
+    });
+
+    commentModal.addEventListener('click', (e) => {
+      if (e.target === commentModal) {
+        commentModal.classList.remove('active');
+        commentForm.reset();
+      }
+    });
+
+    commentForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const content = commentInput.value.trim();
+      if (!content) {
+        alert('Komentar tidak boleh kosong');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('action', 'add_comment');
-      formData.append('post_id', postId);
+      formData.append('post_id', currentPostId);
       formData.append('content', content);
 
       try {
@@ -608,9 +928,31 @@ if($currentUser){
         const data = await response.json();
 
         if (data.status) {
-          const countSpan = btn.querySelector('.comment-count');
-          countSpan.textContent = data.comment_count;
-          alert('Komentar berhasil ditambahkan');
+          commentInput.value = '';
+
+          // Update count di button
+          if (currentCommentBtn) {
+            const countSpan = currentCommentBtn.querySelector('.comment-count');
+            countSpan.textContent = data.comment_count;
+          }
+
+          // Reload comments list
+          const commentsList = document.getElementById('commentsList');
+          commentsList.innerHTML = '<div class="comment-loading">Memuat komentar...</div>';
+
+          const reloadData = new FormData();
+          reloadData.append('action', 'get_comments');
+          reloadData.append('post_id', currentPostId);
+
+          const reloadRes = await fetch('api_komunitas.php', {
+            method: 'POST',
+            body: reloadData
+          });
+
+          const reloadJson = await reloadRes.json();
+          if (reloadJson.status && reloadJson.comments) {
+            renderComments(reloadJson.comments);
+          }
         } else {
           if (response.status === 401) {
             window.location.href = 'login.php';
@@ -622,7 +964,7 @@ if($currentUser){
         console.error('Error:', error);
         alert('Terjadi kesalahan');
       }
-    }
+    });
   </script>
 </body>
 

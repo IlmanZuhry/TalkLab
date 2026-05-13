@@ -302,4 +302,30 @@ class manz{
 	return 0;
 }
 
+	public function getComments($postId){
+	$postIdEsc = (int) $postId;
+	$sql = "SELECT
+		pc.id,
+		pc.content,
+		pc.created_at,
+
+		u.Nama,
+		u.Username,
+		u.Id_User
+
+		FROM post_comments pc
+		JOIN users u ON pc.user_id = u.Id_User
+		WHERE pc.post_id = $postIdEsc ORDER BY pc.created_at ASC";
+
+	$res = mysqli_query($this->koneksi, $sql);
+	$comments = [];
+	if ($res) {
+		while ($row = mysqli_fetch_assoc($res)) {
+			$comments[] = $row;
+		}
+	}
+
+	return $comments;
+}
+
 }
