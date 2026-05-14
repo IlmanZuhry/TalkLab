@@ -5,135 +5,6 @@ $app = new manz();
 $app->ensureSession();
 $currentUser = $app->getCurrentUser();
 
-function ensurePracticeHistoryTable(mysqli $conn)
-{
-    $sql = "CREATE TABLE IF NOT EXISTS practice_history (
-        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-        user_id VARCHAR(6) NOT NULL,
-        topic VARCHAR(255) NOT NULL,
-        duration_seconds INT UNSIGNED NOT NULL,
-        audio_path VARCHAR(255) NOT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_practice_user (user_id),
-        CONSTRAINT fk_practice_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
-        ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
-
-    mysqli_query($conn, $sql);
-}
-
-function getPracticeHistory(mysqli $conn, string $userId): array
-{
-    $history = [];
-    $stmt = mysqli_prepare($conn, "SELECT topic, duration_seconds, audio_path, created_at FROM practice_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 10");
-    if (!$stmt) {
-        return $history;
-    }
-
-    mysqli_stmt_bind_param($stmt, "s", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        $history[] = $row;
-    }
-
-    mysqli_stmt_close($stmt);
-    return $history;
-}
-
-function ensureChallengeHistoryTable(mysqli $conn)
-{
-    $sql = "CREATE TABLE IF NOT EXISTS speaking_challenge_history (
-        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-        user_id VARCHAR(6) NOT NULL,
-        challenge_type VARCHAR(60) NOT NULL,
-        level_name VARCHAR(30) NOT NULL,
-        prompt TEXT NOT NULL,
-        prep_seconds INT UNSIGNED NOT NULL,
-        speak_seconds INT UNSIGNED NOT NULL,
-        actual_seconds INT UNSIGNED NOT NULL,
-        score INT UNSIGNED NOT NULL,
-        completed TINYINT(1) NOT NULL DEFAULT 1,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_challenge_user (user_id),
-        CONSTRAINT fk_challenge_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
-        ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
-
-    mysqli_query($conn, $sql);
-}
-
-function getChallengeHistory(mysqli $conn, string $userId): array
-{
-    $history = [];
-    $stmt = mysqli_prepare($conn, "SELECT challenge_type, level_name, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed, created_at FROM speaking_challenge_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 10");
-    if (!$stmt) {
-        return $history;
-    }
-
-    mysqli_stmt_bind_param($stmt, "s", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        $history[] = $row;
-    }
-
-    mysqli_stmt_close($stmt);
-    return $history;
-}
-
-function ensureAiFeedbackTable(mysqli $conn)
-{
-    $sql = "CREATE TABLE IF NOT EXISTS ai_feedback_history (
-        id INT UNSIGNED NOT NULL AUTO_INCREMENT,
-        user_id VARCHAR(6) NOT NULL,
-        source_type VARCHAR(40) NOT NULL,
-        duration_seconds INT UNSIGNED NOT NULL,
-        clarity_score INT UNSIGNED NOT NULL,
-        fluency_score INT UNSIGNED NOT NULL,
-        confidence_score INT UNSIGNED NOT NULL,
-        consistency_score INT UNSIGNED NOT NULL,
-        filler_count INT UNSIGNED NOT NULL,
-        speaking_speed INT UNSIGNED NOT NULL,
-        feedback TEXT NOT NULL,
-        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        PRIMARY KEY (id),
-        KEY idx_ai_feedback_user (user_id),
-        CONSTRAINT fk_ai_feedback_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
-        ON DELETE CASCADE ON UPDATE CASCADE
-    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
-
-    mysqli_query($conn, $sql);
-}
-
-function getAiFeedbackHistory(mysqli $conn, string $userId): array
-{
-    $history = [];
-    $stmt = mysqli_prepare($conn, "SELECT source_type, duration_seconds, clarity_score, fluency_score, confidence_score, consistency_score, filler_count, speaking_speed, feedback, created_at FROM ai_feedback_history WHERE user_id = ? ORDER BY created_at DESC LIMIT 10");
-    if (!$stmt) {
-        return $history;
-    }
-
-    mysqli_stmt_bind_param($stmt, "s", $userId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-        $history[] = $row;
-    }
-
-    mysqli_stmt_close($stmt);
-    return $history;
-}
-
-ensurePracticeHistoryTable($app->koneksi);
-ensureChallengeHistoryTable($app->koneksi);
-ensureAiFeedbackTable($app->koneksi);
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_ai_feedback') {
     header('Content-Type: application/json');
 
@@ -159,16 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
         exit;
     }
 
-    $stmt = mysqli_prepare($app->koneksi, "INSERT INTO ai_feedback_history (user_id, source_type, duration_seconds, clarity_score, fluency_score, confidence_score, consistency_score, filler_count, speaking_speed, feedback) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    if (!$stmt) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyiapkan penyimpanan AI feedback.']);
-        exit;
-    }
-
-    mysqli_stmt_bind_param($stmt, "ssiiiiiiis", $currentUser['Id_User'], $sourceType, $duration, $clarity, $fluency, $confidence, $consistency, $fillerCount, $speakingSpeed, $feedback);
-    $saved = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
+    $saved = $app->saveAiFeedbackHistory($currentUser['Id_User'], $sourceType, $duration, $clarity, $fluency, $confidence, $consistency, $fillerCount, $speakingSpeed, $feedback);
 
     if (!$saved) {
         http_response_code(500);
@@ -219,16 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
         exit;
     }
 
-    $stmt = mysqli_prepare($app->koneksi, "INSERT INTO speaking_challenge_history (user_id, challenge_type, level_name, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    if (!$stmt) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyiapkan penyimpanan challenge.']);
-        exit;
-    }
-
-    mysqli_stmt_bind_param($stmt, "ssssiiiii", $currentUser['Id_User'], $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
-    $saved = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
+    $saved = $app->saveChallengeHistory($currentUser['Id_User'], $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
 
     if (!$saved) {
         http_response_code(500);
@@ -295,16 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
         exit;
     }
 
-    $stmt = mysqli_prepare($app->koneksi, "INSERT INTO practice_history (user_id, topic, duration_seconds, audio_path) VALUES (?, ?, ?, ?)");
-    if (!$stmt) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyiapkan penyimpanan riwayat.']);
-        exit;
-    }
-
-    mysqli_stmt_bind_param($stmt, "ssis", $currentUser['Id_User'], $topic, $duration, $relativePath);
-    $saved = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
+    $saved = $app->savePracticeHistory($currentUser['Id_User'], $topic, $duration, $relativePath);
 
     if (!$saved) {
         http_response_code(500);
@@ -325,9 +169,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     exit;
 }
 
-$practiceHistory = $currentUser ? getPracticeHistory($app->koneksi, $currentUser['Id_User']) : [];
-$challengeHistory = $currentUser ? getChallengeHistory($app->koneksi, $currentUser['Id_User']) : [];
-$aiFeedbackHistory = $currentUser ? getAiFeedbackHistory($app->koneksi, $currentUser['Id_User']) : [];
+$practiceHistory = $currentUser ? $app->getPracticeHistory($currentUser['Id_User']) : [];
+$challengeHistory = $currentUser ? $app->getChallengeHistory($currentUser['Id_User']) : [];
+$aiFeedbackHistory = $currentUser ? $app->getAiFeedbackHistory($currentUser['Id_User']) : [];
 $totalPracticeDuration = array_sum(array_map(fn($item) => (int) $item['duration_seconds'], $practiceHistory));
 $totalChallengeDuration = array_sum(array_map(fn($item) => (int) $item['actual_seconds'], $challengeHistory));
 $averageAiScore = 0;

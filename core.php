@@ -13,6 +13,7 @@ class manz{
 		}
 		$this->ensureCommunityPostsTable();
 		$this->ensureLikesAndCommentsTable();
+		$this->ensurePracticeTables();
 	}
 
 	// Generate ID unik 6 karakter (huruf kapital + angka)
@@ -301,5 +302,155 @@ class manz{
 	}
 	return 0;
 }
+
+	public function ensurePracticeTables(){
+		$this->ensurePracticeHistoryTable();
+		$this->ensureChallengeHistoryTable();
+		$this->ensureAiFeedbackTable();
+	}
+
+	public function ensurePracticeHistoryTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS practice_history (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id VARCHAR(6) NOT NULL,
+			topic VARCHAR(255) NOT NULL,
+			duration_seconds INT UNSIGNED NOT NULL,
+			audio_path VARCHAR(255) NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_practice_user (user_id),
+			CONSTRAINT fk_practice_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
+			ON DELETE CASCADE ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function ensureChallengeHistoryTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS speaking_challenge_history (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id VARCHAR(6) NOT NULL,
+			challenge_type VARCHAR(60) NOT NULL,
+			level_name VARCHAR(30) NOT NULL,
+			prompt TEXT NOT NULL,
+			prep_seconds INT UNSIGNED NOT NULL,
+			speak_seconds INT UNSIGNED NOT NULL,
+			actual_seconds INT UNSIGNED NOT NULL,
+			score INT UNSIGNED NOT NULL,
+			completed TINYINT(1) NOT NULL DEFAULT 1,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_challenge_user (user_id),
+			CONSTRAINT fk_challenge_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
+			ON DELETE CASCADE ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function ensureAiFeedbackTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS ai_feedback_history (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id VARCHAR(6) NOT NULL,
+			source_type VARCHAR(40) NOT NULL,
+			duration_seconds INT UNSIGNED NOT NULL,
+			clarity_score INT UNSIGNED NOT NULL,
+			fluency_score INT UNSIGNED NOT NULL,
+			confidence_score INT UNSIGNED NOT NULL,
+			consistency_score INT UNSIGNED NOT NULL,
+			filler_count INT UNSIGNED NOT NULL,
+			speaking_speed INT UNSIGNED NOT NULL,
+			feedback TEXT NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_ai_feedback_user (user_id),
+			CONSTRAINT fk_ai_feedback_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
+			ON DELETE CASCADE ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function getPracticeHistory($userId, $limit = 10){
+		$history = [];
+		$limit = (int) $limit;
+		$stmt = mysqli_prepare($this->koneksi, "SELECT topic, duration_seconds, audio_path, created_at FROM practice_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+		if (!$stmt) return $history;
+		mysqli_stmt_bind_param($stmt, "s", $userId);
+		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+		while ($row = mysqli_fetch_assoc($result)){
+			$history[] = $row;
+		}
+		mysqli_stmt_close($stmt);
+		return $history;
+	}
+
+	public function getChallengeHistory($userId, $limit = 10){
+		$history = [];
+		$limit = (int) $limit;
+		$stmt = mysqli_prepare($this->koneksi, "SELECT challenge_type, level_name, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed, created_at FROM speaking_challenge_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+		if (!$stmt) return $history;
+		mysqli_stmt_bind_param($stmt, "s", $userId);
+		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+		while ($row = mysqli_fetch_assoc($result)){
+			$history[] = $row;
+		}
+		mysqli_stmt_close($stmt);
+		return $history;
+	}
+
+	public function getAiFeedbackHistory($userId, $limit = 10){
+		$history = [];
+		$limit = (int) $limit;
+		$stmt = mysqli_prepare($this->koneksi, "SELECT source_type, duration_seconds, clarity_score, fluency_score, confidence_score, consistency_score, filler_count, speaking_speed, feedback, created_at FROM ai_feedback_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+		if (!$stmt) return $history;
+		mysqli_stmt_bind_param($stmt, "s", $userId);
+		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+		while ($row = mysqli_fetch_assoc($result)){
+			$history[] = $row;
+		}
+		mysqli_stmt_close($stmt);
+		return $history;
+	}
+
+	public function savePracticeHistory($userId, $topic, $durationSeconds, $audioPath){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO practice_history (user_id, topic, duration_seconds, audio_path) VALUES (?, ?, ?, ?)");
+		if (!$stmt) return false;
+		$durationSeconds = (int) $durationSeconds;
+		mysqli_stmt_bind_param($stmt, "ssis", $userId, $topic, $durationSeconds, $audioPath);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $saved;
+	}
+
+	public function saveChallengeHistory($userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO speaking_challenge_history (user_id, challenge_type, level_name, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		if (!$stmt) return false;
+		$prepSeconds = (int) $prepSeconds;
+		$speakSeconds = (int) $speakSeconds;
+		$actualSeconds = (int) $actualSeconds;
+		$score = (int) $score;
+		$completed = (int) $completed;
+		mysqli_stmt_bind_param($stmt, "ssssiiiii", $userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $saved;
+	}
+
+	public function saveAiFeedbackHistory($userId, $sourceType, $durationSeconds, $clarity, $fluency, $confidence, $consistency, $fillerCount, $speakingSpeed, $feedback){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO ai_feedback_history (user_id, source_type, duration_seconds, clarity_score, fluency_score, confidence_score, consistency_score, filler_count, speaking_speed, feedback) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		if (!$stmt) return false;
+		$durationSeconds = (int) $durationSeconds;
+		$clarity = (int) $clarity;
+		$fluency = (int) $fluency;
+		$confidence = (int) $confidence;
+		$consistency = (int) $consistency;
+		$fillerCount = (int) $fillerCount;
+		$speakingSpeed = (int) $speakingSpeed;
+		mysqli_stmt_bind_param($stmt, "ssiiiiiiis", $userId, $sourceType, $durationSeconds, $clarity, $fluency, $confidence, $consistency, $fillerCount, $speakingSpeed, $feedback);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $saved;
+	}
 
 }
