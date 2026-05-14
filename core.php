@@ -453,4 +453,202 @@ class manz{
 		return $saved;
 	}
 
+	public function handleSavePractice($currentUser){
+
+	if (!$currentUser) {
+		http_response_code(401);
+		return [
+			'status' => false,
+			'message' => 'Silakan login untuk menyimpan riwayat latihan.'
+		];
+	}
+
+	$topic = trim($_POST['topic'] ?? '');
+	$duration = (int) ($_POST['duration'] ?? 0);
+
+	if ($topic === '' || $duration <= 0 || empty($_FILES['audio']['tmp_name'])) {
+		http_response_code(400);
+		return [
+			'status' => false,
+			'message' => 'Data latihan belum lengkap.'
+		];
+	}
+
+	if ($_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
+		http_response_code(400);
+		return [
+			'status' => false,
+			'message' => 'File audio gagal diterima.'
+		];
+	}
+
+	$uploadDir = __DIR__ . '/uploads/practice_audio';
+
+	if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
+		http_response_code(500);
+		return [
+			'status' => false,
+			'message' => 'Folder penyimpanan audio tidak bisa dibuat.'
+		];
+	}
+
+	$fileName = $currentUser['Id_User'] . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webm';
+
+	$targetPath = $uploadDir . '/' . $fileName;
+	$relativePath = 'uploads/practice_audio/' . $fileName;
+
+	if (!move_uploaded_file($_FILES['audio']['tmp_name'], $targetPath)) {
+		http_response_code(500);
+		return [
+			'status' => false,
+			'message' => 'Gagal menyimpan file audio.'
+		];
+	}
+
+	$saved = $this->savePracticeHistory(
+		$currentUser['Id_User'],
+		$topic,
+		$duration,
+		$relativePath
+	);
+
+	if (!$saved) {
+		http_response_code(500);
+		return [
+			'status' => false,
+			'message' => 'Gagal menyimpan riwayat latihan.'
+		];
+	}
+
+	return [
+		'status' => true,
+		'message' => 'Riwayat latihan berhasil disimpan.',
+		'item' => [
+			'topic' => $topic,
+			'duration_seconds' => $duration,
+			'audio_path' => $relativePath,
+			'created_at' => date('Y-m-d H:i:s')
+		]
+	];
+}
+
+public function handleSaveChallenge($currentUser){
+
+	if (!$currentUser) {
+		http_response_code(401);
+		return [
+			'status' => false,
+			'message' => 'Silakan login untuk menyimpan riwayat challenge.'
+		];
+	}
+
+	$challengeType = trim($_POST['challenge_type'] ?? '');
+	$levelName = trim($_POST['level_name'] ?? '');
+	$prompt = trim($_POST['prompt'] ?? '');
+	$prepSeconds = (int) ($_POST['prep_seconds'] ?? 0);
+	$speakSeconds = (int) ($_POST['speak_seconds'] ?? 0);
+	$actualSeconds = (int) ($_POST['actual_seconds'] ?? 0);
+	$score = max(0, min(100, (int) ($_POST['score'] ?? 0)));
+	$completed = (int) ($_POST['completed'] ?? 1);
+
+	if ($challengeType === '' || $levelName === '' || $prompt === '') {
+		http_response_code(400);
+		return [
+			'status' => false,
+			'message' => 'Data challenge belum lengkap.'
+		];
+	}
+
+	$saved = $this->saveChallengeHistory(
+		$currentUser['Id_User'],
+		$challengeType,
+		$levelName,
+		$prompt,
+		$prepSeconds,
+		$speakSeconds,
+		$actualSeconds,
+		$score,
+		$completed
+	);
+
+	if (!$saved) {
+		http_response_code(500);
+		return [
+			'status' => false,
+			'message' => 'Gagal menyimpan riwayat challenge.'
+		];
+	}
+
+	return [
+		'status' => true,
+		'message' => 'Riwayat challenge berhasil disimpan.',
+		'item' => [
+			'challenge_type' => $challengeType,
+			'level_name' => $levelName,
+			'prompt' => $prompt,
+			'prep_seconds' => $prepSeconds,
+			'speak_seconds' => $speakSeconds,
+			'actual_seconds' => $actualSeconds,
+			'score' => $score,
+			'completed' => $completed,
+			'created_at' => date('Y-m-d H:i:s')
+		]
+	];
+}
+
+public function handleSaveAiFeedback($currentUser){
+
+	if (!$currentUser) {
+		http_response_code(401);
+		return [
+			'status' => false,
+			'message' => 'Silakan login untuk menyimpan AI feedback.'
+		];
+	}
+
+	$sourceType = trim($_POST['source_type'] ?? 'Voice Practice');
+	$duration = max(0, (int) ($_POST['duration_seconds'] ?? 0));
+	$clarity = max(0, min(100, (int) ($_POST['clarity_score'] ?? 0)));
+	$fluency = max(0, min(100, (int) ($_POST['fluency_score'] ?? 0)));
+	$confidence = max(0, min(100, (int) ($_POST['confidence_score'] ?? 0)));
+	$consistency = max(0, min(100, (int) ($_POST['consistency_score'] ?? 0)));
+	$fillerCount = max(0, (int) ($_POST['filler_count'] ?? 0));
+	$speakingSpeed = max(0, (int) ($_POST['speaking_speed'] ?? 0));
+	$feedback = trim($_POST['feedback'] ?? '');
+
+	if ($duration <= 0 || $feedback === '') {
+		http_response_code(400);
+		return [
+			'status' => false,
+			'message' => 'Data feedback belum lengkap.'
+		];
+	}
+
+	$saved = $this->saveAiFeedbackHistory(
+		$currentUser['Id_User'],
+		$sourceType,
+		$duration,
+		$clarity,
+		$fluency,
+		$confidence,
+		$consistency,
+		$fillerCount,
+		$speakingSpeed,
+		$feedback
+	);
+
+	if (!$saved) {
+		http_response_code(500);
+		return [
+			'status' => false,
+			'message' => 'Gagal menyimpan AI feedback.'
+		];
+	}
+
+	return [
+		'status' => true,
+		'message' => 'AI feedback berhasil disimpan.'
+	];
+}
+
 }

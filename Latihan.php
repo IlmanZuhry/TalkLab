@@ -1,172 +1,34 @@
 <?php
 require_once 'core.php';
-if (session_status() == PHP_SESSION_NONE) session_start();
+
+if (session_status() == PHP_SESSION_NONE) {
+	session_start();
+}
+
 $app = new manz();
 $app->ensureSession();
 $currentUser = $app->getCurrentUser();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_ai_feedback') {
-    header('Content-Type: application/json');
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    if (!$currentUser) {
-        http_response_code(401);
-        echo json_encode(['status' => false, 'message' => 'Silakan login untuk menyimpan AI feedback.']);
-        exit;
-    }
+	header('Content-Type: application/json');
 
-    $sourceType = trim($_POST['source_type'] ?? 'Voice Practice');
-    $duration = max(0, (int) ($_POST['duration_seconds'] ?? 0));
-    $clarity = max(0, min(100, (int) ($_POST['clarity_score'] ?? 0)));
-    $fluency = max(0, min(100, (int) ($_POST['fluency_score'] ?? 0)));
-    $confidence = max(0, min(100, (int) ($_POST['confidence_score'] ?? 0)));
-    $consistency = max(0, min(100, (int) ($_POST['consistency_score'] ?? 0)));
-    $fillerCount = max(0, (int) ($_POST['filler_count'] ?? 0));
-    $speakingSpeed = max(0, (int) ($_POST['speaking_speed'] ?? 0));
-    $feedback = trim($_POST['feedback'] ?? '');
+	$action = $_POST['action'] ?? '';
 
-    if ($duration <= 0 || $feedback === '') {
-        http_response_code(400);
-        echo json_encode(['status' => false, 'message' => 'Data feedback belum lengkap.']);
-        exit;
-    }
+	if ($action === 'save_practice') {
+		echo json_encode($app->handleSavePractice($currentUser));
+		exit;
+	}
 
-    $saved = $app->saveAiFeedbackHistory($currentUser['Id_User'], $sourceType, $duration, $clarity, $fluency, $confidence, $consistency, $fillerCount, $speakingSpeed, $feedback);
+	if ($action === 'save_challenge') {
+		echo json_encode($app->handleSaveChallenge($currentUser));
+		exit;
+	}
 
-    if (!$saved) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyimpan AI feedback.']);
-        exit;
-    }
-
-    echo json_encode([
-        'status' => true,
-        'message' => 'AI feedback berhasil disimpan.',
-        'item' => [
-            'source_type' => $sourceType,
-            'duration_seconds' => $duration,
-            'clarity_score' => $clarity,
-            'fluency_score' => $fluency,
-            'confidence_score' => $confidence,
-            'consistency_score' => $consistency,
-            'filler_count' => $fillerCount,
-            'speaking_speed' => $speakingSpeed,
-            'feedback' => $feedback,
-            'created_at' => date('Y-m-d H:i:s')
-        ]
-    ]);
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_challenge') {
-    header('Content-Type: application/json');
-
-    if (!$currentUser) {
-        http_response_code(401);
-        echo json_encode(['status' => false, 'message' => 'Silakan login untuk menyimpan riwayat challenge.']);
-        exit;
-    }
-
-    $challengeType = trim($_POST['challenge_type'] ?? '');
-    $levelName = trim($_POST['level_name'] ?? '');
-    $prompt = trim($_POST['prompt'] ?? '');
-    $prepSeconds = (int) ($_POST['prep_seconds'] ?? 0);
-    $speakSeconds = (int) ($_POST['speak_seconds'] ?? 0);
-    $actualSeconds = (int) ($_POST['actual_seconds'] ?? 0);
-    $score = max(0, min(100, (int) ($_POST['score'] ?? 0)));
-    $completed = (int) ($_POST['completed'] ?? 1);
-
-    if ($challengeType === '' || $levelName === '' || $prompt === '' || $prepSeconds < 0 || $speakSeconds <= 0 || $actualSeconds < 0) {
-        http_response_code(400);
-        echo json_encode(['status' => false, 'message' => 'Data challenge belum lengkap.']);
-        exit;
-    }
-
-    $saved = $app->saveChallengeHistory($currentUser['Id_User'], $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
-
-    if (!$saved) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyimpan riwayat challenge.']);
-        exit;
-    }
-
-    echo json_encode([
-        'status' => true,
-        'message' => 'Riwayat challenge berhasil disimpan.',
-        'item' => [
-            'challenge_type' => $challengeType,
-            'level_name' => $levelName,
-            'prompt' => $prompt,
-            'prep_seconds' => $prepSeconds,
-            'speak_seconds' => $speakSeconds,
-            'actual_seconds' => $actualSeconds,
-            'score' => $score,
-            'completed' => $completed,
-            'created_at' => date('Y-m-d H:i:s')
-        ]
-    ]);
-    exit;
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_practice') {
-    header('Content-Type: application/json');
-
-    if (!$currentUser) {
-        http_response_code(401);
-        echo json_encode(['status' => false, 'message' => 'Silakan login untuk menyimpan riwayat latihan.']);
-        exit;
-    }
-
-    $topic = trim($_POST['topic'] ?? '');
-    $duration = (int) ($_POST['duration'] ?? 0);
-
-    if ($topic === '' || $duration <= 0 || empty($_FILES['audio']['tmp_name'])) {
-        http_response_code(400);
-        echo json_encode(['status' => false, 'message' => 'Data latihan belum lengkap.']);
-        exit;
-    }
-
-    if ($_FILES['audio']['error'] !== UPLOAD_ERR_OK) {
-        http_response_code(400);
-        echo json_encode(['status' => false, 'message' => 'File audio gagal diterima.']);
-        exit;
-    }
-
-    $uploadDir = __DIR__ . '/uploads/practice_audio';
-    if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Folder penyimpanan audio tidak bisa dibuat.']);
-        exit;
-    }
-
-    $fileName = $currentUser['Id_User'] . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webm';
-    $targetPath = $uploadDir . '/' . $fileName;
-    $relativePath = 'uploads/practice_audio/' . $fileName;
-
-    if (!move_uploaded_file($_FILES['audio']['tmp_name'], $targetPath)) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyimpan file audio.']);
-        exit;
-    }
-
-    $saved = $app->savePracticeHistory($currentUser['Id_User'], $topic, $duration, $relativePath);
-
-    if (!$saved) {
-        http_response_code(500);
-        echo json_encode(['status' => false, 'message' => 'Gagal menyimpan riwayat latihan.']);
-        exit;
-    }
-
-    echo json_encode([
-        'status' => true,
-        'message' => 'Riwayat latihan berhasil disimpan.',
-        'item' => [
-            'topic' => $topic,
-            'duration_seconds' => $duration,
-            'audio_path' => $relativePath,
-            'created_at' => date('Y-m-d H:i:s')
-        ]
-    ]);
-    exit;
+	if ($action === 'save_ai_feedback') {
+		echo json_encode($app->handleSaveAiFeedback($currentUser));
+		exit;
+	}
 }
 
 $practiceHistory = $currentUser ? $app->getPracticeHistory($currentUser['Id_User']) : [];
@@ -175,6 +37,7 @@ $aiFeedbackHistory = $currentUser ? $app->getAiFeedbackHistory($currentUser['Id_
 $totalPracticeDuration = array_sum(array_map(fn($item) => (int) $item['duration_seconds'], $practiceHistory));
 $totalChallengeDuration = array_sum(array_map(fn($item) => (int) $item['actual_seconds'], $challengeHistory));
 $averageAiScore = 0;
+
 if (!empty($aiFeedbackHistory)) {
     $scoreTotal = 0;
     foreach ($aiFeedbackHistory as $item) {
