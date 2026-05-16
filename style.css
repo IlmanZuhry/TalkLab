@@ -5,6 +5,15 @@
     font-family: system-ui, sans-serif;
 }
 
+a, a:hover, a:visited, a:active {
+    text-decoration: none !important;
+}
+
+.quick-card h3, 
+.quick-card p,
+.quick-card u {
+    text-decoration: none !important;
+}
 
 body {
     display: flex;
@@ -175,9 +184,18 @@ body {
     cursor: pointer;
 }
 
-.sidebar ul li.active,
 .sidebar ul li:hover {
     background: #476097;
+}
+
+.menu-item.active {
+    background: #d2a06b !important;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.menu-item.active .icon {
+    fill: #ffffff;
 }
 
 .mari {
@@ -322,6 +340,7 @@ main {
     font-size: 20px;
     position: relative;
     z-index: 5;
+    text-decoration: none;
 }
 
 .quick-cards {
@@ -341,6 +360,8 @@ main {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     transition: 0.25s;
     cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
 .quick-card:hover {
