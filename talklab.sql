@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: May 12, 2026 at 07:07 AM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Host: localhost
+-- Waktu pembuatan: 16 Bulan Mei 2026 pada 07.30
+-- Versi server: 10.4.32-MariaDB
+-- Versi PHP: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `talklab`
+-- Basis data: `talklab`
 --
 
 -- --------------------------------------------------------
@@ -68,7 +68,7 @@ INSERT INTO `komunitas` (`Id`, `Id_User`, `Isi`, `Dibuat`, `Update_Post`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `post_comments`
+-- Struktur dari tabel `post_comments`
 --
 
 CREATE TABLE `post_comments` (
@@ -80,10 +80,18 @@ CREATE TABLE `post_comments` (
   `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `post_comments`
+--
+
+INSERT INTO `post_comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `updated_at`) VALUES
+(1, 2, 'AGBI29', 'woyyyyyy', '2026-05-16 12:29:55', NULL),
+(2, 2, '7NA83J', 'apa kau', '2026-05-16 12:30:11', NULL);
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `post_likes`
+-- Struktur dari tabel `post_likes`
 --
 
 CREATE TABLE `post_likes` (
@@ -115,6 +123,12 @@ CREATE TABLE `practice_history` (
 INSERT INTO `practice_history` (`id`, `user_id`, `topic`, `duration_seconds`, `audio_path`, `created_at`) VALUES
 (1, 'LB61P9', 'Perkenalkan diri kamu secara singkat dan percaya diri.', 4, 'uploads/practice_audio/LB61P9_20260512_070044_c045b54e.webm', '2026-05-12 12:00:44'),
 (2, 'LB61P9', 'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.', 5, 'uploads/practice_audio/LB61P9_20260512_070109_5d0a24cf.webm', '2026-05-12 12:01:09');
+--
+-- Dumping data untuk tabel `post_likes`
+--
+
+INSERT INTO `post_likes` (`id`, `post_id`, `user_id`, `created_at`) VALUES
+(1, 2, '7NA83J', '2026-05-16 12:19:49');
 
 -- --------------------------------------------------------
 
@@ -169,7 +183,7 @@ INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Userna
 ('LB61P9', 'mamang ujang', 'palembang', '2002-02-06', 'aduhmamang', '$2y$10$0AnIL/8nzzaf9phtJgRkTOSP1puah5I8Y4fcAEz76vWBpJK.4rR3q', '');
 
 --
--- Indexes for dumped tables
+-- Indeks untuk tabel yang dibuang
 --
 
 --
@@ -187,7 +201,7 @@ ALTER TABLE `komunitas`
   ADD KEY `idx_user_id` (`Id_User`);
 
 --
--- Indexes for table `post_comments`
+-- Indeks untuk tabel `post_comments`
 --
 ALTER TABLE `post_comments`
   ADD PRIMARY KEY (`id`),
@@ -195,7 +209,7 @@ ALTER TABLE `post_comments`
   ADD KEY `idx_user` (`user_id`);
 
 --
--- Indexes for table `post_likes`
+-- Indeks untuk tabel `post_likes`
 --
 ALTER TABLE `post_likes`
   ADD PRIMARY KEY (`id`),
@@ -219,6 +233,7 @@ ALTER TABLE `speaking_challenge_history`
 
 --
 -- Indexes for table `users`
+-- Indeks untuk tabel `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`Id_User`),
@@ -241,13 +256,13 @@ ALTER TABLE `komunitas`
   MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `post_comments`
+-- AUTO_INCREMENT untuk tabel `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `post_likes`
+-- AUTO_INCREMENT untuk tabel `post_likes`
 --
 ALTER TABLE `post_likes`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
@@ -266,6 +281,7 @@ ALTER TABLE `speaking_challenge_history`
 
 --
 -- Constraints for dumped tables
+-- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
 --
