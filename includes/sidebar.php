@@ -1,18 +1,18 @@
 <?php
 // Deteksi halaman aktif secara otomatis berdasarkan nama file
-$current_page = basename($_SERVER['PHP_SELF']);
+$current_page = strtolower(basename($_SERVER['PHP_SELF']));
 
 // Tentukan menu mana yang aktif
 // Materi & sub-halaman materi semuanya highlight menu "Materi"
-$materi_pages = ['Materi.php', 'vokal.php', 'Gerak-tubuh.php', 'lainnya.php', 'submaterivokal.php'];
+$materi_pages = ['materi.php', 'vokal.php', 'gerak-tubuh.php', 'lainnya.php', 'submaterivokal.php'];
 
-if ($current_page === 'Beranda.php') {
+if ($current_page === 'beranda.php' || $current_page === 'ebook.php') {
     $active = 'beranda';
 } elseif (in_array($current_page, $materi_pages)) {
     $active = 'materi';
-} elseif ($current_page === 'Komunitas.php') {
+} elseif ($current_page === 'komunitas.php') {
     $active = 'komunitas';
-} elseif ($current_page === 'Profil.php') {
+} elseif ($current_page === 'profil.php') {
     $active = 'profil';
 } else {
     $active = '';
