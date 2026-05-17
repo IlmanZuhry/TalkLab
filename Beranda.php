@@ -37,7 +37,7 @@ $app = new manz();
                     <p>Kamu belum menyelesaikan tugas apapun</p>
                 </div>
 
-                <a href="materi.php" class="btn-primary">Mulai Belajar</a>
+                <button class="btn-primary">Mulai Belajar</button>
             </div>
 
             <div class="hero-img">
@@ -52,37 +52,37 @@ $app = new manz();
 
         <div class="quick-cards">
 
-            <a href="materi.php" class="quick-card">
+            <div class="quick-card">
                 <div class="icon-box materi-icon">
                     <img src="icon/bukuuu.svg" alt="">
                 </div>
                 <h3>Materi</h3>
                 <p>Klik untuk memulai</p>
-            </a>
+            </div>
 
-            <a href="latihan.php" class="quick-card">
+            <div class="quick-card">
                 <div class="icon-box latihan-icon">
                     <img src="icon/ngomong.svg" alt="">
                 </div>
                 <h3>Latihan</h3>
                 <p>Klik untuk memulai</p>
-            </a>
+            </div>
 
-            <a href="ebook.php" class="quick-card">
+            <div class="quick-card">
                 <div class="icon-box ebook-icon">
                     <img src="icon/buk.svg" alt="">
                 </div>
                 <h3>E-Book</h3>
                 <p>Klik untuk memulai</p>
-            </a>
+            </div>
 
-            <a href="komunitas.php" class="quick-card">
+            <div class="quick-card">
                 <div class="icon-box komunitas-icon">
                     <img src="icon/dua.svg" alt="">
                 </div>
                 <h3>Komunitas</h3>
                 <p>Klik untuk memulai</p>
-            </a>
+            </div>
 
         </div>
 
