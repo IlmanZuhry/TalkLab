@@ -34,7 +34,7 @@ $app->ensureSession();
             <div class="user-info">
                 <div class="name">Tamu</div>
                 <div class="username">@guest</div>
-                <div style="margin-top:6px"><a href="/login.php" style="color:#fff;opacity:0.9;text-decoration:underline;">Masuk</a> &nbsp; <a href="/regis.php" style="color:#fff;opacity:0.9;text-decoration:underline;">Daftar</a></div>
+                <div style="margin-top:6px"><a href="login.php" style="color:#fff;opacity:0.9;text-decoration:underline;">Masuk</a> &nbsp; <a href="regis.php" style="color:#fff;opacity:0.9;text-decoration:underline;">Daftar</a></div>
             </div>
         <?php endif; ?>
     </div>

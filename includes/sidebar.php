@@ -12,6 +12,8 @@ if ($current_page === 'Beranda.php') {
     $active = 'materi';
 } elseif ($current_page === 'Latihan.php') {
     $active = 'latihan';
+} elseif ($current_page === 'Ebook.php') {
+    $active = 'ebook';
 } elseif ($current_page === 'Komunitas.php') {
     $active = 'komunitas';
 } elseif ($current_page === 'Profil.php') {
@@ -83,6 +85,24 @@ if ($current_page === 'Beranda.php') {
         stroke-linejoin="round" />
 </svg>
                     <span>Latihan</span>
+                </a>
+            <?php endif; ?>
+        </li>
+
+        <li class="menu-item <?= $active === 'ebook' ? 'active' : '' ?>">
+            <?php if ($active === 'ebook'): ?>
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M21 4H14C12.9 4 12 4.9 12 6V18C12 16.9 12.9 16 14 16H21V4M10 6C10 4.9 9.1 4 8 4H3V16H10C11.1 16 12 16.9 12 18V6C12 4.9 11.1 4 10 4M3 18V20H8C9.1 20 10 19.1 10 18H3M14 18C14 19.1 14.9 20 16 20H21V18H14Z" />
+                </svg>
+                <span>E-Book</span>
+            <?php else: ?>
+                <a href="Ebook.php">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                            d="M21 4H14C12.9 4 12 4.9 12 6V18C12 16.9 12.9 16 14 16H21V4M10 6C10 4.9 9.1 4 8 4H3V16H10C11.1 16 12 16.9 12 18V6C12 4.9 11.1 4 10 4M3 18V20H8C9.1 20 10 19.1 10 18H3M14 18C14 19.1 14.9 20 16 20H21V18H14Z" />
+                    </svg>
+                    <span>E-Book</span>
                 </a>
             <?php endif; ?>
         </li>
