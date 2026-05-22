@@ -329,6 +329,34 @@ class manz{
 	return $comments;
 }
 
+	public function getLatestCommentReplies($userId, $limit = 3){
+		// Get latest comments on user's posts (replies to user's posts)
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$sql = "SELECT 
+			pc.id,
+			pc.content,
+			pc.user_id,
+			pc.post_id,
+			pc.created_at,
+			u.Nama,
+			k.Isi as post_content
+		FROM post_comments pc
+		JOIN users u ON pc.user_id = u.Id_User
+		JOIN komunitas k ON pc.post_id = k.Id
+		WHERE k.Id_User = '$userIdEsc'
+		ORDER BY pc.created_at DESC
+		LIMIT $limit";
+		
+		$res = mysqli_query($this->koneksi, $sql);
+		$comments = [];
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$comments[] = $row;
+			}
+		}
+		return $comments;
+	}
+
 	public function ensurePracticeTables(){
 		$this->ensurePracticeHistoryTable();
 		$this->ensureChallengeHistoryTable();
