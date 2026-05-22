@@ -17,9 +17,12 @@ include 'includes/ebook_data.php';
         main {
             flex: 1;
             padding: 120px 40px 40px;
-            margin-left: 327px;
+            margin-left: 260px;
+            width: calc(100% - 260px);
             background-color: #f7f7fc;
             min-height: calc(100vh - 120px);
+            position: relative;
+            z-index: 1;
         }
 
         .page-header {
