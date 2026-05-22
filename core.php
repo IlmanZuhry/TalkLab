@@ -14,6 +14,7 @@ class manz{
 		$this->ensureCommunityPostsTable();
 		$this->ensureLikesAndCommentsTable();
 		$this->ensurePracticeTables();
+		$this->ensureMentorTables();
 	}
 
 	// Generate ID unik 6 karakter (huruf kapital + angka)
@@ -361,6 +362,278 @@ class manz{
 		$this->ensurePracticeHistoryTable();
 		$this->ensureChallengeHistoryTable();
 		$this->ensureAiFeedbackTable();
+	}
+
+	public function ensureMentorTables(){
+		$this->ensureMentorAccountsTable();
+		$this->ensureMentorSubmissionsTable();
+		$this->ensureMentorReviewsTable();
+	}
+
+	public function ensureMentorAccountsTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS mentor_accounts (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			name VARCHAR(120) NOT NULL,
+			username VARCHAR(60) NOT NULL,
+			password_hash VARCHAR(255) NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			UNIQUE KEY unique_mentor_username (username)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function ensureMentorSubmissionsTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS mentor_submissions (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			practice_history_id INT UNSIGNED NOT NULL,
+			user_id VARCHAR(6) NOT NULL,
+			mentor_id INT UNSIGNED NULL,
+			status VARCHAR(30) NOT NULL DEFAULT 'pending',
+			submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			reviewed_at DATETIME NULL DEFAULT NULL,
+			PRIMARY KEY (id),
+			UNIQUE KEY unique_practice_submission (practice_history_id),
+			KEY idx_mentor_submission_user (user_id),
+			KEY idx_mentor_submission_mentor (mentor_id),
+			KEY idx_mentor_submission_status (status),
+			CONSTRAINT fk_mentor_submission_practice FOREIGN KEY (practice_history_id) REFERENCES practice_history(id)
+			ON DELETE CASCADE ON UPDATE CASCADE,
+			CONSTRAINT fk_mentor_submission_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
+			ON DELETE CASCADE ON UPDATE CASCADE,
+			CONSTRAINT fk_mentor_submission_mentor FOREIGN KEY (mentor_id) REFERENCES mentor_accounts(id)
+			ON DELETE SET NULL ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function ensureMentorReviewsTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS mentor_reviews (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			submission_id INT UNSIGNED NOT NULL,
+			mentor_id INT UNSIGNED NOT NULL,
+			articulation_score INT UNSIGNED NOT NULL,
+			fluency_score INT UNSIGNED NOT NULL,
+			confidence_score INT UNSIGNED NOT NULL,
+			structure_score INT UNSIGNED NOT NULL,
+			intonation_score INT UNSIGNED NOT NULL,
+			final_score INT UNSIGNED NOT NULL,
+			strengths TEXT NOT NULL,
+			improvements TEXT NOT NULL,
+			feedback TEXT NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			UNIQUE KEY unique_submission_review (submission_id),
+			KEY idx_mentor_review_mentor (mentor_id),
+			CONSTRAINT fk_mentor_review_submission FOREIGN KEY (submission_id) REFERENCES mentor_submissions(id)
+			ON DELETE CASCADE ON UPDATE CASCADE,
+			CONSTRAINT fk_mentor_review_mentor FOREIGN KEY (mentor_id) REFERENCES mentor_accounts(id)
+			ON DELETE CASCADE ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function hasMentorAccounts(){
+		$res = mysqli_query($this->koneksi, "SELECT id FROM mentor_accounts LIMIT 1");
+		return $res && mysqli_num_rows($res) > 0;
+	}
+
+	public function createMentorAccount($name, $username, $password){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO mentor_accounts (name, username, password_hash) VALUES (?, ?, ?)");
+		if (!$stmt) return false;
+		$passwordHash = password_hash($password, PASSWORD_BCRYPT);
+		mysqli_stmt_bind_param($stmt, "sss", $name, $username, $passwordHash);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $saved;
+	}
+
+	public function authenticateMentor($username, $password){
+		$stmt = mysqli_prepare($this->koneksi, "SELECT id, name, username, password_hash FROM mentor_accounts WHERE username = ? LIMIT 1");
+		if (!$stmt) return false;
+		mysqli_stmt_bind_param($stmt, "s", $username);
+		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+		$row = $result ? mysqli_fetch_assoc($result) : false;
+		mysqli_stmt_close($stmt);
+
+		if ($row && password_verify($password, $row['password_hash'])) {
+			unset($row['password_hash']);
+			return $row;
+		}
+
+		return false;
+	}
+
+	public function setMentorSession($mentor){
+		$this->ensureSession();
+		$_SESSION['mentor_id'] = (int) $mentor['id'];
+		$_SESSION['mentor_name'] = $mentor['name'];
+		$_SESSION['mentor_username'] = $mentor['username'];
+	}
+
+	public function getCurrentMentor(){
+		$this->ensureSession();
+		if (empty($_SESSION['mentor_id'])) return false;
+
+		return [
+			'id' => (int) $_SESSION['mentor_id'],
+			'name' => $_SESSION['mentor_name'] ?? 'Mentor',
+			'username' => $_SESSION['mentor_username'] ?? ''
+		];
+	}
+
+	public function getMentorDashboardStats(){
+		$stats = [
+			'pending' => 0,
+			'reviewed' => 0,
+			'students' => 0,
+			'practice_audio' => 0,
+			'average_score' => 0
+		];
+
+		$res = mysqli_query($this->koneksi, "SELECT
+			SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_total,
+			SUM(CASE WHEN status = 'reviewed' THEN 1 ELSE 0 END) AS reviewed_total,
+			COUNT(DISTINCT user_id) AS student_total
+			FROM mentor_submissions");
+		if ($res && $row = mysqli_fetch_assoc($res)) {
+			$stats['pending'] = (int) ($row['pending_total'] ?? 0);
+			$stats['reviewed'] = (int) ($row['reviewed_total'] ?? 0);
+			$stats['students'] = (int) ($row['student_total'] ?? 0);
+		}
+
+		$practiceRes = mysqli_query($this->koneksi, "SELECT COUNT(*) AS total FROM practice_history");
+		if ($practiceRes && $row = mysqli_fetch_assoc($practiceRes)) {
+			$stats['practice_audio'] = (int) $row['total'];
+		}
+
+		$scoreRes = mysqli_query($this->koneksi, "SELECT AVG(final_score) AS average_score FROM mentor_reviews");
+		if ($scoreRes && $row = mysqli_fetch_assoc($scoreRes)) {
+			$stats['average_score'] = (int) round((float) ($row['average_score'] ?? 0));
+		}
+
+		return $stats;
+	}
+
+	public function getMentorReviewQueue($limit = 12){
+		$items = [];
+		$limit = max(1, (int) $limit);
+		$sql = "SELECT
+			ms.id,
+			ms.status,
+			ms.submitted_at,
+			ms.reviewed_at,
+			ph.topic,
+			ph.duration_seconds,
+			ph.audio_path,
+			u.Nama AS student_name,
+			u.Username AS student_username,
+			mr.final_score
+			FROM mentor_submissions ms
+			JOIN practice_history ph ON ph.id = ms.practice_history_id
+			JOIN users u ON u.Id_User = ms.user_id
+			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
+			ORDER BY FIELD(ms.status, 'pending', 'revision_requested', 'reviewed'), ms.submitted_at DESC
+			LIMIT $limit";
+		$res = mysqli_query($this->koneksi, $sql);
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$items[] = $row;
+			}
+		}
+		return $items;
+	}
+
+	public function getMentorSubmissionById($submissionId){
+		$submissionId = (int) $submissionId;
+		$sql = "SELECT
+			ms.id,
+			ms.status,
+			ms.submitted_at,
+			ms.reviewed_at,
+			ph.topic,
+			ph.duration_seconds,
+			ph.audio_path,
+			ph.created_at AS practice_created_at,
+			u.Id_User AS student_id,
+			u.Nama AS student_name,
+			u.Username AS student_username,
+			mr.articulation_score,
+			mr.fluency_score,
+			mr.confidence_score,
+			mr.structure_score,
+			mr.intonation_score,
+			mr.final_score,
+			mr.strengths,
+			mr.improvements,
+			mr.feedback
+			FROM mentor_submissions ms
+			JOIN practice_history ph ON ph.id = ms.practice_history_id
+			JOIN users u ON u.Id_User = ms.user_id
+			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
+			WHERE ms.id = $submissionId
+			LIMIT 1";
+		$res = mysqli_query($this->koneksi, $sql);
+		return $res && mysqli_num_rows($res) > 0 ? mysqli_fetch_assoc($res) : false;
+	}
+
+	public function saveMentorReview($submissionId, $mentorId, $scores, $strengths, $improvements, $feedback){
+		$submissionId = (int) $submissionId;
+		$mentorId = (int) $mentorId;
+		$articulation = max(0, min(100, (int) ($scores['articulation'] ?? 0)));
+		$fluency = max(0, min(100, (int) ($scores['fluency'] ?? 0)));
+		$confidence = max(0, min(100, (int) ($scores['confidence'] ?? 0)));
+		$structure = max(0, min(100, (int) ($scores['structure'] ?? 0)));
+		$intonation = max(0, min(100, (int) ($scores['intonation'] ?? 0)));
+		$finalScore = (int) round(($articulation + $fluency + $confidence + $structure + $intonation) / 5);
+
+		$sql = "INSERT INTO mentor_reviews (
+			submission_id, mentor_id, articulation_score, fluency_score, confidence_score,
+			structure_score, intonation_score, final_score, strengths, improvements, feedback
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON DUPLICATE KEY UPDATE
+			mentor_id = VALUES(mentor_id),
+			articulation_score = VALUES(articulation_score),
+			fluency_score = VALUES(fluency_score),
+			confidence_score = VALUES(confidence_score),
+			structure_score = VALUES(structure_score),
+			intonation_score = VALUES(intonation_score),
+			final_score = VALUES(final_score),
+			strengths = VALUES(strengths),
+			improvements = VALUES(improvements),
+			feedback = VALUES(feedback)";
+		$stmt = mysqli_prepare($this->koneksi, $sql);
+		if (!$stmt) return false;
+		mysqli_stmt_bind_param(
+			$stmt,
+			"iiiiiiiisss",
+			$submissionId,
+			$mentorId,
+			$articulation,
+			$fluency,
+			$confidence,
+			$structure,
+			$intonation,
+			$finalScore,
+			$strengths,
+			$improvements,
+			$feedback
+		);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+
+		if ($saved) {
+			$update = mysqli_prepare($this->koneksi, "UPDATE mentor_submissions SET mentor_id = ?, status = 'reviewed', reviewed_at = NOW() WHERE id = ?");
+			if ($update) {
+				mysqli_stmt_bind_param($update, "ii", $mentorId, $submissionId);
+				$saved = mysqli_stmt_execute($update);
+				mysqli_stmt_close($update);
+			}
+		}
+
+		return $saved;
 	}
 
 	public function ensurePracticeHistoryTable(){
