@@ -24,34 +24,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		echo json_encode($app->handleSaveChallenge($currentUser));
 		exit;
 	}
-
-	if ($action === 'save_ai_feedback') {
-		echo json_encode($app->handleSaveAiFeedback($currentUser));
-		exit;
-	}
 }
 
 $practiceHistory = $currentUser ? $app->getPracticeHistory($currentUser['Id_User']) : [];
 $challengeHistory = $currentUser ? $app->getChallengeHistory($currentUser['Id_User']) : [];
-$aiFeedbackHistory = $currentUser ? $app->getAiFeedbackHistory($currentUser['Id_User']) : [];
-$totalPracticeDuration = array_sum(array_map(fn($item) => (int) $item['duration_seconds'], $practiceHistory));
-$totalChallengeDuration = array_sum(array_map(fn($item) => (int) $item['actual_seconds'], $challengeHistory));
-$averageAiScore = 0;
-
-if (!empty($aiFeedbackHistory)) {
-    $scoreTotal = 0;
-    foreach ($aiFeedbackHistory as $item) {
-        $scoreTotal += ((int) $item['clarity_score'] + (int) $item['fluency_score'] + (int) $item['confidence_score'] + (int) $item['consistency_score']) / 4;
-    }
-    $averageAiScore = (int) round($scoreTotal / count($aiFeedbackHistory));
-}
-$uniqueActivityDays = [];
-foreach (array_merge($practiceHistory, $challengeHistory, $aiFeedbackHistory) as $item) {
-    if (!empty($item['created_at'])) {
-        $uniqueActivityDays[date('Y-m-d', strtotime($item['created_at']))] = true;
-    }
-}
-$streakDays = count($uniqueActivityDays);
 $topics = [
     'Perkenalkan diri kamu secara singkat dan percaya diri.',
     'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.',
@@ -70,6 +46,14 @@ $topics = [
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TALKLAB - Latihan</title>
   <?php include 'includes/layout_css.php'; ?>
+  <script>
+    window.tailwind = window.tailwind || {};
+    window.tailwind.config = { corePlugins: { preflight: false } };
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     body { background: #f7f7fc; }
 
@@ -118,6 +102,136 @@ $topics = [
     .btn-muted { background: #eef2f7; color: #344054; }
     .btn-danger { background: #b42318; color: #fff; }
     .btn:disabled { cursor: not-allowed; opacity: 0.55; }
+
+    .camera-card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 24px rgb(0 0 0 / 0.07);
+      border: 1px solid #e5e7eb;
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .camera-card.interactive:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 34px rgb(16 32 79 / 0.12);
+      border-color: #d2a06b;
+    }
+
+    .camera-btn {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 20px;
+      font-weight: 800;
+      font-size: 15px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: 0.2s;
+    }
+
+    .camera-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+
+    .btn-primary-camera { background: #d2a06b; color: #fff; }
+    .btn-muted-camera { background: #eef2f7; color: #344054; }
+    .btn-danger-camera { background: #b42318; color: #fff; }
+
+    .start-recording-cta {
+      box-shadow: 0 14px 30px rgb(210 160 107 / 0.28);
+    }
+
+    .start-recording-cta:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 18px 38px rgb(210 160 107 / 0.36);
+    }
+
+    .start-recording-cta:not(:disabled) {
+      animation: ctaBreath 2.8s ease-in-out infinite;
+    }
+
+    .recording-glow {
+      box-shadow: 0 0 0 2px rgb(239 68 68 / 0.45), 0 20px 60px rgb(210 160 107 / 0.28);
+    }
+
+    .recording-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 0 0 rgb(239 68 68 / 0.7);
+      animation: recordPulse 1.2s infinite;
+    }
+
+    .camera-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      background: #eef2f7;
+      color: #344054;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .camera-status-pill.live {
+      background: #ecfdf3;
+      color: #027a48;
+    }
+
+    .audio-wave {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      height: 24px;
+    }
+
+    .audio-wave span {
+      width: 4px;
+      height: 8px;
+      border-radius: 999px;
+      background: #d2a06b;
+      opacity: 0.45;
+    }
+
+    .audio-wave.active span {
+      animation: waveBounce 0.9s ease-in-out infinite;
+      opacity: 1;
+    }
+
+    .audio-wave span:nth-child(2) { animation-delay: 0.12s; }
+    .audio-wave span:nth-child(3) { animation-delay: 0.24s; }
+    .audio-wave span:nth-child(4) { animation-delay: 0.36s; }
+    .audio-wave span:nth-child(5) { animation-delay: 0.48s; }
+
+    @keyframes waveBounce {
+      0%, 100% { height: 8px; }
+      50% { height: 22px; }
+    }
+
+    .history-video-card .play-overlay {
+      opacity: 0;
+      transition: opacity 0.22s ease;
+    }
+
+    .history-video-card:hover .play-overlay {
+      opacity: 1;
+    }
+
+    @keyframes recordPulse {
+      0% { box-shadow: 0 0 0 0 rgb(239 68 68 / 0.7); }
+      70% { box-shadow: 0 0 0 12px rgb(239 68 68 / 0); }
+      100% { box-shadow: 0 0 0 0 rgb(239 68 68 / 0); }
+    }
+
+    @keyframes ctaBreath {
+      0%, 100% { box-shadow: 0 14px 30px rgb(210 160 107 / 0.25); }
+      50% { box-shadow: 0 18px 42px rgb(210 160 107 / 0.4); }
+    }
 
     .feature-grid {
       display: grid;
@@ -784,9 +898,9 @@ $topics = [
         <p>Mode cepat dengan level dan skor.</p>
       </button>
       <button class="feature-card" type="button" data-feature="ai">
-        <div class="feature-icon">📊</div>
-        <h2>Feedback AI</h2>
-        <p>Lihat skor, saran, dan progress.</p>
+        <div class="feature-icon">📹</div>
+        <h2>Camera Practice</h2>
+        <p>Latih ekspresi, eye contact, dan gestur.</p>
       </button>
     </section>
 
@@ -1015,142 +1129,8 @@ $topics = [
       </aside>
     </section>
 
-    <section class="workspace feature-section" id="aiSection">
-      <div class="panel">
-        <div class="panel-title">
-          <div>
-            <h2>AI Feedback & Progress Tracking</h2>
-            <p>Masukkan transkrip untuk melihat skor dan saran.</p>
-          </div>
-        </div>
-
-        <div class="control-grid">
-          <div class="control-box">
-            <h3>Sumber Analisis</h3>
-            <div class="duration-options">
-              <button class="duration-btn active ai-source" type="button" data-source="Voice Practice">Voice Practice</button>
-              <button class="duration-btn ai-source" type="button" data-source="Challenge">Challenge</button>
-            </div>
-          </div>
-
-          <div class="control-box">
-            <h3>Durasi Latihan</h3>
-            <div class="duration-options">
-              <button class="duration-btn active ai-duration" type="button" data-duration="30">30 detik</button>
-              <button class="duration-btn ai-duration" type="button" data-duration="60">1 menit</button>
-              <button class="duration-btn ai-duration" type="button" data-duration="180">3 menit</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="control-box" style="margin-bottom:22px;">
-          <h3>Transkrip / Catatan Bicara</h3>
-          <textarea class="analysis-input" id="aiTranscript" placeholder="Tulis atau tempel transkrip latihan di sini. Contoh: eee hari ini saya akan menjelaskan mengapa public speaking penting..."></textarea>
-        </div>
-
-        <div class="action-row">
-          <button class="btn btn-primary" type="button" id="analyzeAiBtn">Analisis Feedback</button>
-          <button class="btn btn-dark" type="button" id="saveAiBtn" disabled>Simpan Feedback</button>
-        </div>
-
-        <div class="result-box" id="aiResultBox">
-          <h3>Performance Score</h3>
-          <div class="score-card four">
-            <div class="score-item">
-              <div class="score-ring" id="confidenceRing"><strong id="confidenceScore">0</strong></div>
-              <span>Confidence Score</span>
-            </div>
-            <div class="score-item">
-              <div class="score-ring" id="clarityRing"><strong id="clarityScore">0</strong></div>
-              <span>Clarity Score</span>
-            </div>
-            <div class="score-item">
-              <div class="score-ring" id="fluencyRing"><strong id="fluencyScore">0</strong></div>
-              <span>Fluency Score</span>
-            </div>
-            <div class="score-item">
-              <div class="score-ring" id="consistencyRing"><strong id="consistencyScore">0</strong></div>
-              <span>Speaking Consistency</span>
-            </div>
-          </div>
-
-          <div class="score-card">
-            <div class="score-item">
-              <span>Speaking Speed</span>
-              <strong id="speakingSpeed">0 WPM</strong>
-            </div>
-            <div class="score-item">
-              <span>Filler Words</span>
-              <strong id="fillerCount">0</strong>
-            </div>
-            <div class="score-item">
-              <span>Durasi</span>
-              <strong id="aiDurationResult">0s</strong>
-            </div>
-          </div>
-
-          <div class="toast info" id="aiFeedbackText">Feedback otomatis akan muncul setelah analisis.</div>
-        </div>
-
-        <div class="toast info" id="aiMessageBox">Isi transkrip atau gunakan catatan latihan, lalu tekan Analisis Feedback.</div>
-      </div>
-
-      <aside class="panel history-panel">
-        <h2>Progress Tracking</h2>
-        <p>Ringkasan perkembangan dari latihan, challenge, dan feedback yang tersimpan di akun.</p>
-
-        <div class="score-card" style="margin-bottom:18px;">
-          <div class="score-item">
-            <span>Total Latihan</span>
-            <strong><?= count($practiceHistory) + count($challengeHistory) ?></strong>
-          </div>
-          <div class="score-item">
-            <span>Total Durasi</span>
-            <strong><?= (int) round(($totalPracticeDuration + $totalChallengeDuration) / 60) ?>m</strong>
-          </div>
-          <div class="score-item">
-            <span>Skor Rata-rata</span>
-            <strong><?= $averageAiScore ?></strong>
-          </div>
-        </div>
-
-        <h2 style="font-size:20px;">Achievement & Streak</h2>
-        <div class="achievement-grid">
-          <div class="achievement <?= $streakDays >= 7 ? 'unlocked' : '' ?>">
-            <strong><?= $streakDays >= 7 ? 'Terbuka' : 'Terkunci' ?></strong>
-            <span>Latihan 7 hari aktif. Saat ini: <?= $streakDays ?> hari aktivitas.</span>
-          </div>
-          <div class="achievement <?= count($challengeHistory) >= 50 ? 'unlocked' : '' ?>">
-            <strong><?= count($challengeHistory) >= 50 ? 'Terbuka' : 'Terkunci' ?></strong>
-            <span>Menyelesaikan 50 challenge. Saat ini: <?= count($challengeHistory) ?> challenge.</span>
-          </div>
-          <div class="achievement <?= $averageAiScore >= 80 ? 'unlocked' : '' ?>">
-            <strong><?= $averageAiScore >= 80 ? 'Terbuka' : 'Terkunci' ?></strong>
-            <span>Skor performa rata-rata mencapai 80+. Saat ini: <?= $averageAiScore ?>.</span>
-          </div>
-        </div>
-
-        <h2 style="font-size:20px; margin-top:22px;">Riwayat Feedback</h2>
-        <div class="history-list" id="aiHistoryList">
-          <?php if (!$currentUser): ?>
-            <div class="empty-state">Silakan login terlebih dahulu agar AI feedback bisa disimpan ke akun.</div>
-          <?php elseif (empty($aiFeedbackHistory)): ?>
-            <div class="empty-state">Belum ada riwayat AI feedback. Jalankan analisis lalu simpan hasilnya.</div>
-          <?php else: ?>
-            <?php foreach ($aiFeedbackHistory as $item): ?>
-              <div class="history-card">
-                <strong><?= htmlspecialchars($item['source_type']) ?> - Skor <?= (int) round(((int) $item['clarity_score'] + (int) $item['fluency_score'] + (int) $item['confidence_score'] + (int) $item['consistency_score']) / 4) ?></strong>
-                <small><?= htmlspecialchars(date('d M Y H:i', strtotime($item['created_at']))) ?> - <?= (int) $item['duration_seconds'] ?> detik - <?= (int) $item['speaking_speed'] ?> WPM</small>
-                <div class="result-meta">
-                  <span class="badge">Clarity <?= (int) $item['clarity_score'] ?></span>
-                  <span class="badge">Fluency <?= (int) $item['fluency_score'] ?></span>
-                  <span class="badge">Filler <?= (int) $item['filler_count'] ?></span>
-                </div>
-              </div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </div>
-      </aside>
+    <section class="feature-section" id="aiSection">
+      <div id="camera-practice-root"></div>
     </section>
   </main>
 
@@ -1221,26 +1201,6 @@ $topics = [
     const challengeScore = document.getElementById("challengeScore");
     const challengeMessageBox = document.getElementById("challengeMessageBox");
     const challengeHistoryList = document.getElementById("challengeHistoryList");
-    const aiSourceBtns = document.querySelectorAll(".ai-source");
-    const aiDurationBtns = document.querySelectorAll(".ai-duration");
-    const aiTranscript = document.getElementById("aiTranscript");
-    const analyzeAiBtn = document.getElementById("analyzeAiBtn");
-    const saveAiBtn = document.getElementById("saveAiBtn");
-    const aiResultBox = document.getElementById("aiResultBox");
-    const confidenceScore = document.getElementById("confidenceScore");
-    const clarityScore = document.getElementById("clarityScore");
-    const fluencyScore = document.getElementById("fluencyScore");
-    const consistencyScore = document.getElementById("consistencyScore");
-    const confidenceRing = document.getElementById("confidenceRing");
-    const clarityRing = document.getElementById("clarityRing");
-    const fluencyRing = document.getElementById("fluencyRing");
-    const consistencyRing = document.getElementById("consistencyRing");
-    const speakingSpeed = document.getElementById("speakingSpeed");
-    const fillerCount = document.getElementById("fillerCount");
-    const aiDurationResult = document.getElementById("aiDurationResult");
-    const aiFeedbackText = document.getElementById("aiFeedbackText");
-    const aiMessageBox = document.getElementById("aiMessageBox");
-    const aiHistoryList = document.getElementById("aiHistoryList");
 
     let topicIndex = 0;
     let selectedSeconds = 30;
@@ -1263,10 +1223,6 @@ $topics = [
     let challengeRemaining = 20;
     let challengeActualSeconds = 0;
     let latestChallengeResult = null;
-    let activeAiSource = "Voice Practice";
-    let activeAiDuration = 30;
-    let latestAiResult = null;
-    const fillerWords = ["eee", "ee", "anu", "hmm", "emm", "eh", "apa ya"];
 
     function formatTime(seconds) {
       const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
@@ -1282,11 +1238,6 @@ $topics = [
     function setChallengeMessage(type, text) {
       challengeMessageBox.className = `toast ${type}`;
       challengeMessageBox.textContent = text;
-    }
-
-    function setAiMessage(type, text) {
-      aiMessageBox.className = `toast ${type}`;
-      aiMessageBox.textContent = text;
     }
 
     function switchFeature(feature) {
@@ -1479,88 +1430,6 @@ $topics = [
       challengeTargetDuration.textContent = `${result.speak_seconds}s`;
       challengeScore.textContent = result.score;
       challengeResultBox.style.display = "block";
-    }
-
-    function countAiFillers(text) {
-      const normalized = text.toLowerCase();
-      return fillerWords.reduce((total, word) => {
-        const pattern = new RegExp(`(^|\\s)${word.replace(" ", "\\s+")}(?=\\s|$|[,.!?])`, "g");
-        const matches = normalized.match(pattern);
-        return total + (matches ? matches.length : 0);
-      }, 0);
-    }
-
-    function analyzeAiFeedback() {
-      const text = aiTranscript.value.trim();
-      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
-      const fillers = countAiFillers(text);
-      const wpm = activeAiDuration > 0 ? Math.round((words / activeAiDuration) * 60) : 0;
-      const speedPenalty = wpm >= 100 && wpm <= 160 ? 0 : Math.min(28, Math.abs(130 - wpm) * 0.35);
-      const fillerPenalty = Math.min(35, fillers * 6);
-      const lengthScore = Math.min(100, Math.max(45, (words / Math.max(activeAiDuration / 3, 1)) * 18));
-
-      const clarity = Math.max(35, Math.round(88 - fillerPenalty * 0.55 + (words > 12 ? 6 : -8)));
-      const fluency = Math.max(30, Math.round(90 - speedPenalty - fillerPenalty * 0.45));
-      const confidence = Math.max(35, Math.round(62 + Math.min(activeAiDuration, 90) * 0.18 + (fillers <= 2 ? 10 : -5)));
-      const consistency = Math.max(30, Math.round((fluency * 0.45) + (clarity * 0.35) + (lengthScore * 0.2)));
-
-      const notes = [];
-      if (wpm === 0) {
-        notes.push("Transkrip belum diisi, jadi analisis kecepatan dan filler words masih terbatas.");
-      } else if (wpm < 100) {
-        notes.push("Kecepatan berbicara masih pelan. Coba kurangi jeda panjang dan susun poin sebelum mulai.");
-      } else if (wpm > 160) {
-        notes.push("Kecepatan berbicara terlalu cepat. Perlambat tempo agar audiens lebih mudah mengikuti.");
-      } else {
-        notes.push("Kecepatan berbicara sudah berada di rentang yang nyaman.");
-      }
-
-      if (fillers > 4) {
-        notes.push("Penggunaan filler words masih terlalu sering. Ganti filler dengan jeda diam singkat.");
-      } else if (fillers > 0) {
-        notes.push("Filler words masih ada, tetapi masih bisa dikendalikan.");
-      } else {
-        notes.push("Penggunaan filler words sangat minim.");
-      }
-
-      if (clarity >= 80 && confidence >= 80) {
-        notes.push("Penyampaian sudah cukup percaya diri dan jelas.");
-      } else if (clarity < 65) {
-        notes.push("Kejelasan pengucapan perlu ditingkatkan dengan artikulasi yang lebih tegas.");
-      }
-
-      latestAiResult = {
-        source_type: activeAiSource,
-        duration_seconds: activeAiDuration,
-        clarity_score: Math.min(100, clarity),
-        fluency_score: Math.min(100, fluency),
-        confidence_score: Math.min(100, confidence),
-        consistency_score: Math.min(100, consistency),
-        filler_count: fillers,
-        speaking_speed: wpm,
-        feedback: notes.join(" ")
-      };
-
-      renderAiResult(latestAiResult);
-      saveAiBtn.disabled = false;
-      setAiMessage("success", "Analisis selesai. Simpan feedback agar masuk ke progress tracking akun.");
-    }
-
-    function renderAiResult(result) {
-      confidenceScore.textContent = result.confidence_score;
-      clarityScore.textContent = result.clarity_score;
-      fluencyScore.textContent = result.fluency_score;
-      consistencyScore.textContent = result.consistency_score;
-      confidenceRing.style.setProperty("--score", `${result.confidence_score}%`);
-      clarityRing.style.setProperty("--score", `${result.clarity_score}%`);
-      fluencyRing.style.setProperty("--score", `${result.fluency_score}%`);
-      consistencyRing.style.setProperty("--score", `${result.consistency_score}%`);
-      speakingSpeed.textContent = `${result.speaking_speed} WPM`;
-      fillerCount.textContent = result.filler_count;
-      aiDurationResult.textContent = `${result.duration_seconds}s`;
-      aiFeedbackText.className = "toast info";
-      aiFeedbackText.textContent = result.feedback;
-      aiResultBox.style.display = "block";
     }
 
     randomTopicBtn.addEventListener("click", () => {
@@ -1807,104 +1676,9 @@ $topics = [
       challengeHistoryList.prepend(card);
     }
 
-    async function saveAiFeedback() {
-      if (!latestAiResult) {
-        setAiMessage("error", "Belum ada hasil AI feedback yang bisa disimpan.");
-        return;
-      }
-
-      if (!isLoggedIn) {
-        setAiMessage("error", "Silakan login terlebih dahulu agar AI feedback tersimpan ke akun.");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("action", "save_ai_feedback");
-      formData.append("source_type", latestAiResult.source_type);
-      formData.append("duration_seconds", latestAiResult.duration_seconds);
-      formData.append("clarity_score", latestAiResult.clarity_score);
-      formData.append("fluency_score", latestAiResult.fluency_score);
-      formData.append("confidence_score", latestAiResult.confidence_score);
-      formData.append("consistency_score", latestAiResult.consistency_score);
-      formData.append("filler_count", latestAiResult.filler_count);
-      formData.append("speaking_speed", latestAiResult.speaking_speed);
-      formData.append("feedback", latestAiResult.feedback);
-
-      saveAiBtn.disabled = true;
-      setAiMessage("info", "Menyimpan AI feedback...");
-
-      try {
-        const response = await fetch("Latihan.php", {
-          method: "POST",
-          body: formData
-        });
-        const data = await response.json();
-
-        if (!data.status) {
-          saveAiBtn.disabled = false;
-          setAiMessage("error", data.message || "Gagal menyimpan AI feedback.");
-          return;
-        }
-
-        prependAiHistory(data.item);
-        setAiMessage("success", data.message);
-      } catch (error) {
-        saveAiBtn.disabled = false;
-        setAiMessage("error", "Terjadi kesalahan saat menyimpan AI feedback.");
-      }
-    }
-
-    function prependAiHistory(item) {
-      const empty = aiHistoryList.querySelector(".empty-state");
-      if (empty) empty.remove();
-
-      const card = document.createElement("div");
-      card.className = "history-card";
-      const avg = Math.round((Number(item.clarity_score) + Number(item.fluency_score) + Number(item.confidence_score) + Number(item.consistency_score)) / 4);
-
-      const title = document.createElement("strong");
-      title.textContent = `${item.source_type} - Skor ${avg}`;
-
-      const meta = document.createElement("small");
-      meta.textContent = `${new Date(item.created_at.replace(" ", "T")).toLocaleString("id-ID")} - ${item.duration_seconds} detik - ${item.speaking_speed} WPM`;
-
-      const stats = document.createElement("div");
-      stats.className = "result-meta";
-
-      ["Clarity " + item.clarity_score, "Fluency " + item.fluency_score, "Filler " + item.filler_count].forEach(text => {
-        const pill = document.createElement("span");
-        pill.className = "badge";
-        pill.textContent = text;
-        stats.appendChild(pill);
-      });
-
-      card.append(title, meta, stats);
-      aiHistoryList.prepend(card);
-    }
-
     featureCards.forEach(card => {
       card.addEventListener("click", () => {
         switchFeature(card.dataset.feature);
-      });
-    });
-
-    aiSourceBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        aiSourceBtns.forEach(item => item.classList.remove("active"));
-        btn.classList.add("active");
-        activeAiSource = btn.dataset.source;
-        latestAiResult = null;
-        saveAiBtn.disabled = true;
-      });
-    });
-
-    aiDurationBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        aiDurationBtns.forEach(item => item.classList.remove("active"));
-        btn.classList.add("active");
-        activeAiDuration = Number(btn.dataset.duration);
-        latestAiResult = null;
-        saveAiBtn.disabled = true;
       });
     });
 
@@ -1938,14 +1712,444 @@ $topics = [
     startChallengeBtn.addEventListener("click", startChallenge);
     finishChallengeBtn.addEventListener("click", () => finishChallenge(false));
     saveChallengeBtn.addEventListener("click", saveChallenge);
-    analyzeAiBtn.addEventListener("click", analyzeAiFeedback);
-    saveAiBtn.addEventListener("click", saveAiFeedback);
 
     updateDurationLabel();
     resetTimer();
     setTopic(0);
     pickChallengePrompt(false);
     switchFeature("voice");
+  </script>
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
+
+    const cameraTopics = [
+      "Ceritakan pengalaman paling berkesan saat berbicara di depan orang.",
+      "Jelaskan mengapa eye contact penting dalam public speaking.",
+      "Presentasikan ide kegiatan kelas dalam satu menit.",
+      "Ceritakan cara kamu membangun rasa percaya diri.",
+      "Berikan opini singkat tentang pentingnya bahasa tubuh.",
+      "Simulasikan pembukaan sebagai MC acara sekolah."
+    ];
+
+    const cameraDurations = [
+      { label: "1 minute", seconds: 60 },
+      { label: "3 minutes", seconds: 180 },
+      { label: "5 minutes", seconds: 300 }
+    ];
+
+    const cameraDummyHistory = [
+      {
+        id: "dummy-1",
+        topic: "Jelaskan mengapa eye contact penting dalam public speaking.",
+        date: "23 Mei 2026, 09.10",
+        duration: 60,
+        videoUrl: "",
+        confidence: "Confident"
+      },
+      {
+        id: "dummy-2",
+        topic: "Simulasikan pembukaan sebagai MC acara sekolah.",
+        date: "22 Mei 2026, 20.35",
+        duration: 180,
+        videoUrl: "",
+        confidence: "Steady"
+      }
+    ];
+
+    const simulationModes = [
+      {
+        name: "Presentation",
+        objective: "Sampaikan ide utama dengan pembuka, tiga poin, dan penutup yang jelas.",
+        tip: "Gunakan gesture tangan saat berpindah poin."
+      },
+      {
+        name: "Interview",
+        objective: "Jawab dengan struktur singkat: situasi, tindakan, dan hasil.",
+        tip: "Tatap kamera seperti sedang melihat pewawancara."
+      },
+      {
+        name: "MC Opening",
+        objective: "Buka acara dengan salam, perkenalan, dan energi yang ramah.",
+        tip: "Mulai dengan senyum dan intonasi naik di kalimat pembuka."
+      }
+    ];
+
+    const focusItems = ["Eye contact", "Facial expression", "Body language", "Confidence"];
+
+    function formatCameraTime(seconds) {
+      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const secs = String(seconds % 60).padStart(2, "0");
+      return `${mins}:${secs}`;
+    }
+
+    function CameraPracticeDashboard() {
+      const liveVideoRef = useRef(null);
+      const replayVideoRef = useRef(null);
+      const mediaRecorderRef = useRef(null);
+      const streamRef = useRef(null);
+      const chunksRef = useRef([]);
+      const timerRef = useRef(null);
+      const elapsedRef = useRef(0);
+
+      const [selectedDuration, setSelectedDuration] = useState(60);
+      const [topic, setTopic] = useState(cameraTopics[0]);
+      const [isRecording, setIsRecording] = useState(false);
+      const [elapsed, setElapsed] = useState(0);
+      const [recordedUrl, setRecordedUrl] = useState("");
+      const [statusMessage, setStatusMessage] = useState("Camera dan microphone akan aktif saat latihan dimulai.");
+      const [history, setHistory] = useState(cameraDummyHistory);
+      const [activeMode, setActiveMode] = useState(simulationModes[0]);
+      const [focusProgress, setFocusProgress] = useState({
+        "Eye contact": false,
+        "Facial expression": false,
+        "Body language": false,
+        "Confidence": false
+      });
+      const [cameraReady, setCameraReady] = useState(false);
+      const [micReady, setMicReady] = useState(false);
+
+      const remainingTime = Math.max(selectedDuration - elapsed, 0);
+      const progress = Math.min((elapsed / selectedDuration) * 100, 100);
+      const recordingStatus = isRecording ? "RECORDING" : recordedUrl ? "FINISHED" : "READY";
+      const speakingTip = isRecording
+        ? activeMode.tip
+        : "Siapkan posisi kamera sejajar mata dan pastikan bahu terlihat natural.";
+
+      const randomTopic = () => {
+        const nextTopics = cameraTopics.filter((item) => item !== topic);
+        const nextTopic = nextTopics[Math.floor(Math.random() * nextTopics.length)] || cameraTopics[0];
+        setTopic(nextTopic);
+      };
+
+      const attachStream = (stream) => {
+        streamRef.current = stream;
+        setCameraReady(stream.getVideoTracks().length > 0);
+        setMicReady(stream.getAudioTracks().length > 0);
+        if (liveVideoRef.current) {
+          liveVideoRef.current.srcObject = stream;
+        }
+      };
+
+      const stopTracks = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
+        setCameraReady(false);
+        setMicReady(false);
+      };
+
+      const stopRecording = () => {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+        setIsRecording(false);
+
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+          mediaRecorderRef.current.stop();
+        } else {
+          stopTracks();
+        }
+      };
+
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          attachStream(stream);
+          chunksRef.current = [];
+          setRecordedUrl("");
+          setElapsed(0);
+          elapsedRef.current = 0;
+
+          const preferredMime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+            ? "video/webm;codecs=vp9,opus"
+            : MediaRecorder.isTypeSupported("video/webm")
+              ? "video/webm"
+              : "";
+          const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+          mediaRecorderRef.current = recorder;
+
+          recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) chunksRef.current.push(event.data);
+          };
+
+          recorder.onstop = () => {
+            const blob = new Blob(chunksRef.current, { type: preferredMime || "video/webm" });
+            const videoUrl = URL.createObjectURL(blob);
+            setRecordedUrl(videoUrl);
+            setHistory((current) => [
+              {
+                id: `local-${Date.now()}`,
+                topic,
+                date: new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
+                duration: elapsedRef.current || selectedDuration,
+                videoUrl,
+                confidence: elapsedRef.current > selectedDuration * 0.75 ? "Confident" : "Growing"
+              },
+              ...current
+            ]);
+            stopTracks();
+            setStatusMessage("Recording selesai. Replay video tersedia di bawah.");
+          };
+
+          recorder.start();
+          setIsRecording(true);
+          setStatusMessage("Recording berjalan. Jaga eye contact dan bahasa tubuh.");
+
+          timerRef.current = setInterval(() => {
+            setElapsed((current) => {
+              const next = current + 1;
+              elapsedRef.current = Math.min(next, selectedDuration);
+              if (next >= selectedDuration) setTimeout(stopRecording, 0);
+              return Math.min(next, selectedDuration);
+            });
+          }, 1000);
+        } catch (error) {
+          setStatusMessage("Camera atau microphone tidak bisa diakses. Periksa izin browser.");
+        }
+      };
+
+      const replayVideo = (videoUrl) => {
+        if (!videoUrl) return;
+        setRecordedUrl(videoUrl);
+        setTimeout(() => replayVideoRef.current?.play(), 100);
+      };
+
+      useEffect(() => {
+        return () => {
+          clearInterval(timerRef.current);
+          stopTracks();
+        };
+      }, []);
+
+      const instruction = useMemo(() => {
+        if (isRecording) return "Bicara menghadap kamera, jaga gestur tetap natural, dan gunakan jeda yang jelas.";
+        return "Pilih durasi dan topik, lalu mulai recording untuk melatih ekspresi, eye contact, dan body language.";
+      }, [isRecording]);
+
+      const toggleFocus = (item) => {
+        setFocusProgress((current) => ({ ...current, [item]: !current[item] }));
+      };
+
+      return (
+        <div className="space-y-6">
+          <section className="camera-card p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Camera Speaking Practice</div>
+                <h2 className="mt-2 text-3xl font-extrabold text-[#10204f]">Latihan dengan webcam</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Latih ekspresi, eye contact, body language, dan confidence langsung dari browser.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <div className="camera-status-pill live">Level 4 Speaker</div>
+                <div className="camera-status-pill">840 XP</div>
+                <div className="camera-status-pill">Streak 5 hari</div>
+                <button type="button" className="camera-btn btn-muted-camera" onClick={randomTopic}>
+                  Topik Acak
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-3">
+            {simulationModes.map((mode) => (
+              <button
+                key={mode.name}
+                type="button"
+                onClick={() => setActiveMode(mode)}
+                className={`camera-card interactive p-5 text-left transition ${activeMode.name === mode.name ? "border-[#d2a06b] bg-[#fffaf3]" : ""}`}
+              >
+                <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Simulation</div>
+                <h3 className="mt-2 text-xl font-extrabold text-[#10204f]">{mode.name}</h3>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">{mode.objective}</p>
+              </button>
+            ))}
+          </section>
+
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.55fr)]">
+            <div className="camera-card overflow-hidden">
+              <div className="border-b border-[#e5e7eb] p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Topic Prompt</div>
+                    <h3 className="mt-2 text-2xl font-extrabold leading-snug text-[#10204f]">{topic}</h3>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className={`camera-status-pill ${cameraReady ? "live" : ""}`}>
+                      <span className={cameraReady ? "recording-dot" : ""}></span>
+                      LIVE Camera
+                    </div>
+                    <div className={`camera-status-pill ${micReady ? "live" : ""}`}>
+                      Mic {micReady ? "On" : "Standby"}
+                    </div>
+                    <div className={`camera-status-pill ${isRecording ? "live" : ""}`}>
+                      {isRecording && <span className="recording-dot"></span>}
+                      {recordingStatus}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_240px]">
+                <div className={`relative overflow-hidden rounded-[18px] bg-[#10204f] transition duration-300 ${isRecording ? "recording-glow" : ""}`}>
+                  <video ref={liveVideoRef} className="aspect-video w-full bg-[#10204f] object-cover" autoPlay muted playsInline></video>
+                  <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-black/35 px-3 py-2 text-xs font-black uppercase tracking-wide text-white">
+                    {isRecording && <span className="recording-dot"></span>}
+                    {recordingStatus}
+                  </div>
+                  <div className="pointer-events-none absolute right-4 top-4 hidden rounded-full bg-black/35 px-3 py-2 text-xs font-black uppercase tracking-wide text-white sm:block">
+                    {activeMode.name} Mode
+                  </div>
+                  <div className={`audio-wave ${isRecording ? "active" : ""} pointer-events-none absolute bottom-4 left-4 rounded-full bg-black/35 px-3 py-2`}>
+                    <span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                  <div className="pointer-events-none absolute bottom-4 right-4 hidden rounded-full bg-black/35 px-3 py-2 text-xs font-black uppercase tracking-wide text-white sm:block">
+                    Eye Contact Practice
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-5">
+                    <div className="text-sm font-extrabold text-[#667085]">Speaking Timer</div>
+                    <div className="mt-2 text-6xl font-black tracking-tight text-[#10204f]">{formatCameraTime(remainingTime)}</div>
+                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#e5e7eb]">
+                      <div className="h-full rounded-full bg-[#d2a06b] transition-all" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <div className="mt-3 text-xs font-black uppercase tracking-wide text-[#d2a06b]">{recordingStatus}</div>
+                  </div>
+
+                  <div className="rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-5">
+                    <div className="mb-3 text-sm font-extrabold text-[#667085]">Duration</div>
+                    <div className="flex flex-wrap gap-2">
+                      {cameraDurations.map((duration) => (
+                        <button
+                          key={duration.seconds}
+                          type="button"
+                          disabled={isRecording}
+                          onClick={() => {
+                            setSelectedDuration(duration.seconds);
+                            setElapsed(0);
+                          }}
+                          className={`rounded-xl px-4 py-2 text-sm font-extrabold transition ${
+                            selectedDuration === duration.seconds
+                              ? "bg-[#d2a06b] text-white"
+                              : "bg-white text-[#344054] ring-1 ring-[#d0d5dd]"
+                          }`}
+                        >
+                          {duration.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 border-t border-[#e5e7eb] p-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Instruction</div>
+                  <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[#667085]">{instruction}</p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-2">
+                    <div className="rounded-2xl bg-[#f8fafc] px-4 py-3 text-sm font-bold text-[#344054] ring-1 ring-[#e5e7eb]">
+                      Objective: {activeMode.objective}
+                    </div>
+                    <div className="rounded-2xl bg-[#fffaf3] px-4 py-3 text-sm font-bold text-[#7c4a12] ring-1 ring-[#f2d7b8]">
+                      Tip: {speakingTip}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" className="camera-btn btn-primary-camera start-recording-cta" onClick={startRecording} disabled={isRecording}>Start Recording</button>
+                  <button type="button" className="camera-btn btn-danger-camera" onClick={stopRecording} disabled={!isRecording}>Stop Recording</button>
+                </div>
+              </div>
+            </div>
+
+            <aside className="space-y-6">
+              <div className="camera-card p-6">
+                <h2 className="text-2xl font-extrabold text-[#10204f]">Replay Result</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">{statusMessage}</p>
+                <div className="mt-5 overflow-hidden rounded-[18px] bg-[#10204f]">
+                  {recordedUrl ? (
+                    <video ref={replayVideoRef} className="aspect-video w-full object-cover" src={recordedUrl} controls></video>
+                  ) : (
+                    <div className="flex aspect-video items-center justify-center text-sm font-bold text-white/75">Hasil recording akan muncul di sini</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="camera-card p-6">
+                <h2 className="text-2xl font-extrabold text-[#10204f]">Practice Focus</h2>
+                <div className="mt-4 grid gap-3">
+                  {focusItems.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleFocus(item)}
+                      className={`flex items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-extrabold ring-1 transition ${
+                        focusProgress[item]
+                          ? "bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]"
+                          : isRecording
+                            ? "bg-[#fffaf3] text-[#7c4a12] ring-[#f2d7b8]"
+                            : "bg-[#f8fafc] text-[#344054] ring-[#e5e7eb]"
+                      }`}
+                    >
+                      <span>{item}</span>
+                      <span>{focusProgress[item] ? "Completed" : isRecording ? "Active" : "Ready"}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="camera-card p-6">
+                <h2 className="text-2xl font-extrabold text-[#10204f]">Daily Challenge</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Selesaikan 1 rekaman camera practice hari ini untuk mendapatkan 120 XP.</p>
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#e5e7eb]">
+                  <div className="h-full w-[68%] rounded-full bg-[#d2a06b]"></div>
+                </div>
+                <div className="mt-3 text-sm font-black text-[#d2a06b]">68% menuju target harian</div>
+              </div>
+            </aside>
+          </section>
+
+          <section className="camera-card p-6">
+            <div className="mb-5">
+              <h2 className="text-2xl font-extrabold text-[#10204f]">History Latihan Speaking</h2>
+              <p className="mt-1 text-sm font-semibold text-[#667085]">Recording sementara tersimpan di local state selama halaman masih terbuka.</p>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {history.map((item) => (
+                <article key={item.id} className="camera-card interactive rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-4">
+                  <div className="history-video-card relative overflow-hidden rounded-2xl bg-[#10204f]">
+                    {item.videoUrl ? (
+                      <video className="aspect-video w-full object-cover" src={item.videoUrl} controls></video>
+                    ) : (
+                      <div className="flex aspect-video items-center justify-center px-4 text-center text-sm font-bold text-white/75">Dummy preview</div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => replayVideo(item.videoUrl)}
+                      disabled={!item.videoUrl}
+                      className="play-overlay absolute inset-0 flex items-center justify-center bg-black/35 text-sm font-black text-white disabled:cursor-not-allowed"
+                    >
+                      Replay
+                    </button>
+                  </div>
+                  <h3 className="mt-4 text-base font-extrabold leading-snug text-[#10204f]">{item.topic}</h3>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-[#eef2f7] px-3 py-1 text-xs font-black text-[#344054]">{item.date}</span>
+                    <span className="rounded-full bg-[#fffaf3] px-3 py-1 text-xs font-black text-[#7c4a12]">{formatCameraTime(item.duration)}</span>
+                    <span className="rounded-full bg-[#ecfdf3] px-3 py-1 text-xs font-black text-[#027a48]">{item.confidence}</span>
+                  </div>
+                  <button type="button" className="camera-btn btn-muted-camera mt-4 w-full" onClick={() => replayVideo(item.videoUrl)} disabled={!item.videoUrl}>Replay</button>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("camera-practice-root")).render(<CameraPracticeDashboard />);
   </script>
 </body>
 
