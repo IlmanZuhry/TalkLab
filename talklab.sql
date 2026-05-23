@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.3
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Waktu pembuatan: 22 Bulan Mei 2026 pada 10.15
--- Versi server: 10.4.32-MariaDB
--- Versi PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: May 23, 2026 at 08:10 AM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Basis data: `talklab`
+-- Database: `talklab`
 --
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `ai_feedback_history`
+-- Table structure for table `ai_feedback_history`
 --
 
 CREATE TABLE `ai_feedback_history` (
@@ -45,7 +45,7 @@ CREATE TABLE `ai_feedback_history` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `komunitas`
+-- Table structure for table `komunitas`
 --
 
 CREATE TABLE `komunitas` (
@@ -57,17 +57,18 @@ CREATE TABLE `komunitas` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `komunitas`
+-- Dumping data for table `komunitas`
 --
 
 INSERT INTO `komunitas` (`Id`, `Id_User`, `Isi`, `Dibuat`, `Update_Post`) VALUES
 (1, '7NA83J', 'Tes haha', '2026-05-09 15:59:59', '2026-05-09 16:02:03'),
-(2, 'AGBI29', 'woy antek antek asheng', '2026-05-09 16:04:51', NULL);
+(2, 'AGBI29', 'woy antek antek asheng', '2026-05-09 16:04:51', NULL),
+(3, 'LB61P9', 'aku gabung disini sangat seru ternyata', '2026-05-12 12:06:36', '2026-05-23 11:57:35');
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `mentor_accounts`
+-- Table structure for table `mentor_accounts`
 --
 
 CREATE TABLE `mentor_accounts` (
@@ -78,17 +79,10 @@ CREATE TABLE `mentor_accounts` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data untuk tabel `mentor_accounts`
---
-
-INSERT INTO `mentor_accounts` (`id`, `name`, `username`, `password_hash`, `created_at`) VALUES
-(1, 'Ilman Zuhry', 'Ilman0909', '$2y$10$fkWXokDZqIyayIccBdg8LOGcf4jdTVj9arThNWh9tYZagV8m/SoEq', '2026-05-22 15:09:18');
-
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `mentor_reviews`
+-- Table structure for table `mentor_reviews`
 --
 
 CREATE TABLE `mentor_reviews` (
@@ -111,7 +105,7 @@ CREATE TABLE `mentor_reviews` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `mentor_submissions`
+-- Table structure for table `mentor_submissions`
 --
 
 CREATE TABLE `mentor_submissions` (
@@ -127,7 +121,7 @@ CREATE TABLE `mentor_submissions` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `post_comments`
+-- Table structure for table `post_comments`
 --
 
 CREATE TABLE `post_comments` (
@@ -139,19 +133,10 @@ CREATE TABLE `post_comments` (
   `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data untuk tabel `post_comments`
---
-
-INSERT INTO `post_comments` (`id`, `post_id`, `user_id`, `content`, `created_at`, `updated_at`) VALUES
-(1, 2, 'AGBI29', 'woyyyyyy', '2026-05-16 12:29:55', NULL),
-(2, 2, '7NA83J', 'apa kau', '2026-05-16 12:30:11', NULL),
-(3, 1, 'AGBI29', 'sssssss', '2026-05-17 09:50:23', NULL);
-
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `post_likes`
+-- Table structure for table `post_likes`
 --
 
 CREATE TABLE `post_likes` (
@@ -161,18 +146,10 @@ CREATE TABLE `post_likes` (
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data untuk tabel `post_likes`
---
-
-INSERT INTO `post_likes` (`id`, `post_id`, `user_id`, `created_at`) VALUES
-(1, 2, '7NA83J', '2026-05-16 12:19:49'),
-(2, 1, 'AGBI29', '2026-05-17 09:50:25');
-
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `practice_history`
+-- Table structure for table `practice_history`
 --
 
 CREATE TABLE `practice_history` (
@@ -185,17 +162,18 @@ CREATE TABLE `practice_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `practice_history`
+-- Dumping data for table `practice_history`
 --
 
 INSERT INTO `practice_history` (`id`, `user_id`, `topic`, `duration_seconds`, `audio_path`, `created_at`) VALUES
-(1, '7NA83J', 'Perkenalkan diri kamu secara singkat dan percaya diri.', 4, 'uploads/practice_audio/7NA83J_20260517_054712_32899f41.webm', '2026-05-17 10:47:12'),
-(2, 'AGBI29', 'Perkenalkan diri kamu secara singkat dan percaya diri.', 4, 'uploads/practice_audio/AGBI29_20260522_101049_48257a55.webm', '2026-05-22 15:10:49');
+(1, 'LB61P9', 'Perkenalkan diri kamu secara singkat dan percaya diri.', 4, 'uploads/practice_audio/LB61P9_20260512_070044_c045b54e.webm', '2026-05-12 12:00:44'),
+(2, 'LB61P9', 'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.', 5, 'uploads/practice_audio/LB61P9_20260512_070109_5d0a24cf.webm', '2026-05-12 12:01:09'),
+(3, 'LB61P9', 'Sampaikan opini sederhana tentang pentingnya public speaking.', 30, 'uploads/practice_audio/LB61P9_20260514_150532_570a68e8.webm', '2026-05-14 20:05:32');
 
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `speaking_challenge_history`
+-- Table structure for table `speaking_challenge_history`
 --
 
 CREATE TABLE `speaking_challenge_history` (
@@ -215,7 +193,7 @@ CREATE TABLE `speaking_challenge_history` (
 -- --------------------------------------------------------
 
 --
--- Struktur dari tabel `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -229,40 +207,41 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data untuk tabel `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Username`, `Password`, `Foto`) VALUES
 ('7NA83J', 'Ilman Zuhry', 'Medan', '2007-10-26', 'LOL', '$2y$10$3ttwlV6cXL/JM.qWnWEiQu5yPbemGOmb8m1vALskfv2Furj7HISGC', ''),
-('AGBI29', 'Wawak Sitompul', 'Binjai', '1990-07-06', 'Sitoms', '$2y$10$vRTbM7Tw5JSVt.X4uohy5uAKlxW/sFEvdQ2FhNSRcFoJJNac24zMq', '');
+('AGBI29', 'Wawak Sitompul', 'Binjai', '1990-07-06', 'Sitoms', '$2y$10$vRTbM7Tw5JSVt.X4uohy5uAKlxW/sFEvdQ2FhNSRcFoJJNac24zMq', ''),
+('LB61P9', 'mamang ujang', 'palembang', '2002-02-06', 'aduhmamang', '$2y$10$0AnIL/8nzzaf9phtJgRkTOSP1puah5I8Y4fcAEz76vWBpJK.4rR3q', '');
 
 --
--- Indeks untuk tabel yang dibuang
+-- Indexes for dumped tables
 --
 
 --
--- Indeks untuk tabel `ai_feedback_history`
+-- Indexes for table `ai_feedback_history`
 --
 ALTER TABLE `ai_feedback_history`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_ai_feedback_user` (`user_id`);
 
 --
--- Indeks untuk tabel `komunitas`
+-- Indexes for table `komunitas`
 --
 ALTER TABLE `komunitas`
   ADD PRIMARY KEY (`Id`),
   ADD KEY `idx_user_id` (`Id_User`);
 
 --
--- Indeks untuk tabel `mentor_accounts`
+-- Indexes for table `mentor_accounts`
 --
 ALTER TABLE `mentor_accounts`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_mentor_username` (`username`);
 
 --
--- Indeks untuk tabel `mentor_reviews`
+-- Indexes for table `mentor_reviews`
 --
 ALTER TABLE `mentor_reviews`
   ADD PRIMARY KEY (`id`),
@@ -270,7 +249,7 @@ ALTER TABLE `mentor_reviews`
   ADD KEY `idx_mentor_review_mentor` (`mentor_id`);
 
 --
--- Indeks untuk tabel `mentor_submissions`
+-- Indexes for table `mentor_submissions`
 --
 ALTER TABLE `mentor_submissions`
   ADD PRIMARY KEY (`id`),
@@ -280,7 +259,7 @@ ALTER TABLE `mentor_submissions`
   ADD KEY `idx_mentor_submission_status` (`status`);
 
 --
--- Indeks untuk tabel `post_comments`
+-- Indexes for table `post_comments`
 --
 ALTER TABLE `post_comments`
   ADD PRIMARY KEY (`id`),
@@ -288,7 +267,7 @@ ALTER TABLE `post_comments`
   ADD KEY `idx_user` (`user_id`);
 
 --
--- Indeks untuk tabel `post_likes`
+-- Indexes for table `post_likes`
 --
 ALTER TABLE `post_likes`
   ADD PRIMARY KEY (`id`),
@@ -297,109 +276,109 @@ ALTER TABLE `post_likes`
   ADD KEY `idx_user` (`user_id`);
 
 --
--- Indeks untuk tabel `practice_history`
+-- Indexes for table `practice_history`
 --
 ALTER TABLE `practice_history`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_practice_user` (`user_id`);
 
 --
--- Indeks untuk tabel `speaking_challenge_history`
+-- Indexes for table `speaking_challenge_history`
 --
 ALTER TABLE `speaking_challenge_history`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_challenge_user` (`user_id`);
 
 --
--- Indeks untuk tabel `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`Id_User`),
   ADD UNIQUE KEY `Username` (`Username`);
 
 --
--- AUTO_INCREMENT untuk tabel yang dibuang
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT untuk tabel `ai_feedback_history`
+-- AUTO_INCREMENT for table `ai_feedback_history`
 --
 ALTER TABLE `ai_feedback_history`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT untuk tabel `komunitas`
+-- AUTO_INCREMENT for table `komunitas`
 --
 ALTER TABLE `komunitas`
-  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `Id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT untuk tabel `mentor_accounts`
+-- AUTO_INCREMENT for table `mentor_accounts`
 --
 ALTER TABLE `mentor_accounts`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT untuk tabel `mentor_reviews`
+-- AUTO_INCREMENT for table `mentor_reviews`
 --
 ALTER TABLE `mentor_reviews`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT untuk tabel `mentor_submissions`
+-- AUTO_INCREMENT for table `mentor_submissions`
 --
 ALTER TABLE `mentor_submissions`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT untuk tabel `post_comments`
+-- AUTO_INCREMENT for table `post_comments`
 --
 ALTER TABLE `post_comments`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
--- AUTO_INCREMENT untuk tabel `post_likes`
---
-ALTER TABLE `post_likes`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT untuk tabel `practice_history`
---
-ALTER TABLE `practice_history`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
-
---
--- AUTO_INCREMENT untuk tabel `speaking_challenge_history`
---
-ALTER TABLE `speaking_challenge_history`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
+-- AUTO_INCREMENT for table `post_likes`
+--
+ALTER TABLE `post_likes`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `practice_history`
+--
+ALTER TABLE `practice_history`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `speaking_challenge_history`
+--
+ALTER TABLE `speaking_challenge_history`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- Constraints for dumped tables
 --
 
 --
--- Ketidakleluasaan untuk tabel `ai_feedback_history`
+-- Constraints for table `ai_feedback_history`
 --
 ALTER TABLE `ai_feedback_history`
   ADD CONSTRAINT `fk_ai_feedback_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `komunitas`
+-- Constraints for table `komunitas`
 --
 ALTER TABLE `komunitas`
   ADD CONSTRAINT `fk_community_user` FOREIGN KEY (`Id_User`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `mentor_reviews`
+-- Constraints for table `mentor_reviews`
 --
 ALTER TABLE `mentor_reviews`
   ADD CONSTRAINT `fk_mentor_review_mentor` FOREIGN KEY (`mentor_id`) REFERENCES `mentor_accounts` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_mentor_review_submission` FOREIGN KEY (`submission_id`) REFERENCES `mentor_submissions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `mentor_submissions`
+-- Constraints for table `mentor_submissions`
 --
 ALTER TABLE `mentor_submissions`
   ADD CONSTRAINT `fk_mentor_submission_mentor` FOREIGN KEY (`mentor_id`) REFERENCES `mentor_accounts` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
@@ -407,27 +386,27 @@ ALTER TABLE `mentor_submissions`
   ADD CONSTRAINT `fk_mentor_submission_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `post_comments`
+-- Constraints for table `post_comments`
 --
 ALTER TABLE `post_comments`
   ADD CONSTRAINT `fk_comment_post` FOREIGN KEY (`post_id`) REFERENCES `komunitas` (`Id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_comment_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `post_likes`
+-- Constraints for table `post_likes`
 --
 ALTER TABLE `post_likes`
   ADD CONSTRAINT `fk_like_post` FOREIGN KEY (`post_id`) REFERENCES `komunitas` (`Id`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_like_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `practice_history`
+-- Constraints for table `practice_history`
 --
 ALTER TABLE `practice_history`
   ADD CONSTRAINT `fk_practice_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Ketidakleluasaan untuk tabel `speaking_challenge_history`
+-- Constraints for table `speaking_challenge_history`
 --
 ALTER TABLE `speaking_challenge_history`
   ADD CONSTRAINT `fk_challenge_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
