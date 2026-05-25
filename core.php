@@ -85,6 +85,7 @@ class manz{
 		$_SESSION['name'] = $row['Nama'];
 		$_SESSION['username'] = $row['Username'];
 		$_SESSION['user_id'] = $row['Id_User'];
+		$_SESSION['foto'] = $row['Foto'] ?? '';
 	}
 
 	// Bantuan logout (menghapus session)
@@ -113,6 +114,7 @@ class manz{
 				'Id_User' => $_SESSION['user_id'] ?? null,
 				'Nama' => $_SESSION['name'] ?? null,
 				'Username' => $_SESSION['username'] ?? null,
+				'Foto' => $_SESSION['foto'] ?? '',
 			];
 		}
 		return false;
@@ -130,6 +132,54 @@ class manz{
 		$user = $this->getCurrentUser();
 		if ($user !== false && !empty($user['Username'])) return htmlspecialchars($user['Username']);
 		return '';
+	}
+
+	// Kembalikan URL foto profil (atau kosong jika belum ada)
+	public function getDisplayFoto(){
+		$user = $this->getCurrentUser();
+		if ($user !== false && !empty($user['Foto'])) return htmlspecialchars($user['Foto']);
+		return '';
+	}
+
+	// Ambil data user berdasarkan Id_User
+	public function getUserById($userId){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$res = mysqli_query($this->koneksi, "SELECT * FROM users WHERE Id_User = '$userIdEsc' LIMIT 1");
+		if($res && mysqli_num_rows($res) > 0){
+			return mysqli_fetch_assoc($res);
+		}
+		return false;
+	}
+
+	// Update profil user (nama, username, foto)
+	public function updateProfile($userId, $nama, $username, $fotoPath = null){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$namaEsc = mysqli_real_escape_string($this->koneksi, $nama);
+		$usernameEsc = mysqli_real_escape_string($this->koneksi, $username);
+
+		// Cek apakah username sudah dipakai oleh user lain
+		$cekUser = mysqli_query($this->koneksi, "SELECT Id_User FROM users WHERE Username = '$usernameEsc' AND Id_User != '$userIdEsc'");
+		if(mysqli_num_rows($cekUser) > 0){
+			return ['status' => false, 'pesan' => 'Username sudah digunakan oleh user lain.'];
+		}
+
+		if ($fotoPath !== null) {
+			$fotoEsc = mysqli_real_escape_string($this->koneksi, $fotoPath);
+			$sql = "UPDATE users SET Nama='$namaEsc', Username='$usernameEsc', Foto='$fotoEsc' WHERE Id_User='$userIdEsc'";
+		} else {
+			$sql = "UPDATE users SET Nama='$namaEsc', Username='$usernameEsc' WHERE Id_User='$userIdEsc'";
+		}
+
+		if(mysqli_query($this->koneksi, $sql)){
+			// Refresh session data
+			$updatedUser = $this->getUserById($userId);
+			if ($updatedUser) {
+				$this->setSessionFromUser($updatedUser);
+			}
+			return ['status' => true, 'pesan' => 'Profil berhasil diperbarui.'];
+		} else {
+			return ['status' => false, 'pesan' => 'Gagal memperbarui profil: ' . mysqli_error($this->koneksi)];
+		}
 	}
 
 	// Pastikan tabel komunitas ada di database
