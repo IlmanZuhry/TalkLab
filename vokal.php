@@ -2,6 +2,35 @@
 require_once 'core.php';
 if (session_status() == PHP_SESSION_NONE) session_start();
 $app = new manz();
+
+$currentUser = $app->getCurrentUser();
+$progressData = [];
+
+$material_totals = [
+    'vokal' => 3,
+    'postur_tubuh' => 5,
+    'kontak_mata' => 5,
+    'intonasi_suara' => 5,
+    'mengatasi_grogi' => 5,
+    'gestur_tangan' => 5,
+    'penyusunan_materi' => 5,
+    'media_presentasi' => 5
+];
+
+if ($currentUser) {
+    foreach ($material_totals as $mId => $total) {
+        $prog = $app->getMaterialProgress($currentUser['Id_User'], $mId);
+        $completed = $prog + 1;
+        if ($completed > $total) $completed = $total;
+        if ($completed < 0) $completed = 0;
+        $pct = round(($completed / $total) * 100);
+        $progressData[$mId] = $pct;
+    }
+} else {
+    foreach ($material_totals as $mId => $total) {
+        $progressData[$mId] = 0;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -63,6 +92,7 @@ $app = new manz();
     </div>
 
     <div class="cards">
+      <a href="submaterivokal.php">
       <div class="card">
         <div class="card-header vokal" title="Vokal yang Jelas">
           <img src="icon/mic.svg" width="88" height="88" alt="Mic Icon">
@@ -77,11 +107,13 @@ $app = new manz();
             </div>
             <div>vokal</div>
           </div>
-          <div class="progress-text"><span>Progress</span><span>50%</span></div>
-          <div class="progress-bar"><div class="progress" style="width: 50%;"></div></div>
+          <div class="progress-text"><span>Progress</span><span><?= $progressData['vokal'] ?>%</span></div>
+          <div class="progress-bar"><div class="progress" style="width: <?= $progressData['vokal'] ?>%;"></div></div>
         </div>
       </div>
+      </a>
 
+      <a href="submateriinotasisuara.php">
       <div class="card">
         <div class="card-header intonasi" title="Intonasi Suara">
           <img src="icon/ear.svg" width="88" height="88" alt="Ear Icon">
@@ -96,12 +128,37 @@ $app = new manz();
             </div>
             <div>vokal</div>
           </div>
-          <div class="progress-text"><span>Progress</span><span>50%</span></div>
-          <div class="progress-bar"><div class="progress" style="width: 50%;"></div></div>
+          <div class="progress-text"><span>Progress</span><span><?= $progressData['intonasi_suara'] ?>%</span></div>
+          <div class="progress-bar"><div class="progress" style="width: <?= $progressData['intonasi_suara'] ?>%;"></div></div>
         </div>
       </div>
+      </a>
     </div>
   </main>
 
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const searchInput = document.querySelector('.search-bar input[type="search"]');
+      const cards = document.querySelectorAll('.cards > a');
+      
+      if (searchInput) {
+        searchInput.addEventListener('input', function(e) {
+          const searchTerm = e.target.value.toLowerCase();
+          
+          cards.forEach(cardLink => {
+            const titleEl = cardLink.querySelector('.card-title');
+            if (titleEl) {
+              const title = titleEl.textContent.toLowerCase();
+              if (title.includes(searchTerm)) {
+                cardLink.style.display = 'block';
+              } else {
+                cardLink.style.display = 'none';
+              }
+            }
+          });
+        });
+      }
+    });
+  </script>
 </body>
 </html>

@@ -281,26 +281,6 @@ $app->ensureSession();
         margin-bottom: 4px;
     }
 
-    /* Sub-menu (submateri) styles */
-    .sub-menu {
-        list-style: none;
-        margin: 6px 0 12px 0;
-        padding: 0 0 0 18px;
-    }
-
-    .sub-menu li {
-        font-size: 13px;
-        color: #6b7280;
-        padding: 6px 8px;
-        border-radius: 6px;
-        transition: background-color 0.15s;
-    }
-
-    .sub-menu li:hover {
-        background: #f3f4f6;
-        color: #374151;
-    }
-
     .course-menu-item:hover {
         background-color: #f8f9fa;
     }
@@ -508,30 +488,42 @@ $app->ensureSession();
                     Kembali ke Materi
                 </a>
             </div>
-            <h1 class="course-header">Overview of Vokal</h1>
+            <h1 class="course-header">Penjelasan:</h1>
 
             <div class="course-container">
                 <!-- Sidebar Menu -->
                 <div class="course-sidebar">
                     <div class="course-sidebar-header">
-                        <span>Materi Vokal</span>
+                        <span>Postur Tubuh</span>
                     </div>
                     <ul class="course-menu-list">
                         <li class="course-menu-item active">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 1. Artikulasi Dasar dan Resonansi Suara
+                                <span class="icon-text">▶</span> 1. Anatomi & Posisi Artikulator
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
                         <li class="course-menu-item">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 2. Teknik Pernapasan
+                                <span class="icon-text">▶</span> 2. Latihan Vokal & Konsonan
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
                         <li class="course-menu-item">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 3. 8 Teknik Vokal Public Speaking
+                                <span class="icon-text">▶</span> 3. Resonansi & Proyeksi Suara
+                            </div>
+                            <span class="course-check-icon">✓</span>
+                        </li>
+                        <li class="course-menu-item">
+                            <div class="course-menu-icon">
+                                <span class="icon-text">▶</span> 4. Diksi & Kejelasan Ucapan
+                            </div>
+                            <span class="course-check-icon">✓</span>
+                        </li>
+                        <li class="course-menu-item">
+                            <div class="course-menu-icon">
+                                <span class="icon-text">▶</span> 5. Intonasi, Emosi & Ekspresi
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
@@ -541,27 +533,20 @@ $app->ensureSession();
                 <!-- Main Content -->
                 <div class="course-content">
                     <div class="video-player-placeholder">
-                        <iframe id="course-video" width="100%" height="100%" 
-                            src="https://www.youtube.com/embed/-2NnNomW68k?si=m_7WFa0C5o3_c5Yz&enablejsapi=1" 
-                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen style="border-radius: 12px;">
-                        </iframe>
+                        <video id="course-video" width="100%" height="100%" controls style="object-fit: cover;">
+                            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                            Your browser does not support HTML video.
+                        </video>
                     </div>
 
                     <div class="script-section">
-                        <div class="script-title">Penjelasan:</div>
+                        <div class="script-title">Video Script for Reference:</div>
                         <div class="script-text" id="script-text">
-                            Sebagai dasar, video ini mengutip teori psikolog Albert Mehrabian yang menyebutkan bahwa saat audiens mencerna pesan, 
-                            mereka memperhatikan tiga hal (3V) [00:37]:<br><br>Verbal (7%): Kata-kata atau materi yang disampaikan.<br><br>Vokal (38%): Cara kita mengucapkan kata-kata tersebut.<br><br>Visual (55%): 
-                            Ekspresi wajah dan gerak tubuh.<br><br>Mengingat porsi vokal jauh lebih besar dari sekadar kata-kata (verbal), pembicara membagikan 5 elemen penting dalam teknik vokal beserta bonus satu trik tambahan:<br><br>
-                            1. Volume (Tingkat Suara) [02:45]<br>Berbicaralah dengan lantang agar audiens di barisan paling belakang sekalipun bisa mendengar dengan jelas dan nyaman. 
-                            Jika diibaratkan skala 1 sampai 10, usahakan berbicara di tingkat volume 8. Volume yang pas juga menunjukkan rasa percaya diri kamu terhadap materi yang dibawakan.<br><br>
-                            2. Pacing (Kecepatan Berbicara) [04:49]<br>Kecepatan normal manusia berbicara adalah sekitar 120-150 kata per menit. Sebagai pemula, belajarlah mengontrol kecepatan—jangan terlalu cepat (agar audiens punya waktu mencerna pesan) dan jangan terlalu lambat (agar audiens tidak bosan). 
-                            Untuk tingkat mahir, kecepatan bisa disesuaikan: sedikit lebih cepat untuk materi ringan dan audiens muda, atau lebih lambat untuk materi berat dan audiens senior.<br><br>3. Pitch (Nada) [08:08]<br>Kamu tidak perlu tahu not balok secara detail, tapi cukup pahami kapan harus menggunakan:<br><br>
-                            Nada Rendah (Alto/Bass): Untuk situasi formal, serius, dan membangun kredibilitas (seperti pembaca berita). Nada ini dihasilkan melalui latihan pernapasan diafragma atau pernapasan perut [09:47].<br><br>Nada Sedang: Untuk situasi kasual atau semi-formal sehari-hari.<br><br>Nada Tinggi: Untuk mengekspresikan emosi yang kuat, seperti kebahagiaan luar biasa atau kemarahan.<br><br>
-                            4. Artikulasi (Pelafalan) [14:28]<br>Artikulasi adalah kejelasan dalam mengucapkan kata-kata. Jangan berbicara sambil bergumam. Bukalah mulut dengan baik dan berikan usaha (effort) saat memproduksi suara. Maya menyarankan untuk melakukan pemanasan seperti senam wajah (contoh: lion face atau menggetarkan bibir) dan berlatih tongue twister (mengucapkan kalimat-kalimat rumit dengan cepat) agar otot mulut dan lidah tidak kaku [16:55].<br><br>
-                            5. Intonasi / Vocal Variety (Dinamika) [21:06]<br>Hindari berbicara secara datar (flat) karena akan membuat audiens cepat bosan. Intonasi adalah gabungan dari volume, kecepatan, nada, dan penekanan. Tambahkan energi dan emosi layaknya kamu sedang menceritakan hal yang sangat menarik kepada sahabatmu.<br><br>
-                            Bonus: Teknik Pauses (Jeda) [23:06]<br>Jangan berbicara terus-menerus tanpa henti seperti kereta api. Berikan jeda atau pause sebelum menyampaikan kata-kata yang penting. Teknik ini akan menciptakan efek dramatis, membuat audiens penasaran, dan memusatkan kembali perhatian mereka kepada kamu.<br><br>Kesimpulan:<br>Memperbaiki teknik vokal bukanlah sistem kebut semalam. Kamu harus konsisten melatih kelima poin di atas dan membawanya ke dalam kebiasaan berbicara sehari-hari agar terdengar lebih natural.
+                            Halo, selamat datang di kursus TalkLab tentang Artikulasi Dasar. Apa yang baru saja kita
+                            lihat dalam ilustrasi sebelumnya adalah bagaimana bentuk mulut yang tepat dapat memengaruhi
+                            kejernihan suara Anda. Menguasai artikulasi adalah langkah pertama yang krusial untuk
+                            berbicara dengan jelas, percaya diri, dan mudah dipahami oleh audiens Anda. Mari kita mulai
+                            melatihnya!
                         </div>
                     </div>
 
@@ -574,31 +559,44 @@ $app->ensureSession();
         </div>
     </main>
 
-    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-        let ytPlayer = null;
-        let isYtApiReady = false;
+        const materials = [
+            {
+                title: "1. Anatomi & Posisi Artikulator",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Di bagian ini kita pelajari struktur mulut, lidah, bibir, dan rahang serta posisi artikulator yang memengaruhi pengucapan. Memahami anatomi membuat latihan artikulasi lebih efektif."
+            },
+            {
+                title: "2. Latihan Vokal & Konsonan",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Kumpulan latihan vokal dan kombinasi konsonan untuk meningkatkan kejernihan dan artikulasi. Latihan pendek harian akan membantu stabilitas suara."
+            },
+            {
+                title: "3. Resonansi & Proyeksi Suara",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Pelajari cara menggunakan rongga resonansi untuk memperbesar kualitas suara dan proyeksinya sehingga terdengar lebih penuh tanpa paksaan."
+            },
+            {
+                title: "4. Diksi & Kejelasan Ucapan",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Latihan diksi untuk memperjelas kata dan mengurangi kebiasaan melumerkan atau menggabungkan kata saat berbicara."
+            },
+            {
+                title: "5. Intonasi, Emosi & Ekspresi",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Mengatur intonasi dan ekspresi untuk menyampaikan pesan dengan emosional yang tepat sehingga audiens lebih terhubung."
+            },
+        ];
 
-        function onYouTubeIframeAPIReady() {
-            isYtApiReady = true;
-            let iframe = document.getElementById('course-video');
-            if (iframe && iframe.tagName.toLowerCase() === 'iframe') {
-                initYouTubePlayer('course-video');
-            }
-        }
+        let currentIndex = 0;
+        let video = document.getElementById('course-video');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const scriptText = document.getElementById('script-text');
+        const menuItems = document.querySelectorAll('.course-menu-item');
+        const videoContainer = document.querySelector('.video-player-placeholder');
 
-        function initYouTubePlayer(iframeId) {
-            if (ytPlayer) {
-                ytPlayer.destroy();
-            }
-            ytPlayer = new YT.Player(iframeId, {
-                events: {
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-        }
-
-        const MATERIAL_ID = 'vokal';
+        const MATERIAL_ID = 'postur_tubuh';
 
         function saveProgressToDB(index) {
             const formData = new FormData();
@@ -613,49 +611,6 @@ $app->ensureSession();
                 console.log('Progress saved:', data);
             }).catch(err => console.error(err));
         }
-
-        function onPlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                // Tandai materi saat ini sebagai selesai
-                menuItems[currentIndex].classList.add('completed');
-                
-                // Simpan progress ke database
-                saveProgressToDB(currentIndex);
-
-                const nextBtn = document.getElementById('next-btn');
-                if (nextBtn) {
-                    nextBtn.disabled = false;
-                    nextBtn.style.opacity = '1';
-                    nextBtn.style.cursor = 'pointer';
-                }
-            }
-        }
-
-        const materials = [
-            {
-                title: "1. Artikulasi Dasar dan Resonansi",
-                videoSrc: "https://youtu.be/-2NnNomW68k?si=m_7WFa0C5o3_c5Yz",
-                script: "Sebagai dasar, video ini mengutip teori psikolog Albert Mehrabian yang menyebutkan bahwa saat audiens mencerna pesan, mereka memperhatikan tiga hal (3V) [00:37]:\n\nVerbal (7%): Kata-kata atau materi yang disampaikan.\n\nVokal (38%): Cara kita mengucapkan kata-kata tersebut.\n\nVisual (55%): Ekspresi wajah dan gerak tubuh.\n\nMengingat porsi vokal jauh lebih besar dari sekadar kata-kata (verbal), pembicara membagikan 5 elemen penting dalam teknik vokal beserta bonus satu trik tambahan:\n\n1. Volume (Tingkat Suara) [02:45]\nBerbicaralah dengan lantang agar audiens di barisan paling belakang sekalipun bisa mendengar dengan jelas dan nyaman. Jika diibaratkan skala 1 sampai 10, usahakan berbicara di tingkat volume 8. Volume yang pas juga menunjukkan rasa percaya diri kamu terhadap materi yang dibawakan.\n\n2. Pacing (Kecepatan Berbicara) [04:49]\nKecepatan normal manusia berbicara adalah sekitar 120-150 kata per menit. Sebagai pemula, belajarlah mengontrol kecepatan—jangan terlalu cepat (agar audiens punya waktu mencerna pesan) dan jangan terlalu lambat (agar audiens tidak bosan). Untuk tingkat mahir, kecepatan bisa disesuaikan: sedikit lebih cepat untuk materi ringan dan audiens muda, atau lebih lambat untuk materi berat dan audiens senior.\n\n3. Pitch (Nada) [08:08]\nKamu tidak perlu tahu not balok secara detail, tapi cukup pahami kapan harus menggunakan:\n\nNada Rendah (Alto/Bass): Untuk situasi formal, serius, dan membangun kredibilitas (seperti pembaca berita). Nada ini dihasilkan melalui latihan pernapasan diafragma atau pernapasan perut [09:47].\n\nNada Sedang: Untuk situasi kasual atau semi-formal sehari-hari.\n\nNada Tinggi: Untuk mengekspresikan emosi yang kuat, seperti kebahagiaan luar biasa atau kemarahan.\n\n4. Artikulasi (Pelafalan) [14:28]\nArtikulasi adalah kejelasan dalam mengucapkan kata-kata. Jangan berbicara sambil bergumam. Bukalah mulut dengan baik dan berikan usaha (effort) saat memproduksi suara. Maya menyarankan untuk melakukan pemanasan seperti senam wajah (contoh: lion face atau menggetarkan bibir) dan berlatih tongue twister (mengucapkan kalimat-kalimat rumit dengan cepat) agar otot mulut dan lidah tidak kaku [16:55].\n\n5. Intonasi / Vocal Variety (Dinamika) [21:06]\nHindari berbicara secara datar (flat) karena akan membuat audiens cepat bosan. Intonasi adalah gabungan dari volume, kecepatan, nada, dan penekanan. Tambahkan energi dan emosi layaknya kamu sedang menceritakan hal yang sangat menarik kepada sahabatmu.\n\nBonus: Teknik Pauses (Jeda) [23:06]\nJangan berbicara terus-menerus tanpa henti seperti kereta api. Berikan jeda atau pause sebelum menyampaikan kata-kata yang penting. Teknik ini akan menciptakan efek dramatis, membuat audiens penasaran, dan memusatkan kembali perhatian mereka kepada kamu.\n\nKesimpulan:\nMemperbaiki teknik vokal bukanlah sistem kebut semalam. Kamu harus konsisten melatih kelima poin di atas dan membawanya ke dalam kebiasaan berbicara sehari-hari agar terdengar lebih natural."
-            },
-            {
-                title: "2. Teknik Pernapasan",
-                videoSrc: "https://youtu.be/YhmbAxzxamo?si=C1EWqw5oIzZf-GjR",
-                script: "Saat kita merasa gugup atau berada di bawah tekanan ketika berbicara di depan umum, kita sering kali tanpa sadar bernapas terlalu dangkal atau bahkan menahan napas. Kebiasaan ini justru memotong suplai oksigen ke otak dan memicu pelepasan hormon stres, yang akhirnya membuat jantung berdebar, keringat dingin, dan pikiran tiba-tiba menjadi kosong.\n\nUntuk mengatasi kepanikan tersebut, solusinya adalah menerapkan teknik pernapasan diafragma atau pernapasan perut. Kamu bisa menarik napas dalam-dalam hingga perut mengembang penuh, menahannya selama 3 sampai 5 detik, lalu menghembuskannya secara perlahan sampai perut benar-benar kempes. Bernapas dengan cara ini sangat efektif untuk meningkatkan suplai oksigen ke otak dan mengaktifkan saraf vagus yang memberikan efek relaksasi pada tubuh, sehingga kamu bisa kembali tenang, fokus, dan berpikir jernih saat berbicara."
-            },
-            {
-                title: "3. 8 Teknik Vokal",
-                videoSrc: "https://youtu.be/VGFVkRpv-SE?si=kDH2-PPod_9r27hT",
-                script: "Untuk menyempurnakan kemampuan public speaking, ada delapan teknik vokal yang perlu kamu kuasai agar komunikasi menjadi lebih efektif dan tidak monoton. Pertama, gunakan pernapasan diafragma agar napasmu lebih panjang dan terkontrol saat memproduksi suara. Kedua, sesuaikan volume suara dengan kondisi ruangan dan audiens agar terdengar jelas hingga barisan paling belakang tanpa harus berteriak. Ketiga, atur tempo atau kecepatan bicaramu menjadi lebih lambat saat menyampaikan pesan atau poin-poin yang sangat penting. Keempat, perhatikan ketukan atau irama bicaramu agar memiliki ritme yang konsisten dan nyaman didengar layaknya sebuah nyanyian.\n\nKelima, gunakan teknik jeda atau berhenti sejenak sebelum poin krusial untuk menciptakan efek dramatis yang membuat audiens penasaran dan kembali memusatkan perhatian. Keenam, berikan penekanan atau aksentuasi pada kata-kata tertentu yang menjadi fokus utama agar audiens lebih yakin dan tidak jenuh. Ketujuh, lakukan pemenggalan kalimat yang tepat layaknya titik dan koma agar kamu memiliki waktu untuk mengambil napas dan tidak terdengar ngos-ngosan. Terakhir, manfaatkan inflection atau perubahan drastis pada nada suara, seperti tiba-tiba merendahkan suara menjadi setengah berbisik untuk menarik perhatian penuh dari audiens. Intinya, penguasaan kedelapan teknik ini akan membuat presentasimu jauh lebih karismatik dan pesan yang disampaikan dapat dicerna dengan maksimal."
-            },
-        ];
-
-        let currentIndex = 0;
-        let video = document.getElementById('course-video');
-        const nextBtn = document.getElementById('next-btn');
-        const prevBtn = document.getElementById('prev-btn');
-        const scriptText = document.getElementById('script-text');
-        const menuItems = document.querySelectorAll('.course-menu-item');
-        const videoContainer = document.querySelector('.video-player-placeholder');
 
         function attachVideoEvent(vid) {
             vid.addEventListener('ended', () => {
@@ -690,47 +645,16 @@ $app->ensureSession();
             scriptText.innerText = mat.script;
 
             if (mat.videoSrc) {
-                let isYouTube = mat.videoSrc.includes('youtu.be') || mat.videoSrc.includes('youtube.com');
+                videoContainer.innerHTML = `<video id="course-video" width="100%" height="100%" controls autoplay style="object-fit: cover;">
+                                                <source src="${mat.videoSrc}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>`;
+                video = document.getElementById('course-video');
+                attachVideoEvent(video);
                 
-                if (isYouTube) {
-                    let embedUrl = mat.videoSrc;
-                    if (embedUrl.includes('youtu.be/')) {
-                        let parts = embedUrl.split('youtu.be/');
-                        let videoId = parts[1].split('?')[0];
-                        let params = parts[1].includes('?') ? '&' + parts[1].split('?')[1] : '';
-                        embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1${params}`;
-                    } else if (embedUrl.includes('youtube.com/watch')) {
-                        let videoId = embedUrl.split('v=')[1].split('&')[0];
-                        embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
-                    }
-
-                    videoContainer.innerHTML = `<iframe id="course-video" width="100%" height="100%" 
-                                                    src="${embedUrl}" 
-                                                    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                                    allowfullscreen style="border-radius: 12px;">
-                                                </iframe>`;
-                    
-                    nextBtn.disabled = true;
-                    nextBtn.style.opacity = '0.5';
-                    nextBtn.style.cursor = 'not-allowed';
-
-                    if (isYtApiReady) {
-                        setTimeout(() => {
-                            initYouTubePlayer('course-video');
-                        }, 100);
-                    }
-                } else {
-                    videoContainer.innerHTML = `<video id="course-video" width="100%" height="100%" controls autoplay style="object-fit: cover;">
-                                                    <source src="${mat.videoSrc}" type="video/mp4">
-                                                    Your browser does not support HTML video.
-                                                </video>`;
-                    video = document.getElementById('course-video');
-                    attachVideoEvent(video);
-                    
-                    nextBtn.disabled = true;
-                    nextBtn.style.opacity = '0.5';
-                    nextBtn.style.cursor = 'not-allowed';
-                }
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
             } else {
                 videoContainer.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100%; width:100%; background:#f0f0f0; border-radius:12px; font-size:24px; font-weight:bold; color:#1c407a;">
                                                 Ujian Akhir
@@ -764,7 +688,7 @@ $app->ensureSession();
             if (currentIndex < materials.length - 1) {
                 loadMaterial(currentIndex + 1);
             } else {
-                alert("Selamat! Anda telah menyelesaikan kelas Vokal.");
+                alert("Selamat! Anda telah menyelesaikan kelas Postur Tubuh.");
                 window.location.href = 'Materi.php';
             }
         });

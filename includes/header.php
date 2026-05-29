@@ -10,8 +10,7 @@ $app->ensureSession();
         <span class="brand-text">TALKLAB</span>
     </div>
 
-    
-
+    <input type="text" placeholder="Cari apa saja di TALKLAB..." class="search">
     <div class="user-area">
         <div class="notif">
             <svg viewBox="0 0 24 24" class="icon-bell">
