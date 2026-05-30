@@ -434,28 +434,11 @@ function mentorScoreValue($submission, $key, $fallback = 75) {
             .queue-item { grid-template-columns: 1fr; }
         }
     </style>
+    <?php include 'inc/layout_css.php'; ?>
 </head>
 <body>
-    <div class="shell">
-        <aside class="sidebar">
-            <a class="brand" href="dashboard.php">
-                <img src="../assets/ayooo.png" alt="Talklab">
-                <strong>TALK<span>LAB</span></strong>
-            </a>
-
-            <div class="mentor-meta">
-                <strong><?= htmlspecialchars($mentor['name']) ?></strong>
-                <span>@<?= htmlspecialchars($mentor['username']) ?></span>
-            </div>
-
-            <nav class="nav">
-                <a class="active" href="dashboard.php">Dashboard</a>
-                <a href="#review-queue">Latihan Masuk</a>
-            </nav>
-
-            <a class="logout" href="logoutad.php">Logout</a>
-        </aside>
-
+    <?php include 'inc/header.php'; ?>
+    <?php include 'inc/sidebar.php'; ?>
         <main>
             <header class="topbar">
                 <div>
@@ -612,6 +595,5 @@ function mentorScoreValue($submission, $key, $fallback = 75) {
                 </article>
             </section>
         </main>
-    </div>
 </body>
 </html>
