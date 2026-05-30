@@ -11,7 +11,6 @@ $app->ensureSession();
     </div>
 
     
-
     <div class="user-area">
         <div class="notif">
             <svg viewBox="0 0 24 24" class="icon-bell">

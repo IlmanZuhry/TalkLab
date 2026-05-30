@@ -1,3 +1,8 @@
+<?php
+require_once 'core.php';
+$app = new manz();
+$app->ensureSession();
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -300,6 +305,11 @@
     .course-check-icon {
         color: #28a745;
         font-weight: bold;
+        display: none;
+    }
+
+    .course-menu-item.completed .course-check-icon {
+        display: block;
     }
 
     .course-content {
@@ -404,127 +414,55 @@
 </style>
 
 <body>
-    <header class="header">
-        <div class="header-left">
-            <img src="assets/ayooo.png" class="logo-header" alt="Logo">
-            <span class="brand-text">TALKLAB</span>
-        </div>
-
-        <input type="text" placeholder="Cari apapun di TALKLAB..." class="search">
-
-        <div class="user-area">
-            <div class="notif">
-                <svg viewBox="0 0 24 24" class="icon-bell">
-                    <path fill="white"
-                        d="M12 2a7 7 0 00-7 7v4.268l-.894 2.683A1 1 0 005 18h14a1 1 0 00.894-1.449L19 13.268V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" />
-                </svg>
-            </div>
-
-            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTF9kb4Z-541wLQd0fNTOTUyExgV9kJG6TXDw&s"
-                class="avatar">
-            <div class="user-info">
-                <div class="name">Bahenol</div>
-                <div class="username">@bahlulethanol</div>
-            </div>
-        </div>
-    </header>
-
-    <!-- SIDEBAR -->
-    <aside class="sidebar">
-        <ul>
-            <li class="menu-item">
-                <a href="Beranda.html">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path fill="currentColor" d="M12 3l9 8h-3v9h-5v-6H11v6H6v-9H3l9-8z" />
-                    </svg>
-                    <span>Beranda</span>
-                </a>
-            </li>
-
-            <li class="menu-item active">
-                <svg class="icon" viewBox="0 0 24 24">
-                    <path fill="currentColor"
-                        d="M21 4H14C12.9 4 12 4.9 12 6V18C12 16.9 12.9 16 14 16H21V4M10 6C10 4.9 9.1 4 8 4H3V16H10C11.1 16 12 16.9 12 18V6C12 4.9 11.1 4 10 4M3 18V20H8C9.1 20 10 19.1 10 18H3M14 18C14 19.1 14.9 20 16 20H21V18H14Z" />
-                </svg>
-                <span>Materi</span>
-            </li>
-
-
-            <li class="menu-item">
-                <a href="Komunitas.html">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zM8 11c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-                    </svg>
-                    <span>Komunitas</span>
-                </a>
-            </li>
-
-            <li class="menu-item">
-                <a href="Profil.html">
-                    <svg class="icon" viewBox="0 0 24 24">
-                        <path fill="currentColor"
-                            d="M12 12c2.67 0 8 1.34 8 4v3H4v-3c0-2.66 5.33-4 8-4zm0-2a4 4 0 110-8 4 4 0 010 8z" />
-                    </svg>
-                    <span>Profil</span>
-                </a>
-            </li>
-        </ul>
-    </aside>
-
+    <?php include 'includes/header.php'; ?>
+    <?php include 'includes/sidebar.php'; ?>
     <main>
         <div
             style="margin-left: 260px; padding: 120px 40px 40px; width: calc(100% - 260px); display: flex; flex-direction: column; box-sizing: border-box;">
             <div>
-                <a href="materi.html" class="back-link">
+                <a href="materi.php" class="back-link">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                         <path fill="currentColor" d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                     </svg>
                     Kembali ke Materi
                 </a>
             </div>
-            <h1 class="course-header">Overview of Vokal</h1>
+            <h1 class="course-header">Penjelasan:</h1>
 
             <div class="course-container">
                 <!-- Sidebar Menu -->
                 <div class="course-sidebar">
                     <div class="course-sidebar-header">
-                        <span>Materi Vokal</span>
+                        <span>Postur Tubuh</span>
                     </div>
                     <ul class="course-menu-list">
                         <li class="course-menu-item active">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 1. Artikulasi Dasar
+                                <span class="icon-text">▶</span> 1. Anatomi & Posisi Artikulator
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
                         <li class="course-menu-item">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 2. Latihan Pernapasan
+                                <span class="icon-text">▶</span> 2. Latihan Vokal & Konsonan
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
                         <li class="course-menu-item">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 3. Resonansi Suara
+                                <span class="icon-text">▶</span> 3. Resonansi & Proyeksi Suara
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
                         <li class="course-menu-item">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 4. Intonasi dan Nada
+                                <span class="icon-text">▶</span> 4. Diksi & Kejelasan Ucapan
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
                         <li class="course-menu-item">
                             <div class="course-menu-icon">
-                                <span class="icon-text">▶</span> 5. Latihan Pemanasan
-                            </div>
-                            <span class="course-check-icon">✓</span>
-                        </li>
-                        <li class="course-menu-item">
-                            <div class="course-menu-icon">
-                                <span class="icon-text">📝</span> Final Exam
+                                <span class="icon-text">▶</span> 5. Intonasi, Emosi & Ekspresi
                             </div>
                             <span class="course-check-icon">✓</span>
                         </li>
@@ -534,18 +472,15 @@
                 <!-- Main Content -->
                 <div class="course-content">
                     <div class="video-player-placeholder">
-                        <img src="https://images.unsplash.com/photo-1516280440502-86927289fbd9?auto=format&fit=crop&q=80&w=1200"
-                            alt="Video Placeholder" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.9;">
-                        <div class="play-button" style="position: absolute;">
-                            <svg viewBox="0 0 24 24">
-                                <path d="M8 5v14l11-7z" />
-                            </svg>
-                        </div>
+                        <video id="course-video" width="100%" height="100%" controls style="object-fit: cover;">
+                            <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
+                            Your browser does not support HTML video.
+                        </video>
                     </div>
 
                     <div class="script-section">
                         <div class="script-title">Video Script for Reference:</div>
-                        <div class="script-text">
+                        <div class="script-text" id="script-text">
                             Halo, selamat datang di kursus TalkLab tentang Artikulasi Dasar. Apa yang baru saja kita
                             lihat dalam ilustrasi sebelumnya adalah bagaimana bentuk mulut yang tepat dapat memengaruhi
                             kejernihan suara Anda. Menguasai artikulasi adalah langkah pertama yang krusial untuk
@@ -555,13 +490,189 @@
                     </div>
 
                     <div class="course-navigation">
-                        <button class="nav-btn">« Previous</button>
-                        <button class="nav-btn next">Next »</button>
+                        <button class="nav-btn" id="prev-btn" disabled style="opacity: 0.5; cursor: not-allowed;">« Previous</button>
+                        <button class="nav-btn next" id="next-btn" disabled style="opacity: 0.5; cursor: not-allowed;">Next »</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
+
+    <script>
+        const materials = [
+            {
+                title: "1. Anatomi & Posisi Artikulator",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Di bagian ini kita pelajari struktur mulut, lidah, bibir, dan rahang serta posisi artikulator yang memengaruhi pengucapan. Memahami anatomi membuat latihan artikulasi lebih efektif."
+            },
+            {
+                title: "2. Latihan Vokal & Konsonan",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Kumpulan latihan vokal dan kombinasi konsonan untuk meningkatkan kejernihan dan artikulasi. Latihan pendek harian akan membantu stabilitas suara."
+            },
+            {
+                title: "3. Resonansi & Proyeksi Suara",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Pelajari cara menggunakan rongga resonansi untuk memperbesar kualitas suara dan proyeksinya sehingga terdengar lebih penuh tanpa paksaan."
+            },
+            {
+                title: "4. Diksi & Kejelasan Ucapan",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Latihan diksi untuk memperjelas kata dan mengurangi kebiasaan melumerkan atau menggabungkan kata saat berbicara."
+            },
+            {
+                title: "5. Intonasi, Emosi & Ekspresi",
+                videoSrc: "https://www.w3schools.com/html/mov_bbb.mp4",
+                script: "Mengatur intonasi dan ekspresi untuk menyampaikan pesan dengan emosional yang tepat sehingga audiens lebih terhubung."
+            },
+        ];
+
+        let currentIndex = 0;
+        let video = document.getElementById('course-video');
+        const nextBtn = document.getElementById('next-btn');
+        const prevBtn = document.getElementById('prev-btn');
+        const scriptText = document.getElementById('script-text');
+        const menuItems = document.querySelectorAll('.course-menu-item');
+        const videoContainer = document.querySelector('.video-player-placeholder');
+
+        const MATERIAL_ID = 'postur_tubuh';
+
+        function saveProgressToDB(index) {
+            const formData = new FormData();
+            formData.append('action', 'save_progress');
+            formData.append('material_id', MATERIAL_ID);
+            formData.append('progress', index);
+
+            fetch('api_progress.php', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json()).then(data => {
+                console.log('Progress saved:', data);
+            }).catch(err => console.error(err));
+        }
+
+        function attachVideoEvent(vid) {
+            vid.addEventListener('ended', () => {
+                // Tandai materi saat ini sebagai selesai
+                menuItems[currentIndex].classList.add('completed');
+                
+                // Simpan progress ke database
+                saveProgressToDB(currentIndex);
+
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            });
+        }
+
+        if (video) {
+            attachVideoEvent(video);
+        }
+
+        function loadMaterial(index) {
+            if (index < 0 || index >= materials.length) return;
+            
+            menuItems.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+
+            const mat = materials[index];
+            scriptText.innerText = mat.script;
+
+            if (mat.videoSrc) {
+                videoContainer.innerHTML = `<video id="course-video" width="100%" height="100%" controls autoplay style="object-fit: cover;">
+                                                <source src="${mat.videoSrc}" type="video/mp4">
+                                                Your browser does not support HTML video.
+                                            </video>`;
+                video = document.getElementById('course-video');
+                attachVideoEvent(video);
+                
+                nextBtn.disabled = true;
+                nextBtn.style.opacity = '0.5';
+                nextBtn.style.cursor = 'not-allowed';
+            } else {
+                videoContainer.innerHTML = `<div style="display:flex; justify-content:center; align-items:center; height:100%; width:100%; background:#f0f0f0; border-radius:12px; font-size:24px; font-weight:bold; color:#1c407a;">
+                                                Ujian Akhir
+                                            </div>`;
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+
+            prevBtn.disabled = index === 0;
+            prevBtn.style.opacity = index === 0 ? '0.5' : '1';
+            prevBtn.style.cursor = index === 0 ? 'not-allowed' : 'pointer';
+
+            if (index === materials.length - 1) {
+                nextBtn.innerText = "Selesai";
+            } else {
+                nextBtn.innerText = "Next »";
+            }
+
+            currentIndex = index;
+
+            // Cek status dari menuItems untuk menentukan apakah tombol next aktif
+            if (menuItems[index].classList.contains('completed')) {
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = '1';
+                nextBtn.style.cursor = 'pointer';
+            }
+        }
+
+        nextBtn.addEventListener('click', () => {
+            if (currentIndex < materials.length - 1) {
+                loadMaterial(currentIndex + 1);
+            } else {
+                alert("Selamat! Anda telah menyelesaikan kelas Postur Tubuh.");
+                window.location.href = 'Materi.php';
+            }
+        });
+
+        // Load progress dari database saat halaman pertama kali dibuka
+        window.addEventListener('DOMContentLoaded', () => {
+            const formData = new FormData();
+            formData.append('action', 'get_progress');
+            formData.append('material_id', MATERIAL_ID);
+
+            fetch('api_progress.php', {
+                method: 'POST',
+                body: formData
+            }).then(res => res.json()).then(data => {
+                if(data.status && data.progress !== undefined) {
+                    let maxProgress = parseInt(data.progress);
+                    menuItems.forEach((item, i) => {
+                        if (i <= maxProgress) {
+                            item.classList.add('completed');
+                        }
+                    });
+                    if (currentIndex <= maxProgress) {
+                        nextBtn.disabled = false;
+                        nextBtn.style.opacity = '1';
+                        nextBtn.style.cursor = 'pointer';
+                    }
+                }
+            }).catch(err => console.error(err));
+        });
+
+        prevBtn.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                loadMaterial(currentIndex - 1);
+            }
+        });
+        
+        // To allow clicking directly on the menu items for demonstration purposes (optional, can be removed if strict sequence is required)
+        menuItems.forEach((item, i) => {
+            item.addEventListener('click', () => {
+                // If you want to force them to watch it linearly, comment this out. 
+                // Currently allowing for better UX in testing.
+                loadMaterial(i);
+            });
+        });
+    </script>
 </body>
 
 </html>

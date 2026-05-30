@@ -1028,4 +1028,25 @@ public function handleSaveAiFeedback($currentUser){
 	];
 }
 
+	public function getMaterialProgress($userId, $materialId){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$materialIdEsc = mysqli_real_escape_string($this->koneksi, $materialId);
+		$sql = "SELECT progress FROM material_progress WHERE user_id = '$userIdEsc' AND material_id = '$materialIdEsc' LIMIT 1";
+		$res = mysqli_query($this->koneksi, $sql);
+		if ($res && mysqli_num_rows($res) > 0) {
+			$row = mysqli_fetch_assoc($res);
+			return (int) $row['progress'];
+		}
+		return -1;
+	}
+
+	public function saveMaterialProgress($userId, $materialId, $progress){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$materialIdEsc = mysqli_real_escape_string($this->koneksi, $materialId);
+		$progressInt = (int) $progress;
+		$sql = "INSERT INTO material_progress (user_id, material_id, progress) VALUES ('$userIdEsc', '$materialIdEsc', $progressInt)
+				ON DUPLICATE KEY UPDATE progress = GREATEST(progress, $progressInt)";
+		return mysqli_query($this->koneksi, $sql);
+	}
+
 }
