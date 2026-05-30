@@ -203,7 +203,8 @@ CREATE TABLE `users` (
   `Tanggal_Lahir` date NOT NULL,
   `Username` varchar(50) NOT NULL,
   `Password` varchar(255) NOT NULL,
-  `Foto` varchar(255) NOT NULL
+  `Foto` varchar(255) NOT NULL,
+  `Bio` varchar(160) NOT NULL DEFAULT 'yang penting bicara aja dulu'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
