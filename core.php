@@ -16,6 +16,7 @@ class manz{
 		$this->ensureLikesAndCommentsTable();
 		$this->ensurePracticeTables();
 		$this->ensureMentorTables();
+		$this->ensureEbookTable();
 	}
 
 	// Generate ID unik 6 karakter (huruf kapital + angka)
@@ -236,7 +237,7 @@ class manz{
 
 	public function getCommunityPosts(){
 	$sql = "SELECT p.Id,p.Id_User,p.Isi,p.Dibuat,
-		u.Nama AS name,u.Username AS username
+		u.Nama AS name,u.Username AS username,u.Foto AS foto
 		FROM Komunitas p LEFT JOIN users u ON p.Id_User = u.Id_User ORDER BY p.Dibuat DESC";
 
 	$res = mysqli_query($this->koneksi, $sql);
@@ -394,7 +395,8 @@ class manz{
 
 		u.Nama,
 		u.Username,
-		u.Id_User
+		u.Id_User,
+		u.Foto
 
 		FROM post_comments pc
 		JOIN users u ON pc.user_id = u.Id_User
@@ -1058,6 +1060,119 @@ public function handleSaveAiFeedback($currentUser){
 		'message' => 'AI feedback berhasil disimpan.'
 	];
 }
+
+	public function ensureEbookTable(){
+		$tableExists = false;
+		$tableCheck = mysqli_query($this->koneksi, "SHOW TABLES LIKE 'ebooks'");
+		if ($tableCheck && mysqli_num_rows($tableCheck) > 0) {
+			$tableExists = true;
+		}
+
+		$create = "CREATE TABLE IF NOT EXISTS ebooks (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			title VARCHAR(180) NOT NULL,
+			author VARCHAR(120) NOT NULL,
+			pages INT UNSIGNED NOT NULL DEFAULT 0,
+			thumbnail_path VARCHAR(255) NOT NULL,
+			pdf_path VARCHAR(255) NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			updated_at DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_ebook_title (title)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $create);
+
+		if ($tableExists) return;
+
+		$countRes = mysqli_query($this->koneksi, "SELECT COUNT(*) AS total FROM ebooks");
+		if (!$countRes) return;
+
+		$count = mysqli_fetch_assoc($countRes);
+		if ((int) ($count['total'] ?? 0) > 0) return;
+
+		$defaults = [
+			['3 Teknik Mahir Berbicara Di Depan Publik', 'Hebbie Agus Kurnia', 32, 'assets/ebook/ebook1.png', 'assets/ebook/ebook1.pdf'],
+			['Public Speaking Untuk Pemula', 'Rinna Raflina, S.Sos., M.I.Kom', 88, 'assets/ebook/ebook2.png', 'assets/ebook/ebook2.pdf'],
+			['My Public Speaking', 'Hilbram Dunar', 180, 'assets/ebook/ebook3.png', 'assets/ebook/ebook3.pdf'],
+			['Dasar Public Speaking', 'Dr. Mohamed Sudi, S.E., M.Si.', 116, 'assets/ebook/ebook4.png', 'assets/ebook/ebook4.pdf'],
+		];
+
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO ebooks (title, author, pages, thumbnail_path, pdf_path) VALUES (?, ?, ?, ?, ?)");
+		if (!$stmt) return;
+
+		foreach ($defaults as $ebook) {
+			$title = $ebook[0];
+			$author = $ebook[1];
+			$pages = $ebook[2];
+			$thumbnailPath = $ebook[3];
+			$pdfPath = $ebook[4];
+			mysqli_stmt_bind_param($stmt, "ssiss", $title, $author, $pages, $thumbnailPath, $pdfPath);
+			mysqli_stmt_execute($stmt);
+		}
+
+		mysqli_stmt_close($stmt);
+	}
+
+	public function getEbooks($search = ''){
+		$search = trim($search);
+		$ebooks = [];
+
+		if ($search !== '') {
+			$like = '%' . $search . '%';
+			$stmt = mysqli_prepare($this->koneksi, "SELECT id, title, author, pages, thumbnail_path, pdf_path, created_at FROM ebooks WHERE title LIKE ? ORDER BY created_at DESC, id DESC");
+			if (!$stmt) return $ebooks;
+			mysqli_stmt_bind_param($stmt, "s", $like);
+			mysqli_stmt_execute($stmt);
+			$res = mysqli_stmt_get_result($stmt);
+		} else {
+			$res = mysqli_query($this->koneksi, "SELECT id, title, author, pages, thumbnail_path, pdf_path, created_at FROM ebooks ORDER BY created_at DESC, id DESC");
+		}
+
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$ebooks[] = $row;
+			}
+		}
+
+		if (isset($stmt) && $stmt) {
+			mysqli_stmt_close($stmt);
+		}
+
+		return $ebooks;
+	}
+
+	public function createEbook($title, $author, $pages, $thumbnailPath, $pdfPath){
+		$title = trim($title);
+		$author = trim($author);
+		$pages = max(0, (int) $pages);
+
+		if ($title === '' || $author === '' || $thumbnailPath === '' || $pdfPath === '') {
+			return false;
+		}
+
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO ebooks (title, author, pages, thumbnail_path, pdf_path) VALUES (?, ?, ?, ?, ?)");
+		if (!$stmt) return false;
+
+		mysqli_stmt_bind_param($stmt, "ssiss", $title, $author, $pages, $thumbnailPath, $pdfPath);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+
+		return $saved;
+	}
+
+	public function deleteEbook($ebookId){
+		$ebookId = (int) $ebookId;
+		if ($ebookId <= 0) return false;
+
+		$stmt = mysqli_prepare($this->koneksi, "DELETE FROM ebooks WHERE id = ? LIMIT 1");
+		if (!$stmt) return false;
+
+		mysqli_stmt_bind_param($stmt, "i", $ebookId);
+		$deleted = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+
+		return $deleted;
+	}
 
 	public function getMaterialProgress($userId, $materialId){
 		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);

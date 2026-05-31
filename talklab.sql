@@ -45,6 +45,35 @@ CREATE TABLE `ai_feedback_history` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ebooks`
+--
+
+CREATE TABLE `ebooks` (
+  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `title` varchar(180) NOT NULL,
+  `author` varchar(120) NOT NULL,
+  `pages` int(10) UNSIGNED NOT NULL DEFAULT 0,
+  `thumbnail_path` varchar(255) NOT NULL,
+  `pdf_path` varchar(255) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_ebook_title` (`title`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ebooks`
+--
+
+INSERT INTO `ebooks` (`id`, `title`, `author`, `pages`, `thumbnail_path`, `pdf_path`, `created_at`, `updated_at`) VALUES
+(1, '3 Teknik Mahir Berbicara Di Depan Publik', 'Hebbie Agus Kurnia', 32, 'assets/ebook/ebook1.png', 'assets/ebook/ebook1.pdf', current_timestamp(), NULL),
+(2, 'Public Speaking Untuk Pemula', 'Rinna Raflina, S.Sos., M.I.Kom', 88, 'assets/ebook/ebook2.png', 'assets/ebook/ebook2.pdf', current_timestamp(), NULL),
+(3, 'My Public Speaking', 'Hilbram Dunar', 180, 'assets/ebook/ebook3.png', 'assets/ebook/ebook3.pdf', current_timestamp(), NULL),
+(4, 'Dasar Public Speaking', 'Dr. Mohamed Sudi, S.E., M.Si.', 116, 'assets/ebook/ebook4.png', 'assets/ebook/ebook4.pdf', current_timestamp(), NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `komunitas`
 --
 
