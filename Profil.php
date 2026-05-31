@@ -11,9 +11,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profil'])) {
     if ($currentUser) {
         $newNama = trim($_POST['nama'] ?? '');
         $newUsername = trim($_POST['username'] ?? '');
+        $newBio = trim($_POST['bio'] ?? '');
 
         if ($newNama === '' || $newUsername === '') {
             $editMsg = 'Nama dan username tidak boleh kosong.';
+            $editStatus = 'error';
+        } elseif (strlen($newBio) > 160) {
+            $editMsg = 'Bio maksimal 160 karakter.';
             $editStatus = 'error';
         } else {
             $fotoPath = null;
@@ -47,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profil'])) {
             }
 
             if ($editStatus !== 'error') {
-                $result = $app->updateProfile($currentUser['Id_User'], $newNama, $newUsername, $fotoPath);
+                $result = $app->updateProfile($currentUser['Id_User'], $newNama, $newUsername, $fotoPath, $newBio);
                 $editMsg = $result['pesan'];
                 $editStatus = $result['status'] ? 'success' : 'error';
             }
@@ -59,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_profil'])) {
 $displayName = $app->getDisplayName();
 $displayUsername = $app->getDisplayUsername();
 $displayFoto = $app->getDisplayFoto();
+$displayBio = $app->getDisplayBio();
 $currentUser = $app->getCurrentUser();
 ?>
 
@@ -200,7 +205,8 @@ $currentUser = $app->getCurrentUser();
             color: #333;
             margin-bottom: 6px;
         }
-        .form-group input[type="text"] {
+        .form-group input[type="text"],
+        .form-group textarea {
             width: 100%;
             padding: 12px 16px;
             border: 2px solid #e0e0e0;
@@ -208,9 +214,22 @@ $currentUser = $app->getCurrentUser();
             font-size: 16px;
             outline: none;
             transition: border-color 0.2s;
+            resize: vertical;
         }
-        .form-group input[type="text"]:focus {
+        .form-group textarea {
+            min-height: 92px;
+            line-height: 1.45;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group textarea:focus {
             border-color: #d2a06b;
+        }
+        .bio-counter {
+            display: block;
+            text-align: right;
+            color: #999;
+            font-size: 12px;
+            margin-top: 5px;
         }
 
         /* Buttons */
@@ -300,7 +319,7 @@ $currentUser = $app->getCurrentUser();
                 <div>
                     <h2 style="font-size:32px; font-weight:700;"><?= $displayName ?></h2>
                     <p style="font-size:22px; color:#d2a06b;">@<?= $displayUsername ?></p>
-                    <p style="font-size:20px; margin-top:10px;">"yang penting bicara aja dulu"</p>
+                    <p style="font-size:20px; margin-top:10px;">"<?= $displayBio ?>"</p>
                 </div>
             </div>
             <button id="btnEditProfil" style="background:#d2a06b; padding:10px 26px; color:white; font-size:20px; border:none; border-radius:12px; cursor:pointer; margin-right: 40px; z-index:2;">
@@ -347,7 +366,7 @@ $currentUser = $app->getCurrentUser();
             </p>
             <p style="display:flex; align-items:center; gap:12px;">
                 <img src="icon/logout.svg" style="width:36px; height:36px;">
-                <a href="login.php">Logout</a>
+                <a href="logout.php" data-logout-link>Logout</a>
             </p>
         </div>
 
@@ -417,6 +436,13 @@ $currentUser = $app->getCurrentUser();
                     <input type="text" name="username" id="inputUsername" value="<?= $displayUsername ?>" required>
                 </div>
 
+                <!-- Bio -->
+                <div class="form-group">
+                    <label for="inputBio">Bio</label>
+                    <textarea name="bio" id="inputBio" maxlength="160" placeholder="Tulis bio singkat kamu"><?= $displayBio ?></textarea>
+                    <span class="bio-counter"><span id="bioCount">0</span>/160</span>
+                </div>
+
                 <button type="submit" class="btn-save-profil">Simpan Perubahan</button>
             </form>
         </div>
@@ -455,6 +481,15 @@ $currentUser = $app->getCurrentUser();
                 reader.readAsDataURL(file);
             }
         });
+
+        // Bio counter
+        const inputBio = document.getElementById('inputBio');
+        const bioCount = document.getElementById('bioCount');
+        const updateBioCount = () => {
+            bioCount.textContent = inputBio.value.length;
+        };
+        inputBio.addEventListener('input', updateBioCount);
+        updateBioCount();
 
         // Auto-open modal if there was a form submission with error
         <?php if (!empty($editMsg)): ?>

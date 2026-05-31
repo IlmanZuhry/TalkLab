@@ -11,6 +11,7 @@ class manz{
 		if(mysqli_connect_errno()){
 			echo"Koneksi gagal:".mysqli_connect_error();
 		}
+		$this->ensureUserBioColumn();
 		$this->ensureCommunityPostsTable();
 		$this->ensureLikesAndCommentsTable();
 		$this->ensurePracticeTables();
@@ -86,6 +87,7 @@ class manz{
 		$_SESSION['username'] = $row['Username'];
 		$_SESSION['user_id'] = $row['Id_User'];
 		$_SESSION['foto'] = $row['Foto'] ?? '';
+		$_SESSION['bio'] = $row['Bio'] ?? '';
 	}
 
 	// Bantuan logout (menghapus session)
@@ -115,6 +117,7 @@ class manz{
 				'Nama' => $_SESSION['name'] ?? null,
 				'Username' => $_SESSION['username'] ?? null,
 				'Foto' => $_SESSION['foto'] ?? '',
+				'Bio' => $_SESSION['bio'] ?? '',
 			];
 		}
 		return false;
@@ -141,6 +144,12 @@ class manz{
 		return '';
 	}
 
+	public function getDisplayBio(){
+		$user = $this->getCurrentUser();
+		if ($user !== false && !empty($user['Bio'])) return htmlspecialchars($user['Bio']);
+		return 'yang penting bicara aja dulu';
+	}
+
 	// Ambil data user berdasarkan Id_User
 	public function getUserById($userId){
 		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
@@ -151,11 +160,12 @@ class manz{
 		return false;
 	}
 
-	// Update profil user (nama, username, foto)
-	public function updateProfile($userId, $nama, $username, $fotoPath = null){
+	// Update profil user (nama, username, foto, bio)
+	public function updateProfile($userId, $nama, $username, $fotoPath = null, $bio = null){
 		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
 		$namaEsc = mysqli_real_escape_string($this->koneksi, $nama);
 		$usernameEsc = mysqli_real_escape_string($this->koneksi, $username);
+		$bioEsc = $bio !== null ? mysqli_real_escape_string($this->koneksi, $bio) : null;
 
 		// Cek apakah username sudah dipakai oleh user lain
 		$cekUser = mysqli_query($this->koneksi, "SELECT Id_User FROM users WHERE Username = '$usernameEsc' AND Id_User != '$userIdEsc'");
@@ -163,12 +173,21 @@ class manz{
 			return ['status' => false, 'pesan' => 'Username sudah digunakan oleh user lain.'];
 		}
 
+		$fields = [
+			"Nama='$namaEsc'",
+			"Username='$usernameEsc'",
+		];
+
+		if ($bio !== null) {
+			$fields[] = "Bio='$bioEsc'";
+		}
+
 		if ($fotoPath !== null) {
 			$fotoEsc = mysqli_real_escape_string($this->koneksi, $fotoPath);
-			$sql = "UPDATE users SET Nama='$namaEsc', Username='$usernameEsc', Foto='$fotoEsc' WHERE Id_User='$userIdEsc'";
-		} else {
-			$sql = "UPDATE users SET Nama='$namaEsc', Username='$usernameEsc' WHERE Id_User='$userIdEsc'";
+			$fields[] = "Foto='$fotoEsc'";
 		}
+
+		$sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE Id_User='$userIdEsc'";
 
 		if(mysqli_query($this->koneksi, $sql)){
 			// Refresh session data
@@ -179,6 +198,18 @@ class manz{
 			return ['status' => true, 'pesan' => 'Profil berhasil diperbarui.'];
 		} else {
 			return ['status' => false, 'pesan' => 'Gagal memperbarui profil: ' . mysqli_error($this->koneksi)];
+		}
+	}
+
+	private function ensureUserBioColumn(){
+		$table = mysqli_query($this->koneksi, "SHOW TABLES LIKE 'users'");
+		if (!$table || mysqli_num_rows($table) === 0) {
+			return;
+		}
+
+		$check = mysqli_query($this->koneksi, "SHOW COLUMNS FROM users LIKE 'Bio'");
+		if ($check && mysqli_num_rows($check) === 0) {
+			mysqli_query($this->koneksi, "ALTER TABLE users ADD COLUMN Bio VARCHAR(160) NOT NULL DEFAULT 'yang penting bicara aja dulu' AFTER Foto");
 		}
 	}
 
