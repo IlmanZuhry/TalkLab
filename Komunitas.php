@@ -180,6 +180,18 @@ $posts = $app->getCommunityPosts();
       flex-shrink: 0;
     }
 
+    .post-avatar-default {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #d2a06b;
+    }
+
+    .post-avatar-default svg {
+      width: 28px;
+      height: 28px;
+    }
+
     .post-author-info { display: flex; flex-direction: column; gap: 4px; user-select: text; }
     .post-author { font-weight: 700; font-size: 16px; color: #101828; line-height: 1.1; }
     .post-username-time { font-size: 13px; color: #8f95a6; user-select: none; }
@@ -506,6 +518,19 @@ $posts = $app->getCommunityPosts();
       border: 2px solid #bca451;
     }
 
+    .comment-avatar-default {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #d2a06b;
+      flex-shrink: 0;
+    }
+
+    .comment-avatar-default svg {
+      width: 20px;
+      height: 20px;
+    }
+
     .comment-author {
       font-weight: 700;
       font-size: 14px;
@@ -670,7 +695,13 @@ if($currentUser){
 ?>
         <article class="post" tabindex="0">
           <header class="post-header">
-            <img src="https://i.pravatar.cc/44?u=<?= urlencode($post['username'] ?: $post['Id_User']) ?>" alt="Avatar <?= htmlspecialchars($post['name'] ?: 'Pengguna') ?>" class="post-avatar" width="44" height="44">
+            <?php if (!empty($post['foto'])): ?>
+              <img src="<?= htmlspecialchars($post['foto']) ?>" alt="Foto profil <?= htmlspecialchars($post['name'] ?: 'Pengguna') ?>" class="post-avatar" width="44" height="44">
+            <?php else: ?>
+              <div class="post-avatar post-avatar-default" aria-label="Foto profil default <?= htmlspecialchars($post['name'] ?: 'Pengguna') ?>">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="white" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              </div>
+            <?php endif; ?>
             <div class="post-author-info">
               <div class="post-author"><?= htmlspecialchars($post['name'] ?: 'Pengguna') ?></div>
               <div class="post-username-time">@<?= htmlspecialchars($post['username'] ?: 'guest') ?> • <?= htmlspecialchars(date('d M Y H:i', strtotime($post['Dibuat']))) ?></div>
@@ -849,7 +880,7 @@ if($currentUser){
       commentsList.innerHTML = comments.map(comment => `
         <div class="comment-item">
           <div class="comment-header">
-            <img src="https://i.pravatar.cc/32?u=${encodeURIComponent(comment.Username || comment.Id_User)}" alt="Avatar" class="comment-avatar">
+            ${renderCommentAvatar(comment)}
             <div style="flex-grow: 1;">
               <div class="comment-author">${escapeHtml(comment.Nama || 'Pengguna')}</div>
               <div style="font-size: 12px; color: #8f95a6;">@${escapeHtml(comment.Username || 'guest')} • ${formatDate(comment.created_at)}</div>
@@ -860,10 +891,26 @@ if($currentUser){
       `).join('');
     }
 
+    function renderCommentAvatar(comment) {
+      if (comment.Foto) {
+        return `<img src="${escapeAttribute(comment.Foto)}" alt="Foto profil ${escapeAttribute(comment.Nama || 'Pengguna')}" class="comment-avatar">`;
+      }
+
+      return `
+        <div class="comment-avatar comment-avatar-default" aria-label="Foto profil default ${escapeAttribute(comment.Nama || 'Pengguna')}">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="white" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </div>
+      `;
+    }
+
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
+    }
+
+    function escapeAttribute(text) {
+      return escapeHtml(text).replace(/"/g, '&quot;');
     }
 
     function formatDate(dateStr) {

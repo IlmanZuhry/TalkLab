@@ -2,7 +2,8 @@
 require_once 'core.php';
 if (session_status() == PHP_SESSION_NONE) session_start();
 $app = new manz();
-include 'includes/ebook_data.php';
+$search_query = $_GET['search'] ?? '';
+$ebooks = $app->getEbooks($search_query);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -281,23 +282,18 @@ include 'includes/ebook_data.php';
 
         <section class="ebook-grid" id="ebookGrid">
             <?php
-            $filtered_ebooks = $ebooks;
-            
-            if (isset($_GET['search'])) {
-                $search_query = $_GET['search'];
-                $filtered_ebooks = searchEbooks($search_query, $ebooks);
-            }
-            
-            if (count($filtered_ebooks) > 0) {
-                foreach ($filtered_ebooks as $ebook) {
+            if (count($ebooks) > 0) {
+                foreach ($ebooks as $ebook) {
                     echo '<article class="ebook-card" data-title="' . htmlspecialchars(strtolower($ebook['title'])) . '">';
-                    echo '<img src="assets/ebook/' . htmlspecialchars($ebook['image']) . '" alt="Cover ' . htmlspecialchars($ebook['title']) . '">';
+                    echo '<img src="' . htmlspecialchars($ebook['thumbnail_path']) . '" alt="Cover ' . htmlspecialchars($ebook['title']) . '">';
                     echo '<div class="ebook-card-body">';
                     echo '<div class="ebook-card-title">' . htmlspecialchars($ebook['title']) . '</div>';
                     echo '<div class="ebook-card-author">' . htmlspecialchars($ebook['author']) . '</div>';
-                    echo '<div class="ebook-card-pages">' . $ebook['pages'] . ' Halaman</div>';
+                    if ((int) $ebook['pages'] > 0) {
+                        echo '<div class="ebook-card-pages">' . (int) $ebook['pages'] . ' Halaman</div>';
+                    }
                     echo '<div class="ebook-card-footer">';
-                    echo '<a href="assets/ebook/' . htmlspecialchars($ebook['pdf']) . '" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Baca</a>';
+                    echo '<a href="' . htmlspecialchars($ebook['pdf_path']) . '" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Baca</a>';
                     echo '</div>';
                     echo '</div>';
                     echo '</article>';
@@ -316,19 +312,14 @@ include 'includes/ebook_data.php';
         const ebookCards = document.querySelectorAll('.ebook-card');
 
         // Data ebook dari PHP
-        const ebooksData = <?php echo json_encode($ebooks); ?>;
+        const ebooksData = <?php echo json_encode($app->getEbooks()); ?>;
 
         // Fungsi untuk melakukan pencarian
         function performSearch(query) {
             const searchQuery = query.toLowerCase().trim();
 
             if (searchQuery === '') {
-                // Tampilkan semua ebook jika search kosong
-                ebookCards.forEach(card => {
-                    card.style.display = '';
-                });
-                // Reload page untuk menampilkan semua data
-                window.location.href = 'Ebook.php';
+                renderEbooks(ebooksData);
                 return;
             }
 
@@ -337,29 +328,37 @@ include 'includes/ebook_data.php';
                 ebook.title.toLowerCase().includes(searchQuery)
             );
 
-            // Hapus cards lama
+            renderEbooks(filteredEbooks);
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text ?? '';
+            return div.innerHTML;
+        }
+
+        function renderEbooks(items) {
             ebookGrid.innerHTML = '';
 
-            if (filteredEbooks.length > 0) {
-                // Tampilkan ebook yang sesuai
-                filteredEbooks.forEach(ebook => {
+            if (items.length > 0) {
+                items.forEach(ebook => {
                     const card = document.createElement('article');
                     card.className = 'ebook-card';
+                    const pages = parseInt(ebook.pages, 10);
                     card.innerHTML = `
-                        <img src="assets/ebook/${ebook.image}" alt="Cover ${ebook.title}">
+                        <img src="${escapeHtml(ebook.thumbnail_path)}" alt="Cover ${escapeHtml(ebook.title)}">
                         <div class="ebook-card-body">
-                            <div class="ebook-card-title">${ebook.title}</div>
-                            <div class="ebook-card-author">${ebook.author}</div>
-                            <div class="ebook-card-pages">${ebook.pages} Halaman</div>
+                            <div class="ebook-card-title">${escapeHtml(ebook.title)}</div>
+                            <div class="ebook-card-author">${escapeHtml(ebook.author)}</div>
+                            ${pages > 0 ? `<div class="ebook-card-pages">${pages} Halaman</div>` : ''}
                             <div class="ebook-card-footer">
-                                <a href="assets/ebook/${ebook.pdf}" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Baca</a>
+                                <a href="${escapeHtml(ebook.pdf_path)}" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Baca</a>
                             </div>
                         </div>
                     `;
                     ebookGrid.appendChild(card);
                 });
             } else {
-                // Tampilkan pesan tidak ada hasil
                 const noResults = document.createElement('div');
                 noResults.className = 'no-results';
                 noResults.style.gridColumn = '1 / -1';
