@@ -185,6 +185,9 @@ CREATE TABLE `practice_history` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` varchar(6) NOT NULL,
   `topic` varchar(255) NOT NULL,
+  `script_title` varchar(255) DEFAULT NULL,
+  `category` varchar(60) DEFAULT NULL,
+  `level_name` varchar(30) DEFAULT NULL,
   `duration_seconds` int(10) UNSIGNED NOT NULL,
   `audio_path` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
@@ -194,10 +197,10 @@ CREATE TABLE `practice_history` (
 -- Dumping data for table `practice_history`
 --
 
-INSERT INTO `practice_history` (`id`, `user_id`, `topic`, `duration_seconds`, `audio_path`, `created_at`) VALUES
-(1, 'LB61P9', 'Perkenalkan diri kamu secara singkat dan percaya diri.', 4, 'uploads/practice_audio/LB61P9_20260512_070044_c045b54e.webm', '2026-05-12 12:00:44'),
-(2, 'LB61P9', 'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.', 5, 'uploads/practice_audio/LB61P9_20260512_070109_5d0a24cf.webm', '2026-05-12 12:01:09'),
-(3, 'LB61P9', 'Sampaikan opini sederhana tentang pentingnya public speaking.', 30, 'uploads/practice_audio/LB61P9_20260514_150532_570a68e8.webm', '2026-05-14 20:05:32');
+INSERT INTO `practice_history` (`id`, `user_id`, `topic`, `script_title`, `category`, `level_name`, `duration_seconds`, `audio_path`, `created_at`) VALUES
+(1, 'LB61P9', 'Perkenalkan diri kamu secara singkat dan percaya diri.', NULL, NULL, NULL, 4, 'uploads/practice_audio/LB61P9_20260512_070044_c045b54e.webm', '2026-05-12 12:00:44'),
+(2, 'LB61P9', 'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.', NULL, NULL, NULL, 5, 'uploads/practice_audio/LB61P9_20260512_070109_5d0a24cf.webm', '2026-05-12 12:01:09'),
+(3, 'LB61P9', 'Sampaikan opini sederhana tentang pentingnya public speaking.', NULL, NULL, NULL, 30, 'uploads/practice_audio/LB61P9_20260514_150532_570a68e8.webm', '2026-05-14 20:05:32');
 
 -- --------------------------------------------------------
 
@@ -210,6 +213,7 @@ CREATE TABLE `speaking_challenge_history` (
   `user_id` varchar(6) NOT NULL,
   `challenge_type` varchar(60) NOT NULL,
   `level_name` varchar(30) NOT NULL,
+  `question_count` int(10) UNSIGNED NOT NULL DEFAULT 1,
   `prompt` text NOT NULL,
   `prep_seconds` int(10) UNSIGNED NOT NULL,
   `speak_seconds` int(10) UNSIGNED NOT NULL,
