@@ -725,6 +725,9 @@ class manz{
 			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 			user_id VARCHAR(6) NOT NULL,
 			topic VARCHAR(255) NOT NULL,
+			script_title VARCHAR(255) NULL DEFAULT NULL,
+			category VARCHAR(60) NULL DEFAULT NULL,
+			level_name VARCHAR(30) NULL DEFAULT NULL,
 			duration_seconds INT UNSIGNED NOT NULL,
 			audio_path VARCHAR(255) NOT NULL,
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -734,6 +737,27 @@ class manz{
 			ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
 		mysqli_query($this->koneksi, $sql);
+		$this->ensurePracticeHistoryMetadataColumns();
+	}
+
+	private function ensurePracticeHistoryMetadataColumns(){
+		$table = mysqli_query($this->koneksi, "SHOW TABLES LIKE 'practice_history'");
+		if (!$table || mysqli_num_rows($table) === 0) {
+			return;
+		}
+
+		$columns = [
+			'script_title' => "ALTER TABLE practice_history ADD COLUMN script_title VARCHAR(255) NULL DEFAULT NULL AFTER topic",
+			'category' => "ALTER TABLE practice_history ADD COLUMN category VARCHAR(60) NULL DEFAULT NULL AFTER script_title",
+			'level_name' => "ALTER TABLE practice_history ADD COLUMN level_name VARCHAR(30) NULL DEFAULT NULL AFTER category"
+		];
+
+		foreach ($columns as $column => $alterSql) {
+			$check = mysqli_query($this->koneksi, "SHOW COLUMNS FROM practice_history LIKE '$column'");
+			if ($check && mysqli_num_rows($check) === 0) {
+				mysqli_query($this->koneksi, $alterSql);
+			}
+		}
 	}
 
 	public function ensureChallengeHistoryTable(){
@@ -742,6 +766,7 @@ class manz{
 			user_id VARCHAR(6) NOT NULL,
 			challenge_type VARCHAR(60) NOT NULL,
 			level_name VARCHAR(30) NOT NULL,
+			question_count INT UNSIGNED NOT NULL DEFAULT 1,
 			prompt TEXT NOT NULL,
 			prep_seconds INT UNSIGNED NOT NULL,
 			speak_seconds INT UNSIGNED NOT NULL,
@@ -755,6 +780,19 @@ class manz{
 			ON DELETE CASCADE ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
 		mysqli_query($this->koneksi, $sql);
+		$this->ensureChallengeHistoryMetadataColumns();
+	}
+
+	private function ensureChallengeHistoryMetadataColumns(){
+		$table = mysqli_query($this->koneksi, "SHOW TABLES LIKE 'speaking_challenge_history'");
+		if (!$table || mysqli_num_rows($table) === 0) {
+			return;
+		}
+
+		$check = mysqli_query($this->koneksi, "SHOW COLUMNS FROM speaking_challenge_history LIKE 'question_count'");
+		if ($check && mysqli_num_rows($check) === 0) {
+			mysqli_query($this->koneksi, "ALTER TABLE speaking_challenge_history ADD COLUMN question_count INT UNSIGNED NOT NULL DEFAULT 1 AFTER level_name");
+		}
 	}
 
 	public function ensureAiFeedbackTable(){
@@ -782,7 +820,7 @@ class manz{
 	public function getPracticeHistory($userId, $limit = 10){
 		$history = [];
 		$limit = (int) $limit;
-		$stmt = mysqli_prepare($this->koneksi, "SELECT topic, duration_seconds, audio_path, created_at FROM practice_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+		$stmt = mysqli_prepare($this->koneksi, "SELECT topic, COALESCE(script_title, topic) AS script_title, COALESCE(category, 'Latihan Suara') AS category, COALESCE(level_name, '') AS level_name, duration_seconds, audio_path, created_at FROM practice_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
 		if (!$stmt) return $history;
 		mysqli_stmt_bind_param($stmt, "s", $userId);
 		mysqli_stmt_execute($stmt);
@@ -797,7 +835,7 @@ class manz{
 	public function getChallengeHistory($userId, $limit = 10){
 		$history = [];
 		$limit = (int) $limit;
-		$stmt = mysqli_prepare($this->koneksi, "SELECT challenge_type, level_name, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed, created_at FROM speaking_challenge_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+		$stmt = mysqli_prepare($this->koneksi, "SELECT challenge_type, level_name, question_count, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed, created_at FROM speaking_challenge_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
 		if (!$stmt) return $history;
 		mysqli_stmt_bind_param($stmt, "s", $userId);
 		mysqli_stmt_execute($stmt);
@@ -824,25 +862,29 @@ class manz{
 		return $history;
 	}
 
-	public function savePracticeHistory($userId, $topic, $durationSeconds, $audioPath){
-		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO practice_history (user_id, topic, duration_seconds, audio_path) VALUES (?, ?, ?, ?)");
+	public function savePracticeHistory($userId, $topic, $durationSeconds, $audioPath, $scriptTitle = '', $category = '', $levelName = ''){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO practice_history (user_id, topic, script_title, category, level_name, duration_seconds, audio_path) VALUES (?, ?, ?, ?, ?, ?, ?)");
 		if (!$stmt) return false;
 		$durationSeconds = (int) $durationSeconds;
-		mysqli_stmt_bind_param($stmt, "ssis", $userId, $topic, $durationSeconds, $audioPath);
+		$scriptTitle = trim($scriptTitle) !== '' ? trim($scriptTitle) : $topic;
+		$category = trim($category);
+		$levelName = trim($levelName);
+		mysqli_stmt_bind_param($stmt, "sssssis", $userId, $topic, $scriptTitle, $category, $levelName, $durationSeconds, $audioPath);
 		$saved = mysqli_stmt_execute($stmt);
 		mysqli_stmt_close($stmt);
 		return $saved;
 	}
 
-	public function saveChallengeHistory($userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed){
-		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO speaking_challenge_history (user_id, challenge_type, level_name, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	public function saveChallengeHistory($userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed, $questionCount = 1){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO speaking_challenge_history (user_id, challenge_type, level_name, question_count, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		if (!$stmt) return false;
+		$questionCount = max(1, (int) $questionCount);
 		$prepSeconds = (int) $prepSeconds;
 		$speakSeconds = (int) $speakSeconds;
 		$actualSeconds = (int) $actualSeconds;
 		$score = (int) $score;
 		$completed = (int) $completed;
-		mysqli_stmt_bind_param($stmt, "ssssiiiii", $userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
+		mysqli_stmt_bind_param($stmt, "sssisiiiii", $userId, $challengeType, $levelName, $questionCount, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
 		$saved = mysqli_stmt_execute($stmt);
 		mysqli_stmt_close($stmt);
 		return $saved;
@@ -875,6 +917,9 @@ class manz{
 	}
 
 	$topic = trim($_POST['topic'] ?? '');
+	$scriptTitle = trim($_POST['script_title'] ?? $topic);
+	$category = trim($_POST['category'] ?? '');
+	$levelName = trim($_POST['level_name'] ?? '');
 	$duration = (int) ($_POST['duration'] ?? 0);
 
 	if ($topic === '' || $duration <= 0 || empty($_FILES['audio']['tmp_name'])) {
@@ -920,7 +965,10 @@ class manz{
 		$currentUser['Id_User'],
 		$topic,
 		$duration,
-		$relativePath
+		$relativePath,
+		$scriptTitle,
+		$category,
+		$levelName
 	);
 
 	if (!$saved) {
@@ -936,6 +984,9 @@ class manz{
 		'message' => 'Riwayat latihan berhasil disimpan.',
 		'item' => [
 			'topic' => $topic,
+			'script_title' => $scriptTitle,
+			'category' => $category,
+			'level_name' => $levelName,
 			'duration_seconds' => $duration,
 			'audio_path' => $relativePath,
 			'created_at' => date('Y-m-d H:i:s')
@@ -955,6 +1006,7 @@ public function handleSaveChallenge($currentUser){
 
 	$challengeType = trim($_POST['challenge_type'] ?? '');
 	$levelName = trim($_POST['level_name'] ?? '');
+	$questionCount = max(1, (int) ($_POST['question_count'] ?? 1));
 	$prompt = trim($_POST['prompt'] ?? '');
 	$prepSeconds = (int) ($_POST['prep_seconds'] ?? 0);
 	$speakSeconds = (int) ($_POST['speak_seconds'] ?? 0);
@@ -979,7 +1031,8 @@ public function handleSaveChallenge($currentUser){
 		$speakSeconds,
 		$actualSeconds,
 		$score,
-		$completed
+		$completed,
+		$questionCount
 	);
 
 	if (!$saved) {
@@ -996,6 +1049,7 @@ public function handleSaveChallenge($currentUser){
 		'item' => [
 			'challenge_type' => $challengeType,
 			'level_name' => $levelName,
+			'question_count' => $questionCount,
 			'prompt' => $prompt,
 			'prep_seconds' => $prepSeconds,
 			'speak_seconds' => $speakSeconds,
