@@ -455,6 +455,68 @@ ALTER TABLE `practice_history`
 --
 ALTER TABLE `speaking_challenge_history`
   ADD CONSTRAINT `fk_challenge_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
+--
+-- Table structure for table `material_progress`
+--
+CREATE TABLE `material_progress` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` varchar(6) NOT NULL,
+  `material_id` varchar(50) NOT NULL,
+  `progress` int(10) unsigned NOT NULL DEFAULT 0,
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_user_material` (`user_id`,`material_id`),
+  CONSTRAINT `fk_progress_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `materials`
+--
+CREATE TABLE `materials` (
+  `id` varchar(50) NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  `category` varchar(50) NOT NULL,
+  `time_minutes` int(11) NOT NULL DEFAULT 10,
+  `icon_file` varchar(50) NOT NULL,
+  `color_class` varchar(30) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `material_videos`
+--
+CREATE TABLE `material_videos` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `material_id` varchar(50) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `video_url` varchar(255) NOT NULL,
+  `script` text NOT NULL,
+  `order_index` int(11) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_material` (`material_id`),
+  CONSTRAINT `fk_mat_vid` FOREIGN KEY (`material_id`) REFERENCES `materials` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `material_video_progress`
+--
+CREATE TABLE `material_video_progress` (
+  `user_id` varchar(6) NOT NULL,
+  `video_id` int(10) unsigned NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`user_id`,`video_id`),
+  CONSTRAINT `fk_mvp_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE,
+  CONSTRAINT `fk_mvp_video` FOREIGN KEY (`video_id`) REFERENCES `material_videos` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
