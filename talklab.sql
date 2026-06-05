@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 23, 2026 at 08:10 AM
+-- Generation Time: Jun 04, 2026 at 07:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -49,16 +49,14 @@ CREATE TABLE `ai_feedback_history` (
 --
 
 CREATE TABLE `ebooks` (
-  `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` int(10) UNSIGNED NOT NULL,
   `title` varchar(180) NOT NULL,
   `author` varchar(120) NOT NULL,
   `pages` int(10) UNSIGNED NOT NULL DEFAULT 0,
   `thumbnail_path` varchar(255) NOT NULL,
   `pdf_path` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp(),
-  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  KEY `idx_ebook_title` (`title`)
+  `updated_at` datetime DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -66,10 +64,10 @@ CREATE TABLE `ebooks` (
 --
 
 INSERT INTO `ebooks` (`id`, `title`, `author`, `pages`, `thumbnail_path`, `pdf_path`, `created_at`, `updated_at`) VALUES
-(1, '3 Teknik Mahir Berbicara Di Depan Publik', 'Hebbie Agus Kurnia', 32, 'assets/ebook/ebook1.png', 'assets/ebook/ebook1.pdf', current_timestamp(), NULL),
-(2, 'Public Speaking Untuk Pemula', 'Rinna Raflina, S.Sos., M.I.Kom', 88, 'assets/ebook/ebook2.png', 'assets/ebook/ebook2.pdf', current_timestamp(), NULL),
-(3, 'My Public Speaking', 'Hilbram Dunar', 180, 'assets/ebook/ebook3.png', 'assets/ebook/ebook3.pdf', current_timestamp(), NULL),
-(4, 'Dasar Public Speaking', 'Dr. Mohamed Sudi, S.E., M.Si.', 116, 'assets/ebook/ebook4.png', 'assets/ebook/ebook4.pdf', current_timestamp(), NULL);
+(1, '3 Teknik Mahir Berbicara Di Depan Publik', 'Hebbie Agus Kurnia', 32, 'assets/ebook/ebook1.png', 'assets/ebook/ebook1.pdf', '2026-06-04 23:59:28', NULL),
+(2, 'Public Speaking Untuk Pemula', 'Rinna Raflina, S.Sos., M.I.Kom', 88, 'assets/ebook/ebook2.png', 'assets/ebook/ebook2.pdf', '2026-06-04 23:59:28', NULL),
+(3, 'My Public Speaking', 'Hilbram Dunar', 180, 'assets/ebook/ebook3.png', 'assets/ebook/ebook3.pdf', '2026-06-04 23:59:28', NULL),
+(4, 'Dasar Public Speaking', 'Dr. Mohamed Sudi, S.E., M.Si.', 116, 'assets/ebook/ebook4.png', 'assets/ebook/ebook4.pdf', '2026-06-04 23:59:28', NULL);
 
 -- --------------------------------------------------------
 
@@ -185,6 +183,9 @@ CREATE TABLE `practice_history` (
   `id` int(10) UNSIGNED NOT NULL,
   `user_id` varchar(6) NOT NULL,
   `topic` varchar(255) NOT NULL,
+  `script_title` varchar(255) DEFAULT NULL,
+  `category` varchar(60) DEFAULT NULL,
+  `level_name` varchar(30) DEFAULT NULL,
   `duration_seconds` int(10) UNSIGNED NOT NULL,
   `audio_path` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
@@ -194,10 +195,10 @@ CREATE TABLE `practice_history` (
 -- Dumping data for table `practice_history`
 --
 
-INSERT INTO `practice_history` (`id`, `user_id`, `topic`, `duration_seconds`, `audio_path`, `created_at`) VALUES
-(1, 'LB61P9', 'Perkenalkan diri kamu secara singkat dan percaya diri.', 4, 'uploads/practice_audio/LB61P9_20260512_070044_c045b54e.webm', '2026-05-12 12:00:44'),
-(2, 'LB61P9', 'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.', 5, 'uploads/practice_audio/LB61P9_20260512_070109_5d0a24cf.webm', '2026-05-12 12:01:09'),
-(3, 'LB61P9', 'Sampaikan opini sederhana tentang pentingnya public speaking.', 30, 'uploads/practice_audio/LB61P9_20260514_150532_570a68e8.webm', '2026-05-14 20:05:32');
+INSERT INTO `practice_history` (`id`, `user_id`, `topic`, `script_title`, `category`, `level_name`, `duration_seconds`, `audio_path`, `created_at`) VALUES
+(1, 'LB61P9', 'Perkenalkan diri kamu secara singkat dan percaya diri.', NULL, NULL, NULL, 4, 'uploads/practice_audio/LB61P9_20260512_070044_c045b54e.webm', '2026-05-12 12:00:44'),
+(2, 'LB61P9', 'Ceritakan pengalaman pribadi yang membuat kamu belajar hal baru.', NULL, NULL, NULL, 5, 'uploads/practice_audio/LB61P9_20260512_070109_5d0a24cf.webm', '2026-05-12 12:01:09'),
+(3, 'LB61P9', 'Sampaikan opini sederhana tentang pentingnya public speaking.', NULL, NULL, NULL, 30, 'uploads/practice_audio/LB61P9_20260514_150532_570a68e8.webm', '2026-05-14 20:05:32');
 
 -- --------------------------------------------------------
 
@@ -210,6 +211,7 @@ CREATE TABLE `speaking_challenge_history` (
   `user_id` varchar(6) NOT NULL,
   `challenge_type` varchar(60) NOT NULL,
   `level_name` varchar(30) NOT NULL,
+  `question_count` int(10) UNSIGNED NOT NULL DEFAULT 1,
   `prompt` text NOT NULL,
   `prep_seconds` int(10) UNSIGNED NOT NULL,
   `speak_seconds` int(10) UNSIGNED NOT NULL,
@@ -240,10 +242,10 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Username`, `Password`, `Foto`) VALUES
-('7NA83J', 'Ilman Zuhry', 'Medan', '2007-10-26', 'LOL', '$2y$10$3ttwlV6cXL/JM.qWnWEiQu5yPbemGOmb8m1vALskfv2Furj7HISGC', ''),
-('AGBI29', 'Wawak Sitompul', 'Binjai', '1990-07-06', 'Sitoms', '$2y$10$vRTbM7Tw5JSVt.X4uohy5uAKlxW/sFEvdQ2FhNSRcFoJJNac24zMq', ''),
-('LB61P9', 'mamang ujang', 'palembang', '2002-02-06', 'aduhmamang', '$2y$10$0AnIL/8nzzaf9phtJgRkTOSP1puah5I8Y4fcAEz76vWBpJK.4rR3q', '');
+INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Username`, `Password`, `Foto`, `Bio`) VALUES
+('7NA83J', 'Ilman Zuhry', 'Medan', '2007-10-26', 'LOL', '$2y$10$3ttwlV6cXL/JM.qWnWEiQu5yPbemGOmb8m1vALskfv2Furj7HISGC', '', 'yang penting bicara aja dulu'),
+('AGBI29', 'Wawak Sitompul', 'Binjai', '1990-07-06', 'Sitoms', '$2y$10$vRTbM7Tw5JSVt.X4uohy5uAKlxW/sFEvdQ2FhNSRcFoJJNac24zMq', '', 'yang penting bicara aja dulu'),
+('LB61P9', 'mamang ujang', 'palembang', '2002-02-06', 'aduhmamang', '$2y$10$0AnIL/8nzzaf9phtJgRkTOSP1puah5I8Y4fcAEz76vWBpJK.4rR3q', '', 'yang penting bicara aja dulu');
 
 --
 -- Indexes for dumped tables
@@ -255,6 +257,13 @@ INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Userna
 ALTER TABLE `ai_feedback_history`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_ai_feedback_user` (`user_id`);
+
+--
+-- Indexes for table `ebooks`
+--
+ALTER TABLE `ebooks`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ebook_title` (`title`);
 
 --
 -- Indexes for table `komunitas`
@@ -335,6 +344,12 @@ ALTER TABLE `users`
 --
 ALTER TABLE `ai_feedback_history`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `ebooks`
+--
+ALTER TABLE `ebooks`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `komunitas`
@@ -440,20 +455,6 @@ ALTER TABLE `practice_history`
 --
 ALTER TABLE `speaking_challenge_history`
   ADD CONSTRAINT `fk_challenge_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
---
--- Table structure for table `material_progress`
---
-CREATE TABLE `material_progress` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `user_id` varchar(6) NOT NULL,
-  `material_id` varchar(50) NOT NULL,
-  `progress` int(10) unsigned NOT NULL DEFAULT 0,
-  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_user_material` (`user_id`,`material_id`),
-  CONSTRAINT `fk_progress_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
