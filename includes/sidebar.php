@@ -8,7 +8,7 @@ $materi_pages = [
     'materi.php', 'vokal.php', 'gerak-tubuh.php', 'lainnya.php', 
     'submaterivokal.php', 'submateripostertubuh.php', 'submaterikontakmata.php', 
     'submateriinotasisuara.php', 'submaterimengatasigrogi.php', 'submaterigesturtangan.php', 
-    'submateripenyusunanmateri.php', 'submaterimediapesentasi.php'
+    'submateripenyusunanmateri.php', 'submaterimediapesentasi.php', 'materi_detail.php'
 ];
 
 if ($current_page === 'beranda.php') {

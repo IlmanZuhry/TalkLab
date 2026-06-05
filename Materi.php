@@ -1,35 +1,33 @@
-
 <?php
 require_once 'core.php';
 if (session_status() == PHP_SESSION_NONE) session_start();
 $app = new manz();
 
 $currentUser = $app->getCurrentUser();
+$categoryFilter = $_GET['category'] ?? null;
+
+$materials = $app->getMaterials($categoryFilter);
 $progressData = [];
 
-$material_totals = [
-    'vokal' => 3,
-    'postur_tubuh' => 5,
-    'kontak_mata' => 5,
-    'intonasi_suara' => 5,
-    'mengatasi_grogi' => 5,
-    'gestur_tangan' => 5,
-    'penyusunan_materi' => 5,
-    'media_presentasi' => 5
-];
-
 if ($currentUser) {
-    foreach ($material_totals as $mId => $total) {
-        $prog = $app->getMaterialProgress($currentUser['Id_User'], $mId);
-        $completed = $prog + 1;
-        if ($completed > $total) $completed = $total;
-        if ($completed < 0) $completed = 0;
-        $pct = round(($completed / $total) * 100);
-        $progressData[$mId] = $pct;
+    foreach ($materials as $mat) {
+        $mId = $mat['id'];
+        $videos = $app->getMaterialVideos($mId);
+        $total = count($videos);
+        
+        if ($total > 0) {
+            $completed = $app->getMaterialProgressCount($currentUser['Id_User'], $mId);
+            if ($completed > $total) $completed = $total;
+            if ($completed < 0) $completed = 0;
+            $pct = round(($completed / $total) * 100);
+            $progressData[$mId] = $pct;
+        } else {
+            $progressData[$mId] = 0;
+        }
     }
 } else {
-    foreach ($material_totals as $mId => $total) {
-        $progressData[$mId] = 0;
+    foreach ($materials as $mat) {
+        $progressData[$mat['id']] = 0;
     }
 }
 ?>
@@ -82,7 +80,7 @@ if ($currentUser) {
       justify-content: flex-start;
     }
 
-    .filter-group button {
+    .filter-group a button {
       border: none;
       padding: 14px 26px;
       border-radius: 20px;
@@ -94,7 +92,7 @@ if ($currentUser) {
       transition: all 0.3s;
     }
 
-    .filter-group button.active {
+    .filter-group a.active button {
       background-color: #ba8e58;
       color: white;
       font-weight: 700;
@@ -133,7 +131,6 @@ if ($currentUser) {
       color: white;
       font-size: 50px;
       font-weight: 700;
-      background-color: #5f73b6;
     }
 
     .vokal { background-color: #5f73b6; }
@@ -144,6 +141,26 @@ if ($currentUser) {
     .gestur-tangan { background-color: #f16722; color: white; font-weight: 700; font-size: 48px; }
     .penyusunan-materi { background-color: #f1e64c; color: white; font-weight: 700; font-size: 48px; }
     .media-presentasi { background-color: #f8a435; color: white; font-weight: 700; font-size: 48px; }
+    .warna-ungu { background-color: #8b5cf6; color: white; font-weight: 700; font-size: 48px; }
+    .warna-teal { background-color: #14b8a6; color: white; font-weight: 700; font-size: 48px; }
+    .warna-merah { background-color: #ef4444; color: white; font-weight: 700; font-size: 48px; }
+    .warna-indigo { background-color: #4f46e5; color: white; font-weight: 700; font-size: 48px; }
+    .warna-coklat { background-color: #8B4513; color: white; font-weight: 700; font-size: 48px; }
+    .warna-abuabu { background-color: #64748b; color: white; font-weight: 700; font-size: 48px; }
+    .warna-hitam { background-color: #0f172a; color: white; font-weight: 700; font-size: 48px; }
+    .warna-magenta { background-color: #d946ef; color: white; font-weight: 700; font-size: 48px; }
+    .warna-cyan { background-color: #06b6d4; color: white; font-weight: 700; font-size: 48px; }
+    .warna-lime { background-color: #84cc16; color: white; font-weight: 700; font-size: 48px; }
+    .warna-emerald { background-color: #10b981; color: white; font-weight: 700; font-size: 48px; }
+    .warna-rose { background-color: #f43f5e; color: white; font-weight: 700; font-size: 48px; }
+    .warna-sky { background-color: #0ea5e9; color: white; font-weight: 700; font-size: 48px; }
+    .warna-amber { background-color: #f59e0b; color: white; font-weight: 700; font-size: 48px; }
+    .warna-pink-muda { background-color: #f472b6; color: white; font-weight: 700; font-size: 48px; }
+    .warna-maroon { background-color: #9f1239; color: white; font-weight: 700; font-size: 48px; }
+    .warna-navy { background-color: #1e3a8a; color: white; font-weight: 700; font-size: 48px; }
+    .warna-peach { background-color: #fb923c; color: white; font-weight: 700; font-size: 48px; }
+    .warna-olive { background-color: #65a30d; color: white; font-weight: 700; font-size: 48px; }
+    .warna-lavender { background-color: #a78bfa; color: white; font-weight: 700; font-size: 48px; }
 
     .card-body {
       padding: 12px 15px 20px;
@@ -163,6 +180,10 @@ if ($currentUser) {
       color: #b4b4b4;
       margin-bottom: 14px;
       min-height: 42px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .card-info {
@@ -227,180 +248,35 @@ if ($currentUser) {
     </div>
 
     <div class="filter-group">
-      <button class="active">Semua</button>
-      <a href="vokal.php"><button>Vokal</button></a>
-      <a href="Gerak-tubuh.php"><button>Gerak Tubuh</button></a>
-      <a href="lainnya.php"><button>Lainnya</button></a>
+      <a href="Materi.php" class="<?= !$categoryFilter ? 'active' : '' ?>"><button>Semua</button></a>
+      <a href="Materi.php?category=vokal" class="<?= $categoryFilter === 'vokal' ? 'active' : '' ?>"><button>Vokal</button></a>
+      <a href="Materi.php?category=gerak tubuh" class="<?= $categoryFilter === 'gerak tubuh' ? 'active' : '' ?>"><button>Gerak Tubuh</button></a>
+      <a href="Materi.php?category=lainnya" class="<?= $categoryFilter === 'lainnya' ? 'active' : '' ?>"><button>Lainnya</button></a>
     </div>
 
     <div class="cards">
-      <a href="submaterivokal.php">
+      <?php foreach ($materials as $mat): ?>
+      <a href="materi_detail.php?id=<?= htmlspecialchars($mat['id']) ?>">
         <div class="card">
-          <div class="card-header vokal" title="Vokal yang Jelas">
-            <img src="icon/mic.svg" width="88" height="88" alt="Mic Icon">
+          <div class="card-header <?= htmlspecialchars($mat['color_class']) ?>" title="<?= htmlspecialchars($mat['title']) ?>">
+            <img src="<?= htmlspecialchars($mat['icon_file']) ?>" width="88" height="88" alt="Icon" onerror="this.style.display='none'">
           </div>
           <div class="card-body">
-            <h2 class="card-title">Vokal yang Jelas</h2>
-            <p class="card-desc">Belajar mengucapkan kata dengan jelas dan tegas</p>
+            <h2 class="card-title"><?= htmlspecialchars($mat['title']) ?></h2>
+            <p class="card-desc"><?= htmlspecialchars($mat['description']) ?></p>
             <div class="card-info">
               <div class="time">
                 <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                15 menit
+                <?= (int)$mat['time_minutes'] ?> menit
               </div>
-              <div>vokal</div>
+              <div><?= htmlspecialchars($mat['category']) ?></div>
             </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['vokal'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['vokal'] ?>%;"></div></div>
+            <div class="progress-text"><span>Progress</span><span><?= $progressData[$mat['id']] ?>%</span></div>
+            <div class="progress-bar"><div class="progress" style="width: <?= $progressData[$mat['id']] ?>%;"></div></div>
           </div>
         </div>
       </a>
-
-      <a href="submateripostertubuh.php">
-        <div class="card">
-          <div class="card-header gerak-tubuh" title="Postur Tubuh">
-            <img src="icon/badan.svg" width="88" height="88" alt="Body Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Postur Tubuh</h2>
-            <p class="card-desc">Cara berdiri dan bergerak yang percaya diri</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                20 menit
-              </div>
-              <div>gerak tubuh</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['postur_tubuh'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['postur_tubuh'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
-
-      <a href="submaterikontakmata.php">
-        <div class="card">
-          <div class="card-header kontak-mata" title="Kontak Mata">
-            <img src="icon/mata.svg" width="88" height="88" alt="Mata Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Kontak Mata</h2>
-            <p class="card-desc">Teknik menatap audiens dengan nyaman</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                10 menit
-              </div>
-              <div>gerak tubuh</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['kontak_mata'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['kontak_mata'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
-
-      <a href="submateriinotasisuara.php">
-        <div class="card">
-          <div class="card-header intonasi" title="Intonasi Suara">
-            <img src="icon/ear.svg" width="88" height="88" alt="Ear Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Intonasi Suara</h2>
-            <p class="card-desc">Mengatur naik turunnya suara saat berbicara</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                10 menit
-              </div>
-              <div>vokal</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['intonasi_suara'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['intonasi_suara'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
-
-      <a href="submaterimengatasigrogi.php">
-        <div class="card">
-          <div class="card-header mengatasi-grogi" title="Mengatasi Grogi">
-            <img src="icon/halo.svg" width="88" height="88" alt="Halo Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Mengatasi Grogi</h2>
-            <p class="card-desc">Tips menghilangkan rasa gugup di depan umum</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                25 menit
-              </div>
-              <div>lainnya</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['mengatasi_grogi'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['mengatasi_grogi'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
-
-      <a href="submaterigesturtangan.php">
-        <div class="card">
-          <div class="card-header gestur-tangan" title="Gestur Tangan">
-            <img src="icon/emot.svg" width="88" height="88" alt="Emot Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Gestur Tangan</h2>
-            <p class="card-desc">Menggunakan gerakan tangan untuk memperkuat pesan</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                10 menit
-              </div>
-              <div>gerak tubuh</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['gestur_tangan'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['gestur_tangan'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
-
-      <a href="submateripenyusunanmateri.php">
-        <div class="card">
-          <div class="card-header penyusunan-materi" title="Penyusunan Materi">
-            <img src="icon/book.svg" width="88" height="88" alt="Book Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Penyusunan Materi</h2>
-            <p class="card-desc">Penyampaian isi yang sistematis</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                15 menit
-              </div>
-              <div>lainnya</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['penyusunan_materi'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['penyusunan_materi'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
-
-      <a href="submaterimediapesentasi.php">
-        <div class="card">
-          <div class="card-header media-presentasi" title="Media Presentasi">
-            <img src="icon/media.svg" width="88" height="88" alt="Media Icon">
-          </div>
-          <div class="card-body">
-            <h2 class="card-title">Media Presentasi</h2>
-            <p class="card-desc">Tips menggunakan microphone dan panggung</p>
-            <div class="card-info">
-              <div class="time">
-                <svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2s-10 4.48-10 10 4.48 10 10 10zm-.5-15h1v6l5.25 3.15-.75 1.23L11.5 13V7z" /></svg>
-                15 menit
-              </div>
-              <div>lainnya</div>
-            </div>
-            <div class="progress-text"><span>Progress</span><span><?= $progressData['media_presentasi'] ?>%</span></div>
-            <div class="progress-bar"><div class="progress" style="width: <?= $progressData['media_presentasi'] ?>%;"></div></div>
-          </div>
-        </div>
-      </a>
+      <?php endforeach; ?>
     </div>
   </main>
 

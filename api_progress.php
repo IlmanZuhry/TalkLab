@@ -33,14 +33,19 @@ if ($action === 'get_progress') {
 }
 
 if ($action === 'save_progress') {
-    $progress = $_POST['progress'] ?? 0;
-    $result = $app->saveMaterialProgress($currentUser['Id_User'], $materialId, $progress);
+    $videoId = $_POST['video_id'] ?? 0;
+    if (empty($videoId)) {
+        http_response_code(400);
+        echo json_encode(['status' => false, 'message' => 'Video ID tidak ditemukan']);
+        exit;
+    }
+    $result = $app->saveVideoProgress($currentUser['Id_User'], $videoId);
     
     if ($result) {
         echo json_encode([
             'status' => true,
             'message' => 'Progress berhasil disimpan',
-            'progress' => $progress
+            'video_id' => $videoId
         ]);
     } else {
         http_response_code(500);

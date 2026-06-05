@@ -17,6 +17,7 @@ class manz{
 		$this->ensurePracticeTables();
 		$this->ensureMentorTables();
 		$this->ensureEbookTable();
+		$this->ensureMaterialsTables();
 	}
 
 	// Generate ID unik 6 karakter (huruf kapital + angka)
@@ -1174,25 +1175,238 @@ public function handleSaveAiFeedback($currentUser){
 		return $deleted;
 	}
 
-	public function getMaterialProgress($userId, $materialId){
+	public function getCompletedVideoIds($userId, $materialId){
 		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
 		$materialIdEsc = mysqli_real_escape_string($this->koneksi, $materialId);
-		$sql = "SELECT progress FROM material_progress WHERE user_id = '$userIdEsc' AND material_id = '$materialIdEsc' LIMIT 1";
+		$sql = "SELECT p.video_id FROM material_video_progress p
+				JOIN material_videos v ON p.video_id = v.id
+				WHERE p.user_id = '$userIdEsc' AND v.material_id = '$materialIdEsc'";
 		$res = mysqli_query($this->koneksi, $sql);
-		if ($res && mysqli_num_rows($res) > 0) {
-			$row = mysqli_fetch_assoc($res);
-			return (int) $row['progress'];
+		$ids = [];
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$ids[] = (int)$row['video_id'];
+			}
 		}
-		return -1;
+		return $ids;
 	}
 
-	public function saveMaterialProgress($userId, $materialId, $progress){
+	public function getMaterialProgressCount($userId, $materialId){
+		$completedIds = $this->getCompletedVideoIds($userId, $materialId);
+		return count($completedIds);
+	}
+
+	public function saveVideoProgress($userId, $videoId){
 		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
-		$materialIdEsc = mysqli_real_escape_string($this->koneksi, $materialId);
-		$progressInt = (int) $progress;
-		$sql = "INSERT INTO material_progress (user_id, material_id, progress) VALUES ('$userIdEsc', '$materialIdEsc', $progressInt)
-				ON DUPLICATE KEY UPDATE progress = GREATEST(progress, $progressInt)";
+		$videoIdInt = (int) $videoId;
+		$sql = "INSERT IGNORE INTO material_video_progress (user_id, video_id) VALUES ('$userIdEsc', $videoIdInt)";
 		return mysqli_query($this->koneksi, $sql);
+	}
+
+	public function ensureMaterialsTables(){
+		$sql = "CREATE TABLE IF NOT EXISTS materials (
+			id VARCHAR(50) NOT NULL,
+			title VARCHAR(100) NOT NULL,
+			description VARCHAR(255) NOT NULL,
+			category VARCHAR(50) NOT NULL,
+			time_minutes INT NOT NULL DEFAULT 10,
+			icon_file VARCHAR(50) NOT NULL,
+			color_class VARCHAR(30) NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+
+		$sql = "CREATE TABLE IF NOT EXISTS material_videos (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			material_id VARCHAR(50) NOT NULL,
+			title VARCHAR(255) NOT NULL,
+			video_url VARCHAR(255) NOT NULL,
+			script TEXT NOT NULL,
+			order_index INT NOT NULL DEFAULT 0,
+			PRIMARY KEY (id),
+			KEY idx_material (material_id),
+			CONSTRAINT fk_mat_vid FOREIGN KEY (material_id) REFERENCES materials(id) ON DELETE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+
+		$this->seedMaterialsTable();
+
+		$sql = "CREATE TABLE IF NOT EXISTS material_video_progress (
+			user_id VARCHAR(6) NOT NULL,
+			video_id INT UNSIGNED NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (user_id, video_id),
+			CONSTRAINT fk_mvp_user FOREIGN KEY (user_id) REFERENCES users(Id_User) ON DELETE CASCADE,
+			CONSTRAINT fk_mvp_video FOREIGN KEY (video_id) REFERENCES material_videos(id) ON DELETE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+
+		$this->migrateOldProgress();
+	}
+
+	private function migrateOldProgress() {
+		$check = mysqli_query($this->koneksi, "SELECT COUNT(*) as cnt FROM material_video_progress");
+		if ($check) {
+			$row = mysqli_fetch_assoc($check);
+			if ($row['cnt'] > 0) return;
+		}
+
+		$res = mysqli_query($this->koneksi, "SELECT * FROM material_progress");
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$uid = $row['user_id'];
+				$mid = $row['material_id'];
+				$prog = (int)$row['progress'];
+				
+				$videos = $this->getMaterialVideos($mid);
+				for ($i = 0; $i <= $prog; $i++) {
+					if (isset($videos[$i])) {
+						$this->saveVideoProgress($uid, $videos[$i]['id']);
+					}
+				}
+			}
+		}
+	}
+
+	private function seedMaterialsTable(){
+		$res = mysqli_query($this->koneksi, "SELECT COUNT(*) as cnt FROM materials");
+		$row = mysqli_fetch_assoc($res);
+		if ($row['cnt'] > 0) return;
+
+		$defaults = [
+			['vokal', 'Vokal yang Jelas', 'Belajar mengucapkan kata dengan jelas dan tegas', 'vokal', 15, 'icon/mic.svg', 'vokal'],
+			['postur_tubuh', 'Postur Tubuh', 'Cara berdiri dan bergerak yang percaya diri', 'gerak tubuh', 20, 'icon/badan.svg', 'gerak-tubuh'],
+			['kontak_mata', 'Kontak Mata', 'Teknik menatap audiens dengan nyaman', 'gerak tubuh', 10, 'icon/mata.svg', 'kontak-mata'],
+			['intonasi_suara', 'Intonasi Suara', 'Mengatur naik turunnya suara saat berbicara', 'vokal', 10, 'icon/ear.svg', 'intonasi'],
+			['mengatasi_grogi', 'Mengatasi Grogi', 'Tips menghilangkan rasa gugup di depan umum', 'lainnya', 25, 'icon/halo.svg', 'mengatasi-grogi'],
+			['gestur_tangan', 'Gestur Tangan', 'Menggunakan gerakan tangan untuk memperkuat pesan', 'gerak tubuh', 10, 'icon/emot.svg', 'gestur-tangan'],
+			['penyusunan_materi', 'Penyusunan Materi', 'Penyampaian isi yang sistematis', 'lainnya', 15, 'icon/book.svg', 'penyusunan-materi'],
+			['media_presentasi', 'Media Presentasi', 'Tips menggunakan microphone dan panggung', 'lainnya', 15, 'icon/media.svg', 'media-presentasi']
+		];
+
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO materials (id, title, description, category, time_minutes, icon_file, color_class) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		if ($stmt) {
+			foreach ($defaults as $m) {
+				mysqli_stmt_bind_param($stmt, "ssssiss", $m[0], $m[1], $m[2], $m[3], $m[4], $m[5], $m[6]);
+				mysqli_stmt_execute($stmt);
+			}
+			mysqli_stmt_close($stmt);
+		}
+
+		$videoDefaults = [
+			['vokal', '1. Artikulasi Dasar dan Resonansi', 'https://youtu.be/-2NnNomW68k?si=m_7WFa0C5o3_c5Yz', 'Video penjelasan tentang artikulasi.', 1],
+			['vokal', '2. Teknik Pernapasan', 'https://youtu.be/YhmbAxzxamo?si=C1EWqw5oIzZf-GjR', 'Pernapasan diafragma membantu suara menjadi lebih bertenaga dan stabil.', 2],
+			['vokal', '3. 8 Teknik Vokal', 'https://youtu.be/VGFVkRpv-SE?si=kDH2-PPod_9r27hT', 'Delapan teknik vokal dalam public speaking.', 3],
+			['postur_tubuh', '1. Pentingnya Postur Tubuh', 'https://youtu.be/Wb2iQ1pTIf4?si=R95-rLST_yO49H8W', 'Postur tubuh menentukan kepercayaan diri.', 1]
+		];
+
+		$stmtV = mysqli_prepare($this->koneksi, "INSERT INTO material_videos (material_id, title, video_url, script, order_index) VALUES (?, ?, ?, ?, ?)");
+		if ($stmtV) {
+			foreach ($videoDefaults as $v) {
+				mysqli_stmt_bind_param($stmtV, "ssssi", $v[0], $v[1], $v[2], $v[3], $v[4]);
+				mysqli_stmt_execute($stmtV);
+			}
+			mysqli_stmt_close($stmtV);
+		}
+	}
+
+	public function getMaterials($category = null){
+		$sql = "SELECT * FROM materials";
+		if ($category) {
+			$catEsc = mysqli_real_escape_string($this->koneksi, $category);
+			$sql .= " WHERE category = '$catEsc'";
+		}
+		$sql .= " ORDER BY CASE id 
+			WHEN 'vokal' THEN 1
+			WHEN 'postur_tubuh' THEN 2
+			WHEN 'kontak_mata' THEN 3
+			WHEN 'intonasi_suara' THEN 4
+			WHEN 'mengatasi_grogi' THEN 5
+			WHEN 'gestur_tangan' THEN 6
+			WHEN 'penyusunan_materi' THEN 7
+			WHEN 'media_presentasi' THEN 8
+			ELSE 99 END ASC, created_at DESC";
+		
+		$res = mysqli_query($this->koneksi, $sql);
+		$materials = [];
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$materials[] = $row;
+			}
+		}
+		return $materials;
+	}
+
+	public function getMaterialById($id){
+		$idEsc = mysqli_real_escape_string($this->koneksi, $id);
+		$res = mysqli_query($this->koneksi, "SELECT * FROM materials WHERE id = '$idEsc' LIMIT 1");
+		return $res ? mysqli_fetch_assoc($res) : false;
+	}
+
+	public function createMaterial($id, $title, $description, $category, $time_minutes, $icon_file, $color_class){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO materials (id, title, description, category, time_minutes, icon_file, color_class) VALUES (?, ?, ?, ?, ?, ?, ?)");
+		if (!$stmt) return false;
+		mysqli_stmt_bind_param($stmt, "ssssiss", $id, $title, $description, $category, $time_minutes, $icon_file, $color_class);
+		$res = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $res;
+	}
+
+	public function updateMaterial($id, $title, $description, $category, $time_minutes, $icon_file, $color_class){
+		$stmt = mysqli_prepare($this->koneksi, "UPDATE materials SET title=?, description=?, category=?, time_minutes=?, icon_file=?, color_class=? WHERE id=?");
+		if (!$stmt) return false;
+		mysqli_stmt_bind_param($stmt, "sssisss", $title, $description, $category, $time_minutes, $icon_file, $color_class, $id);
+		$res = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $res;
+	}
+
+	public function deleteMaterial($id){
+		$idEsc = mysqli_real_escape_string($this->koneksi, $id);
+		return mysqli_query($this->koneksi, "DELETE FROM materials WHERE id = '$idEsc'");
+	}
+
+	public function getMaterialVideos($materialId){
+		$idEsc = mysqli_real_escape_string($this->koneksi, $materialId);
+		$res = mysqli_query($this->koneksi, "SELECT * FROM material_videos WHERE material_id = '$idEsc' ORDER BY order_index ASC");
+		$videos = [];
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$videos[] = $row;
+			}
+		}
+		return $videos;
+	}
+
+	public function getMaterialVideoById($videoId){
+		$id = (int) $videoId;
+		$res = mysqli_query($this->koneksi, "SELECT * FROM material_videos WHERE id = $id LIMIT 1");
+		return $res ? mysqli_fetch_assoc($res) : false;
+	}
+
+	public function addMaterialVideo($materialId, $title, $videoUrl, $script, $orderIndex){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO material_videos (material_id, title, video_url, script, order_index) VALUES (?, ?, ?, ?, ?)");
+		if (!$stmt) return false;
+		mysqli_stmt_bind_param($stmt, "ssssi", $materialId, $title, $videoUrl, $script, $orderIndex);
+		$res = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $res;
+	}
+
+	public function updateMaterialVideo($id, $title, $videoUrl, $script, $orderIndex){
+		$stmt = mysqli_prepare($this->koneksi, "UPDATE material_videos SET title=?, video_url=?, script=?, order_index=? WHERE id=?");
+		if (!$stmt) return false;
+		$id = (int)$id;
+		mysqli_stmt_bind_param($stmt, "sssii", $title, $videoUrl, $script, $orderIndex, $id);
+		$res = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $res;
+	}
+
+	public function deleteMaterialVideo($id){
+		$id = (int) $id;
+		return mysqli_query($this->koneksi, "DELETE FROM material_videos WHERE id = $id");
 	}
 
 }
