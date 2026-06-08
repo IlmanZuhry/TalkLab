@@ -16,6 +16,7 @@ class manz{
 		$this->ensureLikesAndCommentsTable();
 		$this->ensurePracticeTables();
 		$this->ensureMentorTables();
+		$this->ensureCameraPracticeTable();
 		$this->ensureEbookTable();
 		$this->ensureEbookHistoryTable();
 		$this->ensureMaterialsTables();
@@ -569,6 +570,20 @@ class manz{
 		} catch (Exception $e) {
 			// Foreign key might not exist, ignore
 		}
+		// Fix unique key: must be composite (practice_history_id, feature_type) to support
+		// different feature types with same IDs from different tables
+		$indexCheck = mysqli_query($this->koneksi, "SHOW INDEX FROM mentor_submissions WHERE Key_name = 'unique_practice_submission'");
+		if ($indexCheck && mysqli_num_rows($indexCheck) > 0) {
+			// Check if it's already composite
+			$columns = [];
+			while ($idx = mysqli_fetch_assoc($indexCheck)) {
+				$columns[] = $idx['Column_name'];
+			}
+			if (!in_array('feature_type', $columns)) {
+				mysqli_query($this->koneksi, "ALTER TABLE mentor_submissions DROP INDEX unique_practice_submission");
+				mysqli_query($this->koneksi, "ALTER TABLE mentor_submissions ADD UNIQUE KEY unique_practice_feature (practice_history_id, feature_type)");
+			}
+		}
 	}
 
 	public function ensureMentorReviewsTable(){
@@ -714,15 +729,17 @@ class manz{
 			ms.feature_type,
 			ms.submitted_at,
 			ms.reviewed_at,
-			COALESCE(ph.topic, ch.challenge_type) AS topic,
-			COALESCE(ph.duration_seconds, ch.actual_seconds) AS duration_seconds,
-			ph.audio_path,
+			COALESCE(ph.topic, ch.challenge_type, cp.topic) AS topic,
+			COALESCE(ph.duration_seconds, ch.actual_seconds, cp.duration_seconds) AS duration_seconds,
+			COALESCE(ph.audio_path, ch.audio_path) AS audio_path,
+			cp.video_path,
 			u.Nama AS student_name,
 			u.Username AS student_username,
 			mr.final_score
 			FROM mentor_submissions ms
 			LEFT JOIN practice_history ph ON ph.id = ms.practice_history_id AND ms.feature_type = 'voice'
 			LEFT JOIN speaking_challenge_history ch ON ch.id = ms.practice_history_id AND ms.feature_type = 'challenge'
+			LEFT JOIN camera_practice_history cp ON cp.id = ms.practice_history_id AND ms.feature_type = 'camera'
 			JOIN users u ON u.Id_User = ms.user_id
 			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
 			WHERE 1=1 $featureFilter
@@ -745,10 +762,11 @@ class manz{
 			ms.feature_type,
 			ms.submitted_at,
 			ms.reviewed_at,
-			COALESCE(ph.topic, ch.challenge_type) AS topic,
-			COALESCE(ph.duration_seconds, ch.actual_seconds) AS duration_seconds,
-			ph.audio_path,
-			COALESCE(ph.created_at, ch.created_at) AS practice_created_at,
+			COALESCE(ph.topic, ch.challenge_type, cp.topic) AS topic,
+			COALESCE(ph.duration_seconds, ch.actual_seconds, cp.duration_seconds) AS duration_seconds,
+			COALESCE(ph.audio_path, ch.audio_path) AS audio_path,
+			cp.video_path,
+			COALESCE(ph.created_at, ch.created_at, cp.created_at) AS practice_created_at,
 			u.Id_User AS student_id,
 			u.Nama AS student_name,
 			u.Username AS student_username,
@@ -764,6 +782,7 @@ class manz{
 			FROM mentor_submissions ms
 			LEFT JOIN practice_history ph ON ph.id = ms.practice_history_id AND ms.feature_type = 'voice'
 			LEFT JOIN speaking_challenge_history ch ON ch.id = ms.practice_history_id AND ms.feature_type = 'challenge'
+			LEFT JOIN camera_practice_history cp ON cp.id = ms.practice_history_id AND ms.feature_type = 'camera'
 			JOIN users u ON u.Id_User = ms.user_id
 			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
 			WHERE ms.id = $submissionId
@@ -871,12 +890,13 @@ class manz{
 			ms.feature_type,
 			ms.submitted_at,
 			ms.reviewed_at,
-			COALESCE(ph.topic, ch.challenge_type) AS topic,
+			COALESCE(ph.topic, ch.challenge_type, cp.topic) AS topic,
 			ph.script_title,
-			ph.category,
+			COALESCE(ph.category, cp.simulation_mode) AS category,
 			ph.level_name,
-			COALESCE(ph.duration_seconds, ch.actual_seconds) AS duration_seconds,
-			ph.audio_path,
+			COALESCE(ph.duration_seconds, ch.actual_seconds, cp.duration_seconds) AS duration_seconds,
+			COALESCE(ph.audio_path, ch.audio_path) AS audio_path,
+			cp.video_path,
 			ma.name AS mentor_name,
 			ma.specialty AS mentor_specialty,
 			mr.articulation_score,
@@ -891,6 +911,7 @@ class manz{
 			FROM mentor_submissions ms
 			LEFT JOIN practice_history ph ON ph.id = ms.practice_history_id AND ms.feature_type = 'voice'
 			LEFT JOIN speaking_challenge_history ch ON ch.id = ms.practice_history_id AND ms.feature_type = 'challenge'
+			LEFT JOIN camera_practice_history cp ON cp.id = ms.practice_history_id AND ms.feature_type = 'camera'
 			LEFT JOIN mentor_accounts ma ON ma.id = ms.mentor_id
 			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
 			WHERE ms.user_id = ?
@@ -1019,6 +1040,11 @@ class manz{
 		if ($check && mysqli_num_rows($check) === 0) {
 			mysqli_query($this->koneksi, "ALTER TABLE speaking_challenge_history ADD COLUMN question_count INT UNSIGNED NOT NULL DEFAULT 1 AFTER level_name");
 		}
+
+		$checkAudio = mysqli_query($this->koneksi, "SHOW COLUMNS FROM speaking_challenge_history LIKE 'audio_path'");
+		if ($checkAudio && mysqli_num_rows($checkAudio) === 0) {
+			mysqli_query($this->koneksi, "ALTER TABLE speaking_challenge_history ADD COLUMN audio_path VARCHAR(255) NULL DEFAULT NULL AFTER completed");
+		}
 	}
 
 	public function ensureAiFeedbackTable(){
@@ -1101,8 +1127,8 @@ class manz{
 		return $saved;
 	}
 
-	public function saveChallengeHistory($userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed, $questionCount = 1){
-		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO speaking_challenge_history (user_id, challenge_type, level_name, question_count, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+	public function saveChallengeHistory($userId, $challengeType, $levelName, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed, $questionCount = 1, $audioPath = null){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO speaking_challenge_history (user_id, challenge_type, level_name, question_count, prompt, prep_seconds, speak_seconds, actual_seconds, score, completed, audio_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		if (!$stmt) return false;
 		$questionCount = max(1, (int) $questionCount);
 		$prepSeconds = (int) $prepSeconds;
@@ -1110,7 +1136,7 @@ class manz{
 		$actualSeconds = (int) $actualSeconds;
 		$score = (int) $score;
 		$completed = (int) $completed;
-		mysqli_stmt_bind_param($stmt, "sssisiiiii", $userId, $challengeType, $levelName, $questionCount, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
+		mysqli_stmt_bind_param($stmt, "sssisiiiiss", $userId, $challengeType, $levelName, $questionCount, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed, $audioPath);
 		$saved = mysqli_stmt_execute($stmt);
 		$insertId = $saved ? mysqli_insert_id($this->koneksi) : false;
 		mysqli_stmt_close($stmt);
@@ -1282,6 +1308,18 @@ public function handleSaveChallenge($currentUser){
 		];
 	}
 
+	// Handle audio upload for challenge
+	$audioPath = null;
+	if (!empty($_FILES['audio']['tmp_name']) && $_FILES['audio']['error'] === UPLOAD_ERR_OK) {
+		$uploadDir = __DIR__ . '/uploads/challenge_audio';
+		if (!is_dir($uploadDir)) mkdir($uploadDir, 0775, true);
+		$fileName = $currentUser['Id_User'] . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webm';
+		$targetPath = $uploadDir . '/' . $fileName;
+		if (move_uploaded_file($_FILES['audio']['tmp_name'], $targetPath)) {
+			$audioPath = 'uploads/challenge_audio/' . $fileName;
+		}
+	}
+
 	$saved = $this->saveChallengeHistory(
 		$currentUser['Id_User'],
 		$challengeType,
@@ -1292,7 +1330,8 @@ public function handleSaveChallenge($currentUser){
 		$actualSeconds,
 		$score,
 		$completed,
-		$questionCount
+		$questionCount,
+		$audioPath
 	);
 
 	if (!$saved) {
@@ -1768,6 +1807,114 @@ public function handleSaveAiFeedback($currentUser){
 	public function deleteMaterialVideo($id){
 		$id = (int) $id;
 		return mysqli_query($this->koneksi, "DELETE FROM material_videos WHERE id = $id");
+	}
+
+	// ====== Camera Practice History ======
+
+	public function ensureCameraPracticeTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS camera_practice_history (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id VARCHAR(6) NOT NULL,
+			topic VARCHAR(255) NOT NULL,
+			simulation_mode VARCHAR(60) NULL DEFAULT NULL,
+			duration_seconds INT UNSIGNED NOT NULL,
+			video_path VARCHAR(255) NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_camera_user (user_id),
+			CONSTRAINT fk_camera_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
+			ON DELETE CASCADE ON UPDATE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function saveCameraPracticeHistory($userId, $topic, $simulationMode, $durationSeconds, $videoPath){
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO camera_practice_history (user_id, topic, simulation_mode, duration_seconds, video_path) VALUES (?, ?, ?, ?, ?)");
+		if (!$stmt) return false;
+		$durationSeconds = (int) $durationSeconds;
+		mysqli_stmt_bind_param($stmt, "sssis", $userId, $topic, $simulationMode, $durationSeconds, $videoPath);
+		$saved = mysqli_stmt_execute($stmt);
+		$insertId = $saved ? mysqli_insert_id($this->koneksi) : false;
+		mysqli_stmt_close($stmt);
+		return $insertId;
+	}
+
+	public function getCameraPracticeHistory($userId, $limit = 10){
+		$history = [];
+		$limit = (int) $limit;
+		$stmt = mysqli_prepare($this->koneksi, "SELECT id, topic, simulation_mode, duration_seconds, video_path, created_at FROM camera_practice_history WHERE user_id = ? ORDER BY created_at DESC LIMIT $limit");
+		if (!$stmt) return $history;
+		mysqli_stmt_bind_param($stmt, "s", $userId);
+		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+		while ($row = mysqli_fetch_assoc($result)){
+			$history[] = $row;
+		}
+		mysqli_stmt_close($stmt);
+		return $history;
+	}
+
+	public function handleSaveCameraPractice($currentUser){
+		if (!$currentUser) {
+			http_response_code(401);
+			return ['status' => false, 'message' => 'Silakan login untuk menyimpan riwayat camera practice.'];
+		}
+
+		$topic = trim($_POST['topic'] ?? '');
+		$simulationMode = trim($_POST['simulation_mode'] ?? '');
+		$duration = (int) ($_POST['duration'] ?? 0);
+
+		if ($topic === '' || $duration <= 0 || empty($_FILES['video']['tmp_name'])) {
+			http_response_code(400);
+			return ['status' => false, 'message' => 'Data camera practice belum lengkap.'];
+		}
+
+		if ($_FILES['video']['error'] !== UPLOAD_ERR_OK) {
+			http_response_code(400);
+			return ['status' => false, 'message' => 'File video gagal diterima.'];
+		}
+
+		$uploadDir = __DIR__ . '/uploads/camera_video';
+		if (!is_dir($uploadDir) && !mkdir($uploadDir, 0775, true)) {
+			http_response_code(500);
+			return ['status' => false, 'message' => 'Folder penyimpanan video tidak bisa dibuat.'];
+		}
+
+		$fileName = $currentUser['Id_User'] . '_' . date('Ymd_His') . '_' . bin2hex(random_bytes(4)) . '.webm';
+		$targetPath = $uploadDir . '/' . $fileName;
+		$relativePath = 'uploads/camera_video/' . $fileName;
+
+		if (!move_uploaded_file($_FILES['video']['tmp_name'], $targetPath)) {
+			http_response_code(500);
+			return ['status' => false, 'message' => 'Gagal menyimpan file video.'];
+		}
+
+		$practiceId = $this->saveCameraPracticeHistory(
+			$currentUser['Id_User'],
+			$topic,
+			$simulationMode,
+			$duration,
+			$relativePath
+		);
+
+		if (!$practiceId) {
+			http_response_code(500);
+			return ['status' => false, 'message' => 'Gagal menyimpan riwayat camera practice.'];
+		}
+
+		return [
+			'status' => true,
+			'message' => 'Riwayat camera practice berhasil disimpan.',
+			'practice_history_id' => $practiceId,
+			'item' => [
+				'id' => $practiceId,
+				'topic' => $topic,
+				'simulation_mode' => $simulationMode,
+				'duration_seconds' => $duration,
+				'video_path' => $relativePath,
+				'created_at' => date('Y-m-d H:i:s')
+			]
+		];
 	}
 
 }

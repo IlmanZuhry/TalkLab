@@ -25,6 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		exit;
 	}
 
+	if ($action === 'save_camera_practice') {
+		echo json_encode($app->handleSaveCameraPractice($currentUser));
+		exit;
+	}
+
 	if ($action === 'submit_to_mentor') {
 		echo json_encode($app->handleSubmitToMentor($currentUser));
 		exit;
@@ -33,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $practiceHistory = $currentUser ? $app->getPracticeHistory($currentUser['Id_User']) : [];
 $challengeHistory = $currentUser ? $app->getChallengeHistory($currentUser['Id_User']) : [];
+$cameraHistory = $currentUser ? $app->getCameraPracticeHistory($currentUser['Id_User']) : [];
 $mentorInfo = $app->getMentorInfoForFeatures();
 
 $practiceScripts = [
@@ -1975,6 +1981,10 @@ $practiceScripts = [
         const recorderRef = React.useRef(null);
         const streamRef = React.useRef(null);
         const chunksRef = React.useRef([]);
+        // Accumulate all audio chunks across all questions for upload
+        const allAudioChunksRef = React.useRef([]);
+        const fullRecorderRef = React.useRef(null);
+        const fullStreamRef = React.useRef(null);
 
         const aturan = modeCepat
           ? { nama: "Mode Respon Cepat", jumlah: 5, persiapan: 5, jawab: 30, deskripsi: "Pertanyaan acak, persiapan 5 detik, menjawab 30 detik." }
@@ -2019,7 +2029,7 @@ $practiceScripts = [
           setPesan("Tingkat kesulitan diperbarui. Waktu dan jumlah pertanyaan akan mengikuti pilihan ini.");
         }
 
-        function mulaiTantangan() {
+        async function mulaiTantangan() {
           const daftar = susunPertanyaan(simulasi, level, modeCepat);
           setPertanyaan(daftar);
           setNomor(0);
@@ -2027,6 +2037,27 @@ $practiceScripts = [
           setTersimpan(false);
           setTerkirim(false);
           setPracticeHistoryId(null);
+          allAudioChunksRef.current = [];
+          // Start a single continuous recording for the entire challenge
+          try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              fullStreamRef.current = stream;
+              const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+              const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+              recorder.ondataavailable = (event) => {
+                if (event.data.size > 0) allAudioChunksRef.current.push(event.data);
+              };
+              recorder.onstop = () => {
+                if (fullStreamRef.current) {
+                  fullStreamRef.current.getTracks().forEach((t) => t.stop());
+                  fullStreamRef.current = null;
+                }
+              };
+              fullRecorderRef.current = recorder;
+              recorder.start();
+            }
+          } catch (e) { /* mic not available, continue without recording */ }
           setFase("persiapan");
           setSisaWaktu(modeCepat ? 5 : level.persiapan);
           setPesan("Fase persiapan dimulai. Susun jawaban singkat dan jelas.");
@@ -2083,6 +2114,10 @@ $practiceScripts = [
 
         function lanjutPertanyaan() {
           if (nomor + 1 >= pertanyaan.length) {
+            // Stop the full recording when challenge is complete
+            if (fullRecorderRef.current && fullRecorderRef.current.state !== "inactive") {
+              fullRecorderRef.current.stop();
+            }
             setFase("selesai");
             setPesan("Seluruh pertanyaan selesai. Simpan hasil latihan ke riwayat tantangan.");
             return;
@@ -2110,6 +2145,12 @@ $practiceScripts = [
           formData.append("actual_seconds", waktuTotal);
           formData.append("score", Math.round(progres));
           formData.append("completed", selesai ? 1 : 0);
+
+          // Attach accumulated audio recording
+          if (allAudioChunksRef.current.length > 0) {
+            const audioBlob = new Blob(allAudioChunksRef.current, { type: "audio/webm" });
+            formData.append("audio", audioBlob, "challenge.webm");
+          }
 
           setPesan("Menyimpan riwayat tantangan...");
           try {
@@ -2163,6 +2204,11 @@ $practiceScripts = [
 
         function resetSimulasi() {
           hentikanStream();
+          // Stop continuous recorder if still running
+          if (fullRecorderRef.current && fullRecorderRef.current.state !== "inactive") {
+            fullRecorderRef.current.stop();
+          }
+          allAudioChunksRef.current = [];
           setFase("ringkasan");
           setPertanyaan([]);
           setNomor(0);
@@ -2318,24 +2364,8 @@ $practiceScripts = [
       { label: "5 minutes", seconds: 300 }
     ];
 
-    const cameraDummyHistory = [
-      {
-        id: "dummy-1",
-        topic: "Jelaskan mengapa eye contact penting dalam public speaking.",
-        date: "23 Mei 2026, 09.10",
-        duration: 60,
-        videoUrl: "",
-        confidence: "Confident"
-      },
-      {
-        id: "dummy-2",
-        topic: "Simulasikan pembukaan sebagai MC acara sekolah.",
-        date: "22 Mei 2026, 20.35",
-        duration: 180,
-        videoUrl: "",
-        confidence: "Steady"
-      }
-    ];
+    const cameraHistoryFromDB = <?= json_encode($cameraHistory, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    const cameraMentorInfo = <?= json_encode($mentorInfo['camera'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 
     const simulationModes = [
       {
@@ -2371,6 +2401,7 @@ $practiceScripts = [
       const chunksRef = useRef([]);
       const timerRef = useRef(null);
       const elapsedRef = useRef(0);
+      const recordedBlobRef = useRef(null);
 
       const [selectedDuration, setSelectedDuration] = useState(60);
       const [topic, setTopic] = useState(cameraTopics[0]);
@@ -2378,7 +2409,17 @@ $practiceScripts = [
       const [elapsed, setElapsed] = useState(0);
       const [recordedUrl, setRecordedUrl] = useState("");
       const [statusMessage, setStatusMessage] = useState("Camera dan microphone akan aktif saat latihan dimulai.");
-      const [history, setHistory] = useState(cameraDummyHistory);
+      // Build initial history from DB records
+      const dbHistory = cameraHistoryFromDB.map((item) => ({
+        id: `db-${item.id}`,
+        dbId: item.id,
+        topic: item.topic,
+        date: new Date(item.created_at.replace(" ", "T")).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
+        duration: item.duration_seconds,
+        videoUrl: item.video_path || "",
+        confidence: item.simulation_mode || "Practice"
+      }));
+      const [history, setHistory] = useState(dbHistory);
       const [activeMode, setActiveMode] = useState(simulationModes[0]);
       const [focusProgress, setFocusProgress] = useState({
         "Eye contact": false,
@@ -2388,6 +2429,10 @@ $practiceScripts = [
       });
       const [cameraReady, setCameraReady] = useState(false);
       const [micReady, setMicReady] = useState(false);
+      const [isSaving, setIsSaving] = useState(false);
+      const [isSaved, setIsSaved] = useState(false);
+      const [practiceHistoryId, setPracticeHistoryId] = useState(null);
+      const [isSubmitted, setIsSubmitted] = useState(false);
 
       const remainingTime = Math.max(selectedDuration - elapsed, 0);
       const progress = Math.min((elapsed / selectedDuration) * 100, 100);
@@ -2437,9 +2482,13 @@ $practiceScripts = [
           const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
           attachStream(stream);
           chunksRef.current = [];
+          recordedBlobRef.current = null;
           setRecordedUrl("");
           setElapsed(0);
           elapsedRef.current = 0;
+          setIsSaved(false);
+          setIsSubmitted(false);
+          setPracticeHistoryId(null);
 
           const preferredMime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
             ? "video/webm;codecs=vp9,opus"
@@ -2455,21 +2504,11 @@ $practiceScripts = [
 
           recorder.onstop = () => {
             const blob = new Blob(chunksRef.current, { type: preferredMime || "video/webm" });
+            recordedBlobRef.current = blob;
             const videoUrl = URL.createObjectURL(blob);
             setRecordedUrl(videoUrl);
-            setHistory((current) => [
-              {
-                id: `local-${Date.now()}`,
-                topic,
-                date: new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
-                duration: elapsedRef.current || selectedDuration,
-                videoUrl,
-                confidence: elapsedRef.current > selectedDuration * 0.75 ? "Confident" : "Growing"
-              },
-              ...current
-            ]);
             stopTracks();
-            setStatusMessage("Recording selesai. Replay video tersedia di bawah.");
+            setStatusMessage("Recording selesai. Simpan riwayat untuk menyimpan video ke server.");
           };
 
           recorder.start();
@@ -2486,6 +2525,90 @@ $practiceScripts = [
           }, 1000);
         } catch (error) {
           setStatusMessage("Camera atau microphone tidak bisa diakses. Periksa izin browser.");
+        }
+      };
+
+      const saveCameraPractice = async () => {
+        if (!recordedBlobRef.current) {
+          setStatusMessage("Belum ada rekaman video yang bisa disimpan.");
+          return;
+        }
+        if (!isLoggedIn) {
+          setStatusMessage("Silakan login terlebih dahulu agar riwayat tersimpan ke akun.");
+          return;
+        }
+
+        setIsSaving(true);
+        setStatusMessage("Menyimpan video ke server...");
+
+        try {
+          const formData = new FormData();
+          formData.append("action", "save_camera_practice");
+          formData.append("topic", topic);
+          formData.append("simulation_mode", activeMode.name);
+          formData.append("duration", elapsedRef.current || selectedDuration);
+          formData.append("video", recordedBlobRef.current, "camera_practice.webm");
+
+          const response = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await response.json();
+
+          if (!data.status) {
+            setStatusMessage(data.message || "Gagal menyimpan riwayat camera practice.");
+            setIsSaving(false);
+            return;
+          }
+
+          setIsSaved(true);
+          setPracticeHistoryId(data.practice_history_id || null);
+
+          // Add to history list with server path
+          const newItem = {
+            id: `db-${data.practice_history_id}`,
+            dbId: data.practice_history_id,
+            topic: data.item.topic,
+            date: new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
+            duration: data.item.duration_seconds,
+            videoUrl: data.item.video_path,
+            confidence: data.item.simulation_mode || "Practice"
+          };
+          setHistory((current) => [newItem, ...current]);
+          setStatusMessage(data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
+        } catch (error) {
+          setStatusMessage("Terjadi kesalahan saat menyimpan riwayat camera practice.");
+        }
+        setIsSaving(false);
+      };
+
+      const submitToMentor = async () => {
+        if (!practiceHistoryId) {
+          setStatusMessage("Simpan riwayat camera practice terlebih dahulu.");
+          return;
+        }
+        if (!isLoggedIn) {
+          setStatusMessage("Silakan login terlebih dahulu.");
+          return;
+        }
+
+        setStatusMessage("Mengirim latihan ke mentor...");
+
+        try {
+          const formData = new FormData();
+          formData.append("action", "submit_to_mentor");
+          formData.append("practice_history_id", practiceHistoryId);
+          formData.append("feature_type", "camera");
+
+          const response = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await response.json();
+
+          if (!data.status) {
+            setStatusMessage(data.message || "Gagal mengirim ke mentor.");
+            return;
+          }
+
+          setIsSubmitted(true);
+          setStatusMessage(data.message);
+        } catch (error) {
+          setStatusMessage("Terjadi kesalahan saat mengirim ke mentor.");
         }
       };
 
@@ -2521,9 +2644,7 @@ $practiceScripts = [
                 <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Latih ekspresi, eye contact, body language, dan confidence langsung dari browser.</p>
               </div>
               <div className="flex flex-wrap gap-3">
-                <div className="camera-status-pill live">Level 4 Speaker</div>
-                <div className="camera-status-pill">840 XP</div>
-                <div className="camera-status-pill">Streak 5 hari</div>
+                {cameraMentorInfo && <div className="camera-status-pill live">Mentor: {cameraMentorInfo.name}</div>}
                 <button type="button" className="camera-btn btn-muted-camera" onClick={randomTopic}>
                   Topik Acak
                 </button>
@@ -2640,6 +2761,15 @@ $practiceScripts = [
                 <div className="flex flex-wrap gap-3">
                   <button type="button" className="camera-btn btn-primary-camera start-recording-cta" onClick={startRecording} disabled={isRecording}>Start Recording</button>
                   <button type="button" className="camera-btn btn-danger-camera" onClick={stopRecording} disabled={!isRecording}>Stop Recording</button>
+                  <button type="button" className="camera-btn btn-primary-camera" onClick={saveCameraPractice} disabled={!recordedUrl || isRecording || isSaving || isSaved} style={{ background: '#10204f' }}>💾 Simpan Riwayat</button>
+                  <button type="button" className="camera-btn btn-primary-camera" onClick={submitToMentor} disabled={!isSaved || isSubmitted} style={{ background: '#027a48' }}>📤 Kirim ke Mentor</button>
+                </div>
+              </div>
+
+              {/* Status toast */}
+              <div className="px-6 pb-6">
+                <div className={`rounded-2xl px-4 py-3 text-sm font-bold ${statusMessage.includes("berhasil") || statusMessage.includes("dikirim") ? "bg-[#ecfdf3] text-[#027a48]" : statusMessage.includes("Gagal") || statusMessage.includes("kesalahan") || statusMessage.includes("tidak bisa") ? "bg-[#fef3f2] text-[#b42318]" : "bg-[#eff8ff] text-[#175cd3]"}`}>
+                  {statusMessage}
                 </div>
               </div>
             </div>
@@ -2647,7 +2777,7 @@ $practiceScripts = [
             <aside className="space-y-6">
               <div className="camera-card p-6">
                 <h2 className="text-2xl font-extrabold text-[#10204f]">Replay Result</h2>
-                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">{statusMessage}</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">{recordedUrl ? "Putar ulang hasil rekaman terakhir." : "Hasil recording akan muncul di sini."}</p>
                 <div className="mt-5 overflow-hidden rounded-[18px] bg-[#10204f]">
                   {recordedUrl ? (
                     <video ref={replayVideoRef} className="aspect-video w-full object-cover" src={recordedUrl} controls></video>
@@ -2693,38 +2823,35 @@ $practiceScripts = [
 
           <section className="camera-card p-6">
             <div className="mb-5">
-              <h2 className="text-2xl font-extrabold text-[#10204f]">History Latihan Speaking</h2>
-              <p className="mt-1 text-sm font-semibold text-[#667085]">Recording sementara tersimpan di local state selama halaman masih terbuka.</p>
+              <h2 className="text-2xl font-extrabold text-[#10204f]">History Camera Practice</h2>
+              <p className="mt-1 text-sm font-semibold text-[#667085]">Riwayat latihan camera practice yang tersimpan di akun.</p>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {history.map((item) => (
-                <article key={item.id} className="camera-card interactive rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-4">
-                  <div className="history-video-card relative overflow-hidden rounded-2xl bg-[#10204f]">
-                    {item.videoUrl ? (
-                      <video className="aspect-video w-full object-cover" src={item.videoUrl} controls></video>
-                    ) : (
-                      <div className="flex aspect-video items-center justify-center px-4 text-center text-sm font-bold text-white/75">Dummy preview</div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => replayVideo(item.videoUrl)}
-                      disabled={!item.videoUrl}
-                      className="play-overlay absolute inset-0 flex items-center justify-center bg-black/35 text-sm font-black text-white disabled:cursor-not-allowed"
-                    >
-                      Replay
-                    </button>
-                  </div>
-                  <h3 className="mt-4 text-base font-extrabold leading-snug text-[#10204f]">{item.topic}</h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <span className="rounded-full bg-[#eef2f7] px-3 py-1 text-xs font-black text-[#344054]">{item.date}</span>
-                    <span className="rounded-full bg-[#fffaf3] px-3 py-1 text-xs font-black text-[#7c4a12]">{formatCameraTime(item.duration)}</span>
-                    <span className="rounded-full bg-[#ecfdf3] px-3 py-1 text-xs font-black text-[#027a48]">{item.confidence}</span>
-                  </div>
-                  <button type="button" className="camera-btn btn-muted-camera mt-4 w-full" onClick={() => replayVideo(item.videoUrl)} disabled={!item.videoUrl}>Replay</button>
-                </article>
-              ))}
-            </div>
+            {history.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] px-6 py-10 text-center text-sm font-semibold text-[#667085]">
+                Belum ada riwayat camera practice. Mulai rekaman lalu simpan riwayat.
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {history.map((item) => (
+                  <article key={item.id} className="camera-card interactive rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-4">
+                    <div className="history-video-card relative overflow-hidden rounded-2xl bg-[#10204f]">
+                      {item.videoUrl ? (
+                        <video className="aspect-video w-full object-cover" src={item.videoUrl} controls></video>
+                      ) : (
+                        <div className="flex aspect-video items-center justify-center px-4 text-center text-sm font-bold text-white/75">Video tidak tersedia</div>
+                      )}
+                    </div>
+                    <h3 className="mt-4 text-base font-extrabold leading-snug text-[#10204f]">{item.topic}</h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-[#eef2f7] px-3 py-1 text-xs font-black text-[#344054]">{item.date}</span>
+                      <span className="rounded-full bg-[#fffaf3] px-3 py-1 text-xs font-black text-[#7c4a12]">{formatCameraTime(item.duration)}</span>
+                      <span className="rounded-full bg-[#ecfdf3] px-3 py-1 text-xs font-black text-[#027a48]">{item.confidence}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </section>
         </div>
       );
