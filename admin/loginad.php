@@ -3,9 +3,10 @@ require_once '../core.php';
 $app = new manz();
 $app->ensureSession();
 $error = '';
-$isFirstMentorSetup = !$app->hasMentorAccounts();
+$availableSpecialties = $app->getAvailableSpecialties();
+$isMentorSetup = count($availableSpecialties) > 0;
 
-if ($app->getCurrentMentor()) {
+if ($app->getCurrentMentor() && !$isMentorSetup) {
     header('Location: dashboard.php');
     exit;
 }
@@ -16,21 +17,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
     $passwordConfirm = $_POST['password_confirm'] ?? '';
+    $specialty = $_POST['specialty'] ?? '';
 
-    if ($isFirstMentorSetup && $mode === 'setup') {
-        if ($name === '' || $username === '' || $password === '') {
-            $error = 'Nama, username, dan kata sandi mentor wajib diisi.';
+    if ($isMentorSetup && $mode === 'setup') {
+        if ($name === '' || $username === '' || $password === '' || $specialty === '') {
+            $error = 'Nama, username, kata sandi, dan spesialisasi mentor wajib diisi.';
+        } elseif (!in_array($specialty, $availableSpecialties)) {
+            $error = 'Spesialisasi tidak valid atau sudah ada mentor untuk bidang tersebut.';
         } elseif (strlen($password) < 8) {
             $error = 'Kata sandi mentor minimal 8 karakter.';
         } elseif ($password !== $passwordConfirm) {
             $error = 'Konfirmasi kata sandi belum sama.';
-        } elseif (!$app->createMentorAccount($name, $username, $password)) {
-            $error = 'Akun mentor pertama gagal dibuat. Coba username lain.';
+        } elseif (!$app->createMentorAccount($name, $username, $password, $specialty)) {
+            $error = 'Akun mentor gagal dibuat. Coba username lain.';
         } else {
             $mentor = $app->authenticateMentor($username, $password);
-            $app->setMentorSession($mentor);
-            header('Location: dashboard.php');
-            exit;
+            if ($mentor) {
+                $app->setMentorSession($mentor);
+                header('Location: dashboard.php');
+                exit;
+            }
         }
     } elseif ($username === '' || $password === '') {
         $error = 'Username dan kata sandi wajib diisi.';
@@ -108,8 +114,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <div class="login-right">
             
-            <h1 style="font-size: 49px;"><?= $isFirstMentorSetup ? 'Setup mentor' : 'Selamat datang!' ?></h1>
-            <p style="font-size: 25px;"><?= $isFirstMentorSetup ? 'Buat akun mentor pertama untuk membuka dashboard.' : 'Masuk ke dashboard mentor.' ?></p>
+            <h1 style="font-size: 49px;"><?= $isMentorSetup ? 'Setup mentor' : 'Selamat datang!' ?></h1>
+            <p style="font-size: 25px;"><?= $isMentorSetup ? 'Buat akun mentor untuk spesialisasi yang tersedia.' : 'Masuk ke dashboard mentor.' ?></p>
 
             <div class="form-wrapper">
                 
@@ -120,11 +126,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
 
                 <form method="POST" action="loginad.php">
-                    <input type="hidden" name="mode" value="<?= $isFirstMentorSetup ? 'setup' : 'login' ?>">
+                    <input type="hidden" name="mode" value="<?= $isMentorSetup ? 'setup' : 'login' ?>">
 
-                    <?php if ($isFirstMentorSetup): ?>
+                    <?php if ($isMentorSetup): ?>
                         <label>Nama Mentor</label>
                         <input type="text" name="name" placeholder="Ketik nama mentor" required>
+
+                        <label>Spesialisasi</label>
+                        <select name="specialty" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 16px; font-size: 15px;">
+                            <option value="">Pilih Spesialisasi</option>
+                            <?php foreach ($availableSpecialties as $spec): ?>
+                                <option value="<?= htmlspecialchars($spec) ?>">
+                                    <?= $spec === 'voice' ? 'Rekam Suara' : ($spec === 'challenge' ? 'Tantangan Bicara' : 'Camera Practice') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
                     <?php endif; ?>
 
                     <label>Username</label>
@@ -137,12 +153,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <img class="eye-toggle" id="toggle-eye" src="../icon/pw.svg" style="width:32px; height:32px;">
                     </div>
 
-                    <?php if ($isFirstMentorSetup): ?>
+                    <?php if ($isMentorSetup): ?>
                         <label>Konfirmasi Kata Sandi</label>
                         <input type="password" name="password_confirm" placeholder="Ulangi kata sandi" required>
                     <?php endif; ?>
 
-                    <button type="submit" class="btn-login"><?= $isFirstMentorSetup ? 'Buat Akun' : 'Masuk' ?></button>
+                    <button type="submit" class="btn-login"><?= $isMentorSetup ? 'Buat Akun' : 'Masuk' ?></button>
                 </form>
 
                     

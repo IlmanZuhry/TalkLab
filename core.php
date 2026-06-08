@@ -511,11 +511,23 @@ class manz{
 			name VARCHAR(120) NOT NULL,
 			username VARCHAR(60) NOT NULL,
 			password_hash VARCHAR(255) NOT NULL,
+			specialty VARCHAR(30) NOT NULL DEFAULT 'voice',
 			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			PRIMARY KEY (id),
-			UNIQUE KEY unique_mentor_username (username)
+			UNIQUE KEY unique_mentor_username (username),
+			UNIQUE KEY unique_mentor_specialty (specialty)
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
 		mysqli_query($this->koneksi, $sql);
+		$this->ensureMentorSpecialtyColumn();
+	}
+
+	private function ensureMentorSpecialtyColumn(){
+		$table = mysqli_query($this->koneksi, "SHOW TABLES LIKE 'mentor_accounts'");
+		if (!$table || mysqli_num_rows($table) === 0) return;
+		$check = mysqli_query($this->koneksi, "SHOW COLUMNS FROM mentor_accounts LIKE 'specialty'");
+		if ($check && mysqli_num_rows($check) === 0) {
+			mysqli_query($this->koneksi, "ALTER TABLE mentor_accounts ADD COLUMN specialty VARCHAR(30) NOT NULL DEFAULT 'voice' AFTER password_hash");
+		}
 	}
 
 	public function ensureMentorSubmissionsTable(){
@@ -524,6 +536,7 @@ class manz{
 			practice_history_id INT UNSIGNED NOT NULL,
 			user_id VARCHAR(6) NOT NULL,
 			mentor_id INT UNSIGNED NULL,
+			feature_type VARCHAR(30) NOT NULL DEFAULT 'voice',
 			status VARCHAR(30) NOT NULL DEFAULT 'pending',
 			submitted_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 			reviewed_at DATETIME NULL DEFAULT NULL,
@@ -532,6 +545,7 @@ class manz{
 			KEY idx_mentor_submission_user (user_id),
 			KEY idx_mentor_submission_mentor (mentor_id),
 			KEY idx_mentor_submission_status (status),
+			KEY idx_mentor_submission_feature (feature_type),
 			CONSTRAINT fk_mentor_submission_practice FOREIGN KEY (practice_history_id) REFERENCES practice_history(id)
 			ON DELETE CASCADE ON UPDATE CASCADE,
 			CONSTRAINT fk_mentor_submission_user FOREIGN KEY (user_id) REFERENCES users(Id_User)
@@ -540,6 +554,21 @@ class manz{
 			ON DELETE SET NULL ON UPDATE CASCADE
 		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
 		mysqli_query($this->koneksi, $sql);
+		$this->ensureSubmissionFeatureTypeColumn();
+	}
+
+	private function ensureSubmissionFeatureTypeColumn(){
+		$table = mysqli_query($this->koneksi, "SHOW TABLES LIKE 'mentor_submissions'");
+		if (!$table || mysqli_num_rows($table) === 0) return;
+		$check = mysqli_query($this->koneksi, "SHOW COLUMNS FROM mentor_submissions LIKE 'feature_type'");
+		if ($check && mysqli_num_rows($check) === 0) {
+			mysqli_query($this->koneksi, "ALTER TABLE mentor_submissions ADD COLUMN feature_type VARCHAR(30) NOT NULL DEFAULT 'voice' AFTER mentor_id");
+		}
+		try {
+			mysqli_query($this->koneksi, "ALTER TABLE mentor_submissions DROP FOREIGN KEY fk_mentor_submission_practice");
+		} catch (Exception $e) {
+			// Foreign key might not exist, ignore
+		}
 	}
 
 	public function ensureMentorReviewsTable(){
@@ -574,18 +603,20 @@ class manz{
 		return $res && mysqli_num_rows($res) > 0;
 	}
 
-	public function createMentorAccount($name, $username, $password){
-		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO mentor_accounts (name, username, password_hash) VALUES (?, ?, ?)");
+	public function createMentorAccount($name, $username, $password, $specialty = 'voice'){
+		$validSpecialties = ['voice', 'challenge', 'camera'];
+		if (!in_array($specialty, $validSpecialties)) $specialty = 'voice';
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO mentor_accounts (name, username, password_hash, specialty) VALUES (?, ?, ?, ?)");
 		if (!$stmt) return false;
 		$passwordHash = password_hash($password, PASSWORD_BCRYPT);
-		mysqli_stmt_bind_param($stmt, "sss", $name, $username, $passwordHash);
+		mysqli_stmt_bind_param($stmt, "ssss", $name, $username, $passwordHash, $specialty);
 		$saved = mysqli_stmt_execute($stmt);
 		mysqli_stmt_close($stmt);
 		return $saved;
 	}
 
 	public function authenticateMentor($username, $password){
-		$stmt = mysqli_prepare($this->koneksi, "SELECT id, name, username, password_hash FROM mentor_accounts WHERE username = ? LIMIT 1");
+		$stmt = mysqli_prepare($this->koneksi, "SELECT id, name, username, password_hash, specialty FROM mentor_accounts WHERE username = ? LIMIT 1");
 		if (!$stmt) return false;
 		mysqli_stmt_bind_param($stmt, "s", $username);
 		mysqli_stmt_execute($stmt);
@@ -606,6 +637,7 @@ class manz{
 		$_SESSION['mentor_id'] = (int) $mentor['id'];
 		$_SESSION['mentor_name'] = $mentor['name'];
 		$_SESSION['mentor_username'] = $mentor['username'];
+		$_SESSION['mentor_specialty'] = $mentor['specialty'] ?? 'voice';
 	}
 
 	public function getCurrentMentor(){
@@ -615,11 +647,12 @@ class manz{
 		return [
 			'id' => (int) $_SESSION['mentor_id'],
 			'name' => $_SESSION['mentor_name'] ?? 'Mentor',
-			'username' => $_SESSION['mentor_username'] ?? ''
+			'username' => $_SESSION['mentor_username'] ?? '',
+			'specialty' => $_SESSION['mentor_specialty'] ?? 'voice'
 		];
 	}
 
-	public function getMentorDashboardStats(){
+	public function getMentorDashboardStats($specialty = null){
 		$stats = [
 			'pending' => 0,
 			'reviewed' => 0,
@@ -628,23 +661,38 @@ class manz{
 			'average_score' => 0
 		];
 
+		$featureFilter = '';
+		if ($specialty) {
+			$specEsc = mysqli_real_escape_string($this->koneksi, $specialty);
+			$featureFilter = " WHERE ms.feature_type = '$specEsc'";
+		}
+
 		$res = mysqli_query($this->koneksi, "SELECT
-			SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_total,
-			SUM(CASE WHEN status = 'reviewed' THEN 1 ELSE 0 END) AS reviewed_total,
-			COUNT(DISTINCT user_id) AS student_total
-			FROM mentor_submissions");
+			SUM(CASE WHEN ms.status = 'pending' THEN 1 ELSE 0 END) AS pending_total,
+			SUM(CASE WHEN ms.status = 'reviewed' THEN 1 ELSE 0 END) AS reviewed_total,
+			COUNT(DISTINCT ms.user_id) AS student_total
+			FROM mentor_submissions ms $featureFilter");
 		if ($res && $row = mysqli_fetch_assoc($res)) {
 			$stats['pending'] = (int) ($row['pending_total'] ?? 0);
 			$stats['reviewed'] = (int) ($row['reviewed_total'] ?? 0);
 			$stats['students'] = (int) ($row['student_total'] ?? 0);
 		}
 
-		$practiceRes = mysqli_query($this->koneksi, "SELECT COUNT(*) AS total FROM practice_history");
+		if ($specialty === 'challenge') {
+			$practiceRes = mysqli_query($this->koneksi, "SELECT COUNT(*) AS total FROM speaking_challenge_history");
+		} else {
+			$practiceRes = mysqli_query($this->koneksi, "SELECT COUNT(*) AS total FROM practice_history");
+		}
 		if ($practiceRes && $row = mysqli_fetch_assoc($practiceRes)) {
 			$stats['practice_audio'] = (int) $row['total'];
 		}
 
-		$scoreRes = mysqli_query($this->koneksi, "SELECT AVG(final_score) AS average_score FROM mentor_reviews");
+		$scoreFilter = '';
+		if ($specialty) {
+			$specEsc = mysqli_real_escape_string($this->koneksi, $specialty);
+			$scoreFilter = " WHERE mr.submission_id IN (SELECT id FROM mentor_submissions WHERE feature_type = '$specEsc')";
+		}
+		$scoreRes = mysqli_query($this->koneksi, "SELECT AVG(mr.final_score) AS average_score FROM mentor_reviews mr $scoreFilter");
 		if ($scoreRes && $row = mysqli_fetch_assoc($scoreRes)) {
 			$stats['average_score'] = (int) round((float) ($row['average_score'] ?? 0));
 		}
@@ -652,24 +700,32 @@ class manz{
 		return $stats;
 	}
 
-	public function getMentorReviewQueue($limit = 12){
+	public function getMentorReviewQueue($limit = 12, $specialty = null){
 		$items = [];
 		$limit = max(1, (int) $limit);
+		$featureFilter = '';
+		if ($specialty) {
+			$specEsc = mysqli_real_escape_string($this->koneksi, $specialty);
+			$featureFilter = " AND ms.feature_type = '$specEsc'";
+		}
 		$sql = "SELECT
 			ms.id,
 			ms.status,
+			ms.feature_type,
 			ms.submitted_at,
 			ms.reviewed_at,
-			ph.topic,
-			ph.duration_seconds,
+			COALESCE(ph.topic, ch.challenge_type) AS topic,
+			COALESCE(ph.duration_seconds, ch.actual_seconds) AS duration_seconds,
 			ph.audio_path,
 			u.Nama AS student_name,
 			u.Username AS student_username,
 			mr.final_score
 			FROM mentor_submissions ms
-			JOIN practice_history ph ON ph.id = ms.practice_history_id
+			LEFT JOIN practice_history ph ON ph.id = ms.practice_history_id AND ms.feature_type = 'voice'
+			LEFT JOIN speaking_challenge_history ch ON ch.id = ms.practice_history_id AND ms.feature_type = 'challenge'
 			JOIN users u ON u.Id_User = ms.user_id
 			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
+			WHERE 1=1 $featureFilter
 			ORDER BY FIELD(ms.status, 'pending', 'revision_requested', 'reviewed'), ms.submitted_at DESC
 			LIMIT $limit";
 		$res = mysqli_query($this->koneksi, $sql);
@@ -686,12 +742,13 @@ class manz{
 		$sql = "SELECT
 			ms.id,
 			ms.status,
+			ms.feature_type,
 			ms.submitted_at,
 			ms.reviewed_at,
-			ph.topic,
-			ph.duration_seconds,
+			COALESCE(ph.topic, ch.challenge_type) AS topic,
+			COALESCE(ph.duration_seconds, ch.actual_seconds) AS duration_seconds,
 			ph.audio_path,
-			ph.created_at AS practice_created_at,
+			COALESCE(ph.created_at, ch.created_at) AS practice_created_at,
 			u.Id_User AS student_id,
 			u.Nama AS student_name,
 			u.Username AS student_username,
@@ -705,7 +762,8 @@ class manz{
 			mr.improvements,
 			mr.feedback
 			FROM mentor_submissions ms
-			JOIN practice_history ph ON ph.id = ms.practice_history_id
+			LEFT JOIN practice_history ph ON ph.id = ms.practice_history_id AND ms.feature_type = 'voice'
+			LEFT JOIN speaking_challenge_history ch ON ch.id = ms.practice_history_id AND ms.feature_type = 'challenge'
 			JOIN users u ON u.Id_User = ms.user_id
 			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
 			WHERE ms.id = $submissionId
@@ -769,6 +827,123 @@ class manz{
 		}
 
 		return $saved;
+	}
+
+	public function submitToMentor($practiceHistoryId, $userId, $featureType = 'voice'){
+		$validTypes = ['voice', 'challenge', 'camera'];
+		if (!in_array($featureType, $validTypes)) $featureType = 'voice';
+
+		// Find mentor with matching specialty
+		$mentor = $this->getMentorBySpecialty($featureType);
+		$mentorId = $mentor ? (int) $mentor['id'] : null;
+
+		$stmt = mysqli_prepare($this->koneksi, "INSERT INTO mentor_submissions (practice_history_id, user_id, mentor_id, feature_type) VALUES (?, ?, ?, ?)");
+		if (!$stmt) return false;
+		mysqli_stmt_bind_param($stmt, "isis", $practiceHistoryId, $userId, $mentorId, $featureType);
+		$saved = mysqli_stmt_execute($stmt);
+		mysqli_stmt_close($stmt);
+		return $saved;
+	}
+
+	public function getMentorBySpecialty($specialty){
+		$specEsc = mysqli_real_escape_string($this->koneksi, $specialty);
+		$res = mysqli_query($this->koneksi, "SELECT id, name, username, specialty FROM mentor_accounts WHERE specialty = '$specEsc' LIMIT 1");
+		return $res && mysqli_num_rows($res) > 0 ? mysqli_fetch_assoc($res) : false;
+	}
+
+	public function getMentorInfoForFeatures(){
+		$mentors = ['voice' => null, 'challenge' => null, 'camera' => null];
+		$res = mysqli_query($this->koneksi, "SELECT id, name, username, specialty FROM mentor_accounts WHERE specialty IN ('voice','challenge','camera')");
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$mentors[$row['specialty']] = $row;
+			}
+		}
+		return $mentors;
+	}
+
+	public function getUserReviewResults($userId, $limit = 20){
+		$items = [];
+		$limit = max(1, (int) $limit);
+		$stmt = mysqli_prepare($this->koneksi, "SELECT
+			ms.id AS submission_id,
+			ms.status,
+			ms.feature_type,
+			ms.submitted_at,
+			ms.reviewed_at,
+			COALESCE(ph.topic, ch.challenge_type) AS topic,
+			ph.script_title,
+			ph.category,
+			ph.level_name,
+			COALESCE(ph.duration_seconds, ch.actual_seconds) AS duration_seconds,
+			ph.audio_path,
+			ma.name AS mentor_name,
+			ma.specialty AS mentor_specialty,
+			mr.articulation_score,
+			mr.fluency_score,
+			mr.confidence_score,
+			mr.structure_score,
+			mr.intonation_score,
+			mr.final_score,
+			mr.strengths,
+			mr.improvements,
+			mr.feedback
+			FROM mentor_submissions ms
+			LEFT JOIN practice_history ph ON ph.id = ms.practice_history_id AND ms.feature_type = 'voice'
+			LEFT JOIN speaking_challenge_history ch ON ch.id = ms.practice_history_id AND ms.feature_type = 'challenge'
+			LEFT JOIN mentor_accounts ma ON ma.id = ms.mentor_id
+			LEFT JOIN mentor_reviews mr ON mr.submission_id = ms.id
+			WHERE ms.user_id = ?
+			ORDER BY ms.submitted_at DESC
+			LIMIT $limit");
+		if (!$stmt) return $items;
+		mysqli_stmt_bind_param($stmt, "s", $userId);
+		mysqli_stmt_execute($stmt);
+		$result = mysqli_stmt_get_result($stmt);
+		while ($row = mysqli_fetch_assoc($result)) {
+			$items[] = $row;
+		}
+		mysqli_stmt_close($stmt);
+		return $items;
+	}
+
+	public function getUserReviewStats($userId){
+		$stats = ['total' => 0, 'pending' => 0, 'reviewed' => 0, 'average_score' => 0];
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$res = mysqli_query($this->koneksi, "SELECT
+			COUNT(*) AS total,
+			SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) AS pending_total,
+			SUM(CASE WHEN status = 'reviewed' THEN 1 ELSE 0 END) AS reviewed_total
+			FROM mentor_submissions WHERE user_id = '$userIdEsc'");
+		if ($res && $row = mysqli_fetch_assoc($res)) {
+			$stats['total'] = (int) ($row['total'] ?? 0);
+			$stats['pending'] = (int) ($row['pending_total'] ?? 0);
+			$stats['reviewed'] = (int) ($row['reviewed_total'] ?? 0);
+		}
+		$scoreRes = mysqli_query($this->koneksi, "SELECT AVG(mr.final_score) AS avg_score
+			FROM mentor_reviews mr
+			JOIN mentor_submissions ms ON ms.id = mr.submission_id
+			WHERE ms.user_id = '$userIdEsc'");
+		if ($scoreRes && $row = mysqli_fetch_assoc($scoreRes)) {
+			$stats['average_score'] = (int) round((float) ($row['avg_score'] ?? 0));
+		}
+		return $stats;
+	}
+
+	public function getAvailableSpecialties(){
+		$taken = [];
+		$res = mysqli_query($this->koneksi, "SELECT specialty FROM mentor_accounts");
+		if ($res) {
+			while ($row = mysqli_fetch_assoc($res)) {
+				$taken[] = $row['specialty'];
+			}
+		}
+		$all = ['voice', 'challenge', 'camera'];
+		return array_values(array_diff($all, $taken));
+	}
+
+	public function getLastInsertedPracticeId(){
+		return (int) mysqli_insert_id($this->koneksi);
 	}
 
 	public function ensurePracticeHistoryTable(){
@@ -937,8 +1112,9 @@ class manz{
 		$completed = (int) $completed;
 		mysqli_stmt_bind_param($stmt, "sssisiiiii", $userId, $challengeType, $levelName, $questionCount, $prompt, $prepSeconds, $speakSeconds, $actualSeconds, $score, $completed);
 		$saved = mysqli_stmt_execute($stmt);
+		$insertId = $saved ? mysqli_insert_id($this->koneksi) : false;
 		mysqli_stmt_close($stmt);
-		return $saved;
+		return $insertId;
 	}
 
 	public function saveAiFeedbackHistory($userId, $sourceType, $durationSeconds, $clarity, $fluency, $confidence, $consistency, $fillerCount, $speakingSpeed, $feedback){
@@ -1030,9 +1206,12 @@ class manz{
 		];
 	}
 
+	$practiceId = $this->getLastInsertedPracticeId();
+
 	return [
 		'status' => true,
 		'message' => 'Riwayat latihan berhasil disimpan.',
+		'practice_history_id' => $practiceId,
 		'item' => [
 			'topic' => $topic,
 			'script_title' => $scriptTitle,
@@ -1042,6 +1221,36 @@ class manz{
 			'audio_path' => $relativePath,
 			'created_at' => date('Y-m-d H:i:s')
 		]
+	];
+}
+
+public function handleSubmitToMentor($currentUser){
+	if (!$currentUser) {
+		http_response_code(401);
+		return ['status' => false, 'message' => 'Silakan login terlebih dahulu.'];
+	}
+
+	$practiceHistoryId = (int) ($_POST['practice_history_id'] ?? 0);
+	$featureType = trim($_POST['feature_type'] ?? 'voice');
+
+	if ($practiceHistoryId <= 0) {
+		http_response_code(400);
+		return ['status' => false, 'message' => 'ID latihan tidak valid.'];
+	}
+
+	$submitted = $this->submitToMentor($practiceHistoryId, $currentUser['Id_User'], $featureType);
+
+	if (!$submitted) {
+		http_response_code(500);
+		return ['status' => false, 'message' => 'Gagal mengirim latihan ke mentor. Mungkin sudah pernah dikirim.'];
+	}
+
+	$mentor = $this->getMentorBySpecialty($featureType);
+	$mentorName = $mentor ? $mentor['name'] : 'Mentor';
+
+	return [
+		'status' => true,
+		'message' => "Latihan berhasil dikirim ke $mentorName untuk penilaian."
 	];
 }
 
@@ -1097,6 +1306,7 @@ public function handleSaveChallenge($currentUser){
 	return [
 		'status' => true,
 		'message' => 'Riwayat challenge berhasil disimpan.',
+		'practice_history_id' => $saved,
 		'item' => [
 			'challenge_type' => $challengeType,
 			'level_name' => $levelName,

@@ -17,6 +17,8 @@ if ($current_page === 'beranda.php') {
     $active = 'materi';
 } elseif ($current_page === 'latihan.php') {
     $active = 'latihan';
+} elseif ($current_page === 'hasillatihan.php') {
+    $active = 'hasillatihan';
 } elseif ($current_page === 'ebook.php') {
     $active = 'ebook';
 } elseif ($current_page === 'komunitas.php') {
@@ -90,6 +92,22 @@ if ($current_page === 'beranda.php') {
         stroke-linejoin="round" />
 </svg>
                     <span>Latihan</span>
+                </a>
+            <?php endif; ?>
+        </li>
+
+        <li class="menu-item <?= $active === 'hasillatihan' ? 'active' : '' ?>">
+            <?php if ($active === 'hasillatihan'): ?>
+                <svg class="icon" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                </svg>
+                <span>Hasil Latihan</span>
+            <?php else: ?>
+                <a href="HasilLatihan.php">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                    </svg>
+                    <span>Hasil Latihan</span>
                 </a>
             <?php endif; ?>
         </li>

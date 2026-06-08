@@ -24,10 +24,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		echo json_encode($app->handleSaveChallenge($currentUser));
 		exit;
 	}
+
+	if ($action === 'submit_to_mentor') {
+		echo json_encode($app->handleSubmitToMentor($currentUser));
+		exit;
+	}
 }
 
 $practiceHistory = $currentUser ? $app->getPracticeHistory($currentUser['Id_User']) : [];
 $challengeHistory = $currentUser ? $app->getChallengeHistory($currentUser['Id_User']) : [];
+$mentorInfo = $app->getMentorInfoForFeatures();
+
 $practiceScripts = [
   [
     'category' => 'Pidato',
@@ -1215,16 +1222,25 @@ $practiceScripts = [
         <div class="feature-icon">🎙</div>
         <h2>Rekam Suara</h2>
         <p>Pilih topik, bicara, dengarkan ulang.</p>
+        <?php if ($mentorInfo['voice']): ?>
+          <span class="badge badge-ready">Mentor: <?= htmlspecialchars($mentorInfo['voice']['name']) ?></span>
+        <?php endif; ?>
       </button>
       <button class="feature-card" type="button" data-feature="challenge">
         <div class="feature-icon">⏱</div>
         <h2>Tantangan Bicara</h2>
         <p>Mode cepat dengan level dan skor.</p>
+        <?php if ($mentorInfo['challenge']): ?>
+          <span class="badge badge-ready">Mentor: <?= htmlspecialchars($mentorInfo['challenge']['name']) ?></span>
+        <?php endif; ?>
       </button>
       <button class="feature-card" type="button" data-feature="ai">
         <div class="feature-icon">📹</div>
         <h2>Camera Practice</h2>
         <p>Latih ekspresi, eye contact, dan gestur.</p>
+        <?php if ($mentorInfo['camera']): ?>
+          <span class="badge badge-ready">Mentor: <?= htmlspecialchars($mentorInfo['camera']['name']) ?></span>
+        <?php endif; ?>
       </button>
     </section>
 
@@ -1240,7 +1256,7 @@ $practiceScripts = [
         <div class="coach-strip">
           <img src="assets/jjjj.png" alt="Coach TalkLab">
           <div>
-            <strong>Siap latihan suara?</strong>
+            <strong><?= $mentorInfo['voice'] ? 'Mentor: ' . htmlspecialchars($mentorInfo['voice']['name']) : 'Siap latihan suara?' ?></strong>
             <span>Ikuti naskah yang tersedia untuk melatih artikulasi, intonasi, jeda, dan penyampaian pesan.</span>
           </div>
         </div>
@@ -1328,6 +1344,7 @@ $practiceScripts = [
             <button class="btn btn-danger" type="button" id="stopBtn" disabled>Stop Recording</button>
             <button class="btn btn-muted" type="button" id="replayBtn" disabled>Putar Ulang Hasil</button>
             <button class="btn btn-dark" type="button" id="saveBtn" disabled>Simpan Riwayat</button>
+            <button class="btn btn-primary" type="button" id="submitMentorBtn" disabled style="background:#027a48;">📤 Kirim ke Mentor</button>
           </div>
 
           <div class="result-box" id="resultBox">
@@ -1423,6 +1440,7 @@ $practiceScripts = [
     const stopBtn = document.getElementById("stopBtn");
     const replayBtn = document.getElementById("replayBtn");
     const saveBtn = document.getElementById("saveBtn");
+    const submitMentorBtn = document.getElementById("submitMentorBtn");
     const playback = document.getElementById("playback");
     const resultBox = document.getElementById("resultBox");
     const resultTopic = document.getElementById("resultTopic");
@@ -1451,6 +1469,7 @@ $practiceScripts = [
     let mediaRecorder = null;
     let audioChunks = [];
     let recordedBlob = null;
+    let lastSavedPracticeId = null;
 
     function formatTime(seconds) {
       const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
@@ -1534,10 +1553,12 @@ $practiceScripts = [
 
     function resetRecordingResult() {
       recordedBlob = null;
+      lastSavedPracticeId = null;
       playback.removeAttribute("src");
       resultBox.style.display = "none";
       saveBtn.disabled = true;
       replayBtn.disabled = true;
+      submitMentorBtn.disabled = true;
     }
 
     randomTopicBtn.addEventListener("click", () => {
@@ -1704,10 +1725,49 @@ $practiceScripts = [
         }
 
         prependHistory(data.item);
-        setMessage("success", data.message);
+        lastSavedPracticeId = data.practice_history_id || null;
+        if (lastSavedPracticeId) {
+          submitMentorBtn.disabled = false;
+        }
+        setMessage("success", data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
       } catch (error) {
         saveBtn.disabled = false;
         setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan.");
+      }
+    }
+
+    async function submitToMentor() {
+      if (!lastSavedPracticeId) {
+        setMessage("error", "Simpan riwayat latihan terlebih dahulu.");
+        return;
+      }
+      if (!isLoggedIn) {
+        setMessage("error", "Silakan login terlebih dahulu.");
+        return;
+      }
+
+      submitMentorBtn.disabled = true;
+      setMessage("info", "Mengirim latihan ke mentor...");
+
+      try {
+        const formData = new FormData();
+        formData.append("action", "submit_to_mentor");
+        formData.append("practice_history_id", lastSavedPracticeId);
+        formData.append("feature_type", "voice");
+
+        const response = await fetch("Latihan.php", { method: "POST", body: formData });
+        const data = await response.json();
+
+        if (!data.status) {
+          submitMentorBtn.disabled = false;
+          setMessage("error", data.message || "Gagal mengirim ke mentor.");
+          return;
+        }
+
+        setMessage("success", data.message);
+      } catch (error) {
+        submitMentorBtn.disabled = false;
+        setMessage("error", "Terjadi kesalahan saat mengirim ke mentor.");
       }
     }
 
@@ -1784,6 +1844,7 @@ $practiceScripts = [
       }
     });
     saveBtn.addEventListener("click", savePractice);
+    submitMentorBtn.addEventListener("click", submitToMentor);
 
     setActiveScript(0);
     switchFeature("voice");
@@ -1909,6 +1970,8 @@ $practiceScripts = [
         const [durasiJawaban, setDurasiJawaban] = React.useState([]);
         const [pesan, setPesan] = React.useState("Pilih jenis simulasi dan tingkat kesulitan, lalu mulai tantangan.");
         const [tersimpan, setTersimpan] = React.useState(false);
+        const [terkirim, setTerkirim] = React.useState(false);
+        const [practiceHistoryId, setPracticeHistoryId] = React.useState(null);
         const recorderRef = React.useRef(null);
         const streamRef = React.useRef(null);
         const chunksRef = React.useRef([]);
@@ -1962,6 +2025,8 @@ $practiceScripts = [
           setNomor(0);
           setDurasiJawaban([]);
           setTersimpan(false);
+          setTerkirim(false);
+          setPracticeHistoryId(null);
           setFase("persiapan");
           setSisaWaktu(modeCepat ? 5 : level.persiapan);
           setPesan("Fase persiapan dimulai. Susun jawaban singkat dan jelas.");
@@ -2055,10 +2120,44 @@ $practiceScripts = [
               return;
             }
             setTersimpan(true);
+            setPracticeHistoryId(data.practice_history_id || null);
             window.prependChallengeHistory?.(data.item);
-            setPesan(data.message || "Riwayat tantangan berhasil disimpan.");
+            setPesan(data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
           } catch (error) {
             setPesan("Terjadi kesalahan saat menyimpan riwayat tantangan.");
+          }
+        }
+
+        async function submitToMentor() {
+          if (!practiceHistoryId) {
+            setPesan("Simpan riwayat latihan terlebih dahulu.");
+            return;
+          }
+          if (!isLoggedIn) {
+            setPesan("Silakan login terlebih dahulu.");
+            return;
+          }
+
+          setPesan("Mengirim latihan ke mentor...");
+
+          try {
+            const formData = new FormData();
+            formData.append("action", "submit_to_mentor");
+            formData.append("practice_history_id", practiceHistoryId);
+            formData.append("feature_type", "challenge");
+
+            const response = await fetch("Latihan.php", { method: "POST", body: formData });
+            const data = await response.json();
+
+            if (!data.status) {
+              setPesan(data.message || "Gagal mengirim ke mentor.");
+              return;
+            }
+
+            setTerkirim(true);
+            setPesan(data.message);
+          } catch (error) {
+            setPesan("Terjadi kesalahan saat mengirim ke mentor.");
           }
         }
 
@@ -2069,6 +2168,8 @@ $practiceScripts = [
           setNomor(0);
           setDurasiJawaban([]);
           setTersimpan(false);
+          setTerkirim(false);
+          setPracticeHistoryId(null);
           setSisaWaktu(aturan.persiapan);
           setPesan("Pilih jenis simulasi dan tingkat kesulitan, lalu mulai tantangan.");
         }
@@ -2184,6 +2285,7 @@ $practiceScripts = [
                 {fase === "menjawab" && <button className="btn btn-danger" type="button" onClick={() => selesaiMenjawab(false)}>Selesai Menjawab</button>}
                 {fase === "jawaban" && <button className="btn btn-primary" type="button" onClick={lanjutPertanyaan}>Lanjut</button>}
                 {selesai && <button className="btn btn-dark" type="button" onClick={simpanRiwayat} disabled={tersimpan}>Simpan Riwayat</button>}
+                {selesai && <button className="btn btn-primary" type="button" onClick={submitToMentor} disabled={!tersimpan || terkirim} style={{ background: '#027a48' }}>📤 Kirim ke Mentor</button>}
                 {(fase !== "ringkasan") && <button className="btn btn-muted" type="button" onClick={resetSimulasi}>Ulangi Simulasi</button>}
               </div>
 
