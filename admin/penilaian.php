@@ -470,6 +470,10 @@ function penilaianFeatureLabel($type) {
                         </div>
                     </div>
 
+                    <?php if (!empty($selectedSubmission['video_path'])): ?>
+                        <video controls style="width:100%; border-radius:8px; margin-bottom:18px;" src="../<?= htmlspecialchars($selectedSubmission['video_path']) ?>"></video>
+                    <?php endif; ?>
+
                     <?php if (!empty($selectedSubmission['audio_path'])): ?>
                         <audio controls src="../<?= htmlspecialchars($selectedSubmission['audio_path']) ?>"></audio>
                     <?php endif; ?>

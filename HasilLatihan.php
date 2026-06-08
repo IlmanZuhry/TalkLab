@@ -506,6 +506,9 @@ function scoreColor($score) {
             </div>
 
             <div class="result-card-body">
+              <?php if ($result['feature_type'] === 'camera' && !empty($result['video_path'])): ?>
+                <video controls src="<?= htmlspecialchars($result['video_path']) ?>" style="width:100%; border-radius:8px; margin-bottom:10px;"></video>
+              <?php endif; ?>
               <?php if ($result['audio_path']): ?>
                 <audio controls src="<?= htmlspecialchars($result['audio_path']) ?>"></audio>
               <?php endif; ?>
