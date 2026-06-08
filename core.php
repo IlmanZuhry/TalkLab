@@ -17,6 +17,7 @@ class manz{
 		$this->ensurePracticeTables();
 		$this->ensureMentorTables();
 		$this->ensureEbookTable();
+		$this->ensureEbookHistoryTable();
 		$this->ensureMaterialsTables();
 	}
 
@@ -413,6 +414,56 @@ class manz{
 
 	return $comments;
 }
+
+	public function getCommunityPostHistory($userId, $limit = 10){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$sql = "SELECT Id, Isi, Dibuat FROM Komunitas WHERE Id_User = '$userIdEsc' ORDER BY Dibuat DESC LIMIT $limit";
+		$res = mysqli_query($this->koneksi, $sql);
+		$history = [];
+		if ($res){
+			while ($row = mysqli_fetch_assoc($res)){
+				$history[] = $row;
+			}
+		}
+		return $history;
+	}
+
+	public function getUserCommentHistory($userId, $limit = 10){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$sql = "SELECT pc.id, pc.content, pc.post_id, pc.created_at, k.Isi AS post_content
+			FROM post_comments pc
+			LEFT JOIN Komunitas k ON pc.post_id = k.Id
+			WHERE pc.user_id = '$userIdEsc'
+			ORDER BY pc.created_at DESC
+			LIMIT $limit";
+		$res = mysqli_query($this->koneksi, $sql);
+		$history = [];
+		if ($res){
+			while ($row = mysqli_fetch_assoc($res)){
+				$history[] = $row;
+			}
+		}
+		return $history;
+	}
+
+	public function getMaterialActivityHistory($userId, $limit = 10){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$sql = "SELECT p.created_at, v.title AS video_title, m.title AS material_title
+			FROM material_video_progress p
+			JOIN material_videos v ON p.video_id = v.id
+			JOIN materials m ON v.material_id = m.id
+			WHERE p.user_id = '$userIdEsc'
+			ORDER BY p.created_at DESC
+			LIMIT $limit";
+		$res = mysqli_query($this->koneksi, $sql);
+		$history = [];
+		if ($res){
+			while ($row = mysqli_fetch_assoc($res)){
+				$history[] = $row;
+			}
+		}
+		return $history;
+	}
 
 	public function getLatestCommentReplies($userId, $limit = 3){
 		// Get latest comments on user's posts (replies to user's posts)
@@ -1166,6 +1217,52 @@ public function handleSaveAiFeedback($currentUser){
 		}
 
 		mysqli_stmt_close($stmt);
+	}
+
+	public function ensureEbookHistoryTable(){
+		$sql = "CREATE TABLE IF NOT EXISTS ebook_activity (
+			id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+			user_id VARCHAR(6) NOT NULL,
+			ebook_id INT UNSIGNED NOT NULL,
+			ebook_title VARCHAR(255) NOT NULL,
+			created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			KEY idx_ebook_activity_user (user_id),
+			CONSTRAINT fk_ebook_activity_user FOREIGN KEY (user_id) REFERENCES users(Id_User) ON DELETE CASCADE,
+			CONSTRAINT fk_ebook_activity_ebook FOREIGN KEY (ebook_id) REFERENCES ebooks(id) ON DELETE CASCADE
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci";
+		mysqli_query($this->koneksi, $sql);
+	}
+
+	public function getEbookById($ebookId){
+		$ebookIdInt = (int) $ebookId;
+		$sql = "SELECT id, title FROM ebooks WHERE id = $ebookIdInt LIMIT 1";
+		$res = mysqli_query($this->koneksi, $sql);
+		if ($res && mysqli_num_rows($res) > 0){
+			return mysqli_fetch_assoc($res);
+		}
+		return false;
+	}
+
+	public function saveEbookActivity($userId, $ebookId, $ebookTitle){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$ebookIdInt = (int) $ebookId;
+		$ebookTitleEsc = mysqli_real_escape_string($this->koneksi, $ebookTitle);
+		$sql = "INSERT INTO ebook_activity (user_id, ebook_id, ebook_title) VALUES ('$userIdEsc', $ebookIdInt, '$ebookTitleEsc')";
+		return mysqli_query($this->koneksi, $sql);
+	}
+
+	public function getEbookActivityHistory($userId, $limit = 10){
+		$userIdEsc = mysqli_real_escape_string($this->koneksi, $userId);
+		$sql = "SELECT ebook_id, ebook_title, created_at FROM ebook_activity WHERE user_id = '$userIdEsc' ORDER BY created_at DESC LIMIT $limit";
+		$res = mysqli_query($this->koneksi, $sql);
+		$history = [];
+		if ($res){
+			while ($row = mysqli_fetch_assoc($res)){
+				$history[] = $row;
+			}
+		}
+		return $history;
 	}
 
 	public function getEbooks($search = ''){

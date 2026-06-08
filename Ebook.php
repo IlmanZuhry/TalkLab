@@ -293,7 +293,7 @@ $ebooks = $app->getEbooks($search_query);
                         echo '<div class="ebook-card-pages">' . (int) $ebook['pages'] . ' Halaman</div>';
                     }
                     echo '<div class="ebook-card-footer">';
-                    echo '<a href="' . htmlspecialchars($ebook['pdf_path']) . '" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Baca</a>';
+                    echo '<a href="' . htmlspecialchars($ebook['pdf_path']) . '" target="_blank" class="btn-primary ebook-read-btn" data-ebook-id="' . (int) $ebook['id'] . '" data-ebook-title="' . htmlspecialchars($ebook['title'], ENT_QUOTES) . '" style="display: block; text-align: center; text-decoration: none;">Baca</a>';
                     echo '</div>';
                     echo '</div>';
                     echo '</article>';
@@ -352,7 +352,7 @@ $ebooks = $app->getEbooks($search_query);
                             <div class="ebook-card-author">${escapeHtml(ebook.author)}</div>
                             ${pages > 0 ? `<div class="ebook-card-pages">${pages} Halaman</div>` : ''}
                             <div class="ebook-card-footer">
-                                <a href="${escapeHtml(ebook.pdf_path)}" target="_blank" class="btn-primary" style="display: block; text-align: center; text-decoration: none;">Baca</a>
+                                <a href="${escapeHtml(ebook.pdf_path)}" target="_blank" class="btn-primary ebook-read-btn" data-ebook-id="${escapeHtml(ebook.id)}" data-ebook-title="${escapeHtml(ebook.title)}" style="display: block; text-align: center; text-decoration: none;">Baca</a>
                             </div>
                         </div>
                     `;
@@ -365,6 +365,31 @@ $ebooks = $app->getEbooks($search_query);
                 noResults.textContent = 'Tidak ada e-book yang sesuai dengan pencarian Anda';
                 ebookGrid.appendChild(noResults);
             }
+            setupEbookLoggers();
+        }
+
+        // Add event listener to ebook read buttons
+        function logEbookRead(ebookId, ebookTitle) {
+            if (!ebookId) return;
+            const formData = new FormData();
+            formData.append('action', 'save_read');
+            formData.append('ebook_id', ebookId);
+            formData.append('ebook_title', ebookTitle);
+
+            fetch('api_ebook.php', {
+                method: 'POST',
+                body: formData
+            }).catch(() => {});
+        }
+
+        function setupEbookLoggers() {
+            document.querySelectorAll('.ebook-read-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const ebookId = btn.dataset.ebookId;
+                    const ebookTitle = btn.dataset.ebookTitle || '';
+                    logEbookRead(ebookId, ebookTitle);
+                });
+            });
         }
 
         // Event listener untuk search input
@@ -378,6 +403,8 @@ $ebooks = $app->getEbooks($search_query);
                 performSearch(e.target.value);
             }
         });
+
+        setupEbookLoggers();
     </script>
 
 </body>

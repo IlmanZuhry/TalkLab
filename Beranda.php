@@ -27,32 +27,71 @@ function getTimeAgoInIndonesian($dateString) {
 $recentActivities = [];
 
 if ($currentUser) {
-    // Get latest practice session
-    $practiceHistory = $app->getPracticeHistory($currentUser['Id_User'], 1);
-    if (!empty($practiceHistory)) {
-        $recentActivities[] = [
-            'type' => 'practice',
-            'text' => 'Kamu melakukan latihan: "' . substr($practiceHistory[0]['topic'], 0, 40) . '..."',
-            'time' => $practiceHistory[0]['created_at']
-        ];
-    }
-    
-    // Get latest challenge
-    $challengeHistory = $app->getChallengeHistory($currentUser['Id_User'], 1);
-    if (!empty($challengeHistory)) {
-        $recentActivities[] = [
-            'type' => 'challenge',
-            'text' => 'Kamu menyelesaikan ' . $challengeHistory[0]['challenge_type'] . ' dengan skor ' . $challengeHistory[0]['score'],
-            'time' => $challengeHistory[0]['created_at']
-        ];
-    }
-    
-    // Get latest comment reply on user's posts
-    $userPostComments = $app->getLatestCommentReplies($currentUser['Id_User'], 3);
-    foreach ($userPostComments as $comment) {
-        $recentActivities[] = [
-            'type' => 'comment',
-            'text' => 'Ada balasan komentar: "' . substr($comment['content'], 0, 40) . '..."',
+        // Get latest practice sessions
+        $practiceHistory = $app->getPracticeHistory($currentUser['Id_User'], 5);
+        foreach ($practiceHistory as $practice) {
+            $recentActivities[] = [
+                'type' => 'practice',
+                'text' => 'Kamu melakukan latihan: "' . substr($practice['topic'], 0, 40) . '..."',
+                'time' => $practice['created_at']
+            ];
+        }
+
+        // Get latest challenge history
+        $challengeHistory = $app->getChallengeHistory($currentUser['Id_User'], 5);
+        foreach ($challengeHistory as $challenge) {
+            $recentActivities[] = [
+                'type' => 'challenge',
+                'text' => 'Kamu menyelesaikan ' . $challenge['challenge_type'] . ' dengan skor ' . $challenge['score'],
+                'time' => $challenge['created_at']
+            ];
+        }
+
+        // Get latest material progress
+        $materialHistory = $app->getMaterialActivityHistory($currentUser['Id_User'], 5);
+        foreach ($materialHistory as $item) {
+            $recentActivities[] = [
+                'type' => 'material',
+                'text' => 'Kamu menyelesaikan materi: "' . substr($item['material_title'], 0, 40) . ' - ' . substr($item['video_title'], 0, 40) . '..."',
+                'time' => $item['created_at']
+            ];
+        }
+
+        // Get latest ebook reads
+        $ebookHistory = $app->getEbookActivityHistory($currentUser['Id_User'], 5);
+        foreach ($ebookHistory as $ebook) {
+            $recentActivities[] = [
+                'type' => 'ebook',
+                'text' => 'Kamu membaca e-book: "' . substr($ebook['ebook_title'], 0, 40) . '..."',
+                'time' => $ebook['created_at']
+            ];
+        }
+
+        // Get latest community posts by the user
+        $userPosts = $app->getCommunityPostHistory($currentUser['Id_User'], 5);
+        foreach ($userPosts as $post) {
+            $recentActivities[] = [
+                'type' => 'community_post',
+                'text' => 'Kamu membuat posting komunitas: "' . substr($post['Isi'], 0, 40) . '..."',
+                'time' => $post['Dibuat']
+            ];
+        }
+
+        // Get latest comments by the user
+        $userComments = $app->getUserCommentHistory($currentUser['Id_User'], 5);
+        foreach ($userComments as $comment) {
+            $recentActivities[] = [
+                'type' => 'community_comment',
+                'text' => 'Kamu mengomentari: "' . substr($comment['content'], 0, 40) . '..."',
+                'time' => $comment['created_at']
+            ];
+        }
+
+        // Get latest comment replies on user's posts
+        $userPostComments = $app->getLatestCommentReplies($currentUser['Id_User'], 5);
+        foreach ($userPostComments as $comment) {
+            $recentActivities[] = [
+                'type' => 'comment_reply',
             'time' => $comment['created_at']
         ];
     }
@@ -63,8 +102,8 @@ usort($recentActivities, function($a, $b) {
     return strtotime($b['time']) - strtotime($a['time']);
 });
 
-// Limit to 3 latest activities
-$recentActivities = array_slice($recentActivities, 0, 3);
+// Limit to 5 latest activities
+$recentActivities = array_slice($recentActivities, 0, 5);
 ?>
 
 <!DOCTYPE html>
@@ -159,11 +198,15 @@ $recentActivities = array_slice($recentActivities, 0, 3);
             ?>
                     <div class="activity-item">
                         <?php if ($activity['type'] === 'practice'): ?>
-                            <img class="activity-icon" src="icon/ngomong.svg" alt="">
+                            <div class="icon-box latihan-icon"><img src="icon/ngomong.svg" alt=""></div>
                         <?php elseif ($activity['type'] === 'challenge'): ?>
-                            <img class="activity-icon" src="icon/cup.svg" alt="">
+                            <div class="icon-box yellow"><img src="icon/cup.svg" alt=""></div>
+                        <?php elseif ($activity['type'] === 'material'): ?>
+                            <div class="icon-box materi-icon"><img src="icon/bukuuu.svg" alt=""></div>
+                        <?php elseif ($activity['type'] === 'ebook'): ?>
+                            <div class="icon-box ebook-icon"><img src="icon/buk.svg" alt=""></div>
                         <?php else: ?>
-                            <img class="activity-icon" src="icon/panah.svg" alt="">
+                            <div class="icon-box komunitas-icon"><img src="icon/dua.svg" alt=""></div>
                         <?php endif; ?>
                         <div class="text">
                             <p><?php echo htmlspecialchars($activity['text']); ?></p>

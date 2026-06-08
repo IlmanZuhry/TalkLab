@@ -350,17 +350,25 @@ main {
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
-
-.icon-box {
+.quick-card .icon-box {
     width: 80px;
     height: 80px;
-    border-radius: 10px;
+    border-radius: 20px;
     margin: 0 auto 14px;
     background: #0e3a8a;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-left: 0;
+}
+
+.activity-item .icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
 .materi-icon {
@@ -419,8 +427,22 @@ main {
     gap: 15px;
     width: 100%;
     margin-top: 25px;
+    max-height: 420px;
+    overflow-y: auto;
 }
 
+.activity-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.activity-list::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+}
+
+.activity-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.04);
+}
 
 .activity-item {
     background: #f4f4f4;
@@ -431,11 +453,16 @@ main {
     align-items: flex-start;
 }
 
+.activity-item .icon-box {
+    width: 50px;
+    height: 50px;
+    border-radius: 18px;
+    background: #032F98;
+}
 
-.icon-box {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+.activity-item .icon-box img {
+    width: 22px;
+    height: auto;
 }
 
 
