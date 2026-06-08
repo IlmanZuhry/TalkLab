@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     }
 }
 
-$stats = $app->getMentorDashboardStats();
-$queue = $app->getMentorReviewQueue();
+$stats = $app->getMentorDashboardStats($mentor['specialty'] ?? null);
+$queue = $app->getMentorReviewQueue(12, $mentor['specialty'] ?? null);
 $selectedSubmissionId = (int) ($_GET['submission'] ?? 0);
 $selectedSubmission = $selectedSubmissionId > 0 ? $app->getMentorSubmissionById($selectedSubmissionId) : false;
 $reviewSaved = isset($_GET['saved']);
