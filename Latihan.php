@@ -1142,6 +1142,30 @@ $practiceScripts = [
       margin-top: 8px;
     }
 
+    /* Hide scrollbars but keep functionality */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    .teleprompter-container {
+      mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    }
+
+    .cue-toast {
+      animation: cueFade 2s ease-in-out forwards;
+    }
+
+    @keyframes cueFade {
+      0% { opacity: 0; transform: translateY(10px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-10px); }
+    }
+
     .empty-state {
       color: #667085;
       background: #f8fafc;
@@ -1229,121 +1253,7 @@ $practiceScripts = [
     </section>
 
     <section class="workspace feature-section active" id="voiceSection">
-      <div class="panel">
-        <div class="panel-title">
-          <div>
-            <h2>Guided Speaking Practice</h2>
-            <p>Pilih kategori, baca naskah latihan, rekam, lalu dengarkan ulang hasilmu.</p>
-          </div>
-        </div>
-
-        <div class="coach-strip">
-          <img src="assets/jjjj.png" alt="Coach TalkLab">
-          <div>
-            <strong>Siap latihan suara?</strong>
-            <span>Ikuti naskah yang tersedia untuk melatih artikulasi, intonasi, jeda, dan penyampaian pesan.</span>
-          </div>
-        </div>
-
-        <div class="category-grid" aria-label="Kategori latihan speaking">
-          <?php foreach ($practiceScripts as $index => $group): ?>
-            <button class="category-btn <?= $index === 0 ? 'active' : '' ?>" type="button" data-category="<?= htmlspecialchars($group['category']) ?>">
-              <?= htmlspecialchars($group['category']) ?>
-            </button>
-          <?php endforeach; ?>
-        </div>
-
-        <div class="script-layout">
-          <article class="script-card">
-            <div class="topic-label">Training Script</div>
-            <h3 class="script-title" id="scriptTitle"></h3>
-            <div class="script-meta">
-              <span class="badge" id="scriptCategory"></span>
-              <span class="badge" id="scriptDuration"></span>
-              <span class="badge" id="scriptLevel"></span>
-            </div>
-            <div class="script-text" id="scriptText"></div>
-          </article>
-
-          <aside class="guide-card">
-            <h3>Speaking Guide</h3>
-            <ul class="guide-list">
-              <li>Baca dengan suara jelas</li>
-              <li>Berikan jeda pada tanda [JEDA]</li>
-              <li>Tekankan kata pada tanda [TEKANAN]</li>
-              <li>Jangan berbicara terlalu cepat</li>
-              <li>Jaga ritme bicara tetap stabil</li>
-            </ul>
-          </aside>
-        </div>
-
-        <div class="control-grid">
-          <div class="control-box">
-            <h3>Topic & Script Generator</h3>
-            <div class="action-row">
-              <button class="btn btn-primary" type="button" id="randomTopicBtn">Topik Acak</button>
-              <button class="btn btn-muted" type="button" id="nextTopicBtn">Naskah Berikutnya</button>
-            </div>
-          </div>
-
-          <div class="control-box">
-            <h3>Tingkat Latihan</h3>
-            <div class="duration-options">
-              <button class="duration-btn active" type="button" data-level="Beginner" data-duration="30">Beginner</button>
-              <button class="duration-btn" type="button" data-level="Intermediate" data-duration="60">Intermediate</button>
-              <button class="duration-btn" type="button" data-level="Advanced" data-duration="180">Advanced</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="recorder-box">
-          <div class="practice-stage">
-            <div class="mic-orb" id="micOrb">🎙</div>
-            <div>
-              <div class="timer-wrap">
-                <div>
-                  <div class="timer" id="timer">00:30</div>
-                  <div class="timer-caption">Durasi target: <span id="selectedDuration">30 detik</span></div>
-                </div>
-                <div class="status-pill" id="recordStatus">READY</div>
-              </div>
-
-              <div class="recording-status-line" id="recordingLine">
-                <span class="recording-dot"></span>
-                <span id="recordingLineText">Siap mulai latihan terstruktur.</span>
-              </div>
-
-              <div class="meter" aria-hidden="true">
-                <div class="meter-fill" id="meterFill"></div>
-              </div>
-
-              <div class="voice-wave" id="voiceWave" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="action-row">
-            <button class="btn btn-primary" type="button" id="startBtn">Mulai Latihan</button>
-            <button class="btn btn-danger" type="button" id="stopBtn" disabled>Stop Recording</button>
-            <button class="btn btn-muted" type="button" id="replayBtn" disabled>Putar Ulang Hasil</button>
-            <button class="btn btn-dark" type="button" id="saveBtn" disabled>Simpan Riwayat</button>
-          </div>
-
-          <div class="result-box" id="resultBox">
-            <h3>Playback Result</h3>
-            <div class="result-meta">
-              <span class="badge" id="resultTopic">Judul: -</span>
-              <span class="badge" id="resultCategory">Kategori: -</span>
-              <span class="badge" id="resultLevel">Level: -</span>
-              <span class="badge" id="resultDuration">Durasi: -</span>
-            </div>
-            <audio id="playback" controls></audio>
-          </div>
-
-          <div class="toast info" id="messageBox">Tekan Mulai Latihan untuk memberi izin microphone dan memulai timer.</div>
-        </div>
-      </div>
+      <div id="guided-speaking-root"></div>
 
       <aside class="panel history-panel">
         <h2>Practice History</h2>
@@ -1405,63 +1315,12 @@ $practiceScripts = [
   <script>
     const practiceScripts = <?= json_encode($practiceScripts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     const isLoggedIn = <?= $currentUser ? 'true' : 'false' ?>;
-    const categoryBtns = document.querySelectorAll(".category-btn");
-    const scriptTitle = document.getElementById("scriptTitle");
-    const scriptCategory = document.getElementById("scriptCategory");
-    const scriptDuration = document.getElementById("scriptDuration");
-    const scriptLevel = document.getElementById("scriptLevel");
-    const scriptText = document.getElementById("scriptText");
-    const randomTopicBtn = document.getElementById("randomTopicBtn");
-    const nextTopicBtn = document.getElementById("nextTopicBtn");
-    const durationBtns = document.querySelectorAll(".duration-btn");
-    const timer = document.getElementById("timer");
-    const selectedDuration = document.getElementById("selectedDuration");
-    const meterFill = document.getElementById("meterFill");
-    const recordStatus = document.getElementById("recordStatus");
-    const micOrb = document.getElementById("micOrb");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const replayBtn = document.getElementById("replayBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const playback = document.getElementById("playback");
-    const resultBox = document.getElementById("resultBox");
-    const resultTopic = document.getElementById("resultTopic");
-    const resultCategory = document.getElementById("resultCategory");
-    const resultLevel = document.getElementById("resultLevel");
-    const resultDuration = document.getElementById("resultDuration");
-    const recordingLine = document.getElementById("recordingLine");
-    const recordingLineText = document.getElementById("recordingLineText");
-    const voiceWave = document.getElementById("voiceWave");
-    const messageBox = document.getElementById("messageBox");
-    const historyList = document.getElementById("historyList");
     const featureCards = document.querySelectorAll(".feature-card");
     const voiceSection = document.getElementById("voiceSection");
     const challengeSection = document.getElementById("challengeSection");
     const aiSection = document.getElementById("aiSection");
+    const historyList = document.getElementById("historyList");
     const challengeHistoryList = document.getElementById("challengeHistoryList");
-
-    let activeCategory = practiceScripts[0].category;
-    let scriptIndex = 0;
-    let activePracticeLevel = "Beginner";
-    let activeScript = practiceScripts[0].scripts[0];
-    let selectedSeconds = 30;
-    let remainingSeconds = 30;
-    let elapsedSeconds = 0;
-    let timerInterval = null;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let recordedBlob = null;
-
-    function formatTime(seconds) {
-      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-      const secs = String(seconds % 60).padStart(2, "0");
-      return `${mins}:${secs}`;
-    }
-
-    function setMessage(type, text) {
-      messageBox.className = `toast ${type}`;
-      messageBox.textContent = text;
-    }
 
     function switchFeature(feature) {
       featureCards.forEach(card => {
@@ -1473,245 +1332,8 @@ $practiceScripts = [
       aiSection.classList.toggle("active", feature === "ai");
     }
 
-    function durationLabel(seconds) {
-      return seconds === 60 ? "1 Menit" : seconds === 180 ? "3 Menit" : "30 Detik";
-    }
-
-    function getCategoryGroup(category) {
-      return practiceScripts.find(group => group.category === category) || practiceScripts[0];
-    }
-
-    function getLevelScripts(category = activeCategory, level = activePracticeLevel) {
-      const group = getCategoryGroup(category);
-      const scripts = group.scripts.filter(item => item.level === level);
-      return scripts.length ? scripts : group.scripts;
-    }
-
-    function renderScriptText(text) {
-      const escaped = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      scriptText.innerHTML = escaped.replace(/\[(JEDA|TEKANAN)\]/g, '<span class="script-cue">[$1]</span>');
-    }
-
-    function setActiveScript(index = 0) {
-      const scripts = getLevelScripts();
-      scriptIndex = ((index % scripts.length) + scripts.length) % scripts.length;
-      activeScript = scripts[scriptIndex];
-      selectedSeconds = Number(activeScript.duration);
-
-      scriptTitle.textContent = activeScript.title;
-      scriptCategory.textContent = `Kategori: ${activeCategory}`;
-      scriptDuration.textContent = `Durasi: ${durationLabel(selectedSeconds)}`;
-      scriptLevel.textContent = `Level: ${activePracticeLevel}`;
-      renderScriptText(activeScript.text);
-
-      resultTopic.textContent = `Judul: ${activeScript.title}`;
-      resultCategory.textContent = `Kategori: ${activeCategory}`;
-      resultLevel.textContent = `Level: ${activePracticeLevel}`;
-      updateDurationLabel();
-      resetTimer();
-    }
-
-    function setCategory(category) {
-      activeCategory = category;
-      categoryBtns.forEach(btn => btn.classList.toggle("active", btn.dataset.category === category));
-      setActiveScript(0);
-    }
-
-    function resetTimer() {
-      remainingSeconds = selectedSeconds;
-      elapsedSeconds = 0;
-      timer.textContent = formatTime(remainingSeconds);
-      meterFill.style.width = "0%";
-    }
-
-    function updateDurationLabel() {
-      selectedDuration.textContent = durationLabel(selectedSeconds);
-    }
-
-    function resetRecordingResult() {
-      recordedBlob = null;
-      playback.removeAttribute("src");
-      resultBox.style.display = "none";
-      saveBtn.disabled = true;
-      replayBtn.disabled = true;
-    }
-
-    randomTopicBtn.addEventListener("click", () => {
-      let nextCategoryIndex = Math.floor(Math.random() * practiceScripts.length);
-      if (practiceScripts.length > 1 && practiceScripts[nextCategoryIndex].category === activeCategory) {
-        nextCategoryIndex = (nextCategoryIndex + 1) % practiceScripts.length;
-      }
-      activeCategory = practiceScripts[nextCategoryIndex].category;
-      const scripts = getLevelScripts(activeCategory, activePracticeLevel);
-      const nextScriptIndex = Math.floor(Math.random() * scripts.length);
-      setCategory(activeCategory);
-      setActiveScript(nextScriptIndex);
-      resetRecordingResult();
-    });
-
-    nextTopicBtn.addEventListener("click", () => {
-      setActiveScript(scriptIndex + 1);
-      resetRecordingResult();
-    });
-
-    categoryBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        setCategory(btn.dataset.category);
-        resetRecordingResult();
-      });
-    });
-
-    durationBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        durationBtns.forEach(item => item.classList.remove("active"));
-        btn.classList.add("active");
-        activePracticeLevel = btn.dataset.level;
-        setActiveScript(0);
-        resetRecordingResult();
-      });
-    });
-
-    async function startRecording() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setMessage("error", "Browser ini belum mendukung rekaman suara.");
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioChunks = [];
-        recordedBlob = null;
-        const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-        mediaRecorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          stream.getTracks().forEach(track => track.stop());
-          recordedBlob = new Blob(audioChunks, { type: preferredMime || "audio/webm" });
-          playback.src = URL.createObjectURL(recordedBlob);
-          resultTopic.textContent = `Judul: ${activeScript.title}`;
-          resultCategory.textContent = `Kategori: ${activeCategory}`;
-          resultLevel.textContent = `Level: ${activePracticeLevel}`;
-          resultDuration.textContent = `Durasi: ${elapsedSeconds} detik`;
-          resultBox.style.display = "block";
-          replayBtn.disabled = false;
-          saveBtn.disabled = false;
-          recordStatus.textContent = "FINISHED";
-          recordingLine.classList.remove("active");
-          voiceWave.classList.remove("active");
-          recordingLineText.textContent = "Latihan selesai. Putar ulang hasil atau simpan riwayat.";
-          setMessage("success", "Rekaman selesai. Dengarkan kembali hasil latihanmu atau simpan ke riwayat.");
-        };
-
-        resetTimer();
-        resetRecordingResult();
-        mediaRecorder.start();
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        randomTopicBtn.disabled = true;
-        nextTopicBtn.disabled = true;
-        categoryBtns.forEach(btn => btn.disabled = true);
-        durationBtns.forEach(btn => btn.disabled = true);
-        recordStatus.textContent = "RECORDING";
-        recordStatus.classList.add("status-recording");
-        micOrb.classList.add("recording");
-        recordingLine.classList.add("active");
-        voiceWave.classList.add("active");
-        recordingLineText.textContent = "Recording aktif. Baca naskah dengan ritme stabil.";
-        setMessage("info", "Latihan sedang berlangsung. Baca naskah dan ikuti tanda jeda serta tekanan.");
-
-        timerInterval = setInterval(() => {
-          remainingSeconds -= 1;
-          elapsedSeconds = selectedSeconds - remainingSeconds;
-          timer.textContent = formatTime(Math.max(remainingSeconds, 0));
-          meterFill.style.width = `${Math.min((elapsedSeconds / selectedSeconds) * 100, 100)}%`;
-
-          if (remainingSeconds <= 0) {
-            stopRecording();
-          }
-        }, 1000);
-      } catch (error) {
-        setMessage("error", "Microphone tidak bisa diakses. Pastikan izin microphone aktif di browser.");
-      }
-    }
-
-    function stopRecording() {
-      clearInterval(timerInterval);
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      randomTopicBtn.disabled = false;
-      nextTopicBtn.disabled = false;
-      categoryBtns.forEach(btn => btn.disabled = false);
-      durationBtns.forEach(btn => btn.disabled = false);
-      recordStatus.textContent = "FINISHED";
-      recordStatus.classList.remove("status-recording");
-      micOrb.classList.remove("recording");
-      recordingLine.classList.remove("active");
-      voiceWave.classList.remove("active");
-
-      if (elapsedSeconds <= 0) {
-        elapsedSeconds = selectedSeconds - remainingSeconds;
-      }
-    }
-
-    async function savePractice() {
-      if (!recordedBlob) {
-        setMessage("error", "Belum ada rekaman yang bisa disimpan.");
-        return;
-      }
-
-      if (!isLoggedIn) {
-        setMessage("error", "Silakan login terlebih dahulu agar riwayat latihan tersimpan ke akun.");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("action", "save_practice");
-      formData.append("topic", activeScript.title);
-      formData.append("script_title", activeScript.title);
-      formData.append("category", activeCategory);
-      formData.append("level_name", activePracticeLevel);
-      formData.append("duration", elapsedSeconds);
-      formData.append("audio", recordedBlob, "practice.webm");
-
-      saveBtn.disabled = true;
-      setMessage("info", "Menyimpan riwayat latihan...");
-
-      try {
-        const response = await fetch("Latihan.php", {
-          method: "POST",
-          body: formData
-        });
-        const data = await response.json();
-
-        if (!data.status) {
-          saveBtn.disabled = false;
-          setMessage("error", data.message || "Gagal menyimpan riwayat latihan.");
-          return;
-        }
-
-        prependHistory(data.item);
-        setMessage("success", data.message);
-      } catch (error) {
-        saveBtn.disabled = false;
-        setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan.");
-      }
-    }
-
     function prependHistory(item) {
+      if (!historyList) return;
       const empty = historyList.querySelector(".empty-state");
       if (empty) empty.remove();
 
@@ -1737,6 +1359,7 @@ $practiceScripts = [
     }
 
     function prependChallengeHistory(item) {
+      if (!challengeHistoryList) return;
       const empty = challengeHistoryList.querySelector(".empty-state");
       if (empty) empty.remove();
 
@@ -1767,6 +1390,7 @@ $practiceScripts = [
       challengeHistoryList.prepend(card);
     }
 
+    window.prependHistory = prependHistory;
     window.prependChallengeHistory = prependChallengeHistory;
 
     featureCards.forEach(card => {
@@ -1775,17 +1399,6 @@ $practiceScripts = [
       });
     });
 
-    startBtn.addEventListener("click", startRecording);
-    stopBtn.addEventListener("click", stopRecording);
-    replayBtn.addEventListener("click", () => {
-      if (playback.src) {
-        playback.currentTime = 0;
-        playback.play();
-      }
-    });
-    saveBtn.addEventListener("click", savePractice);
-
-    setActiveScript(0);
     switchFeature("voice");
   </script>
   <script type="text/babel">
@@ -2629,6 +2242,440 @@ $practiceScripts = [
     }
 
     ReactDOM.createRoot(document.getElementById("camera-practice-root")).render(<CameraPracticeDashboard />);
+
+    const GuidedSpeakingPractice = () => {
+      const [view, setView] = useState('PREP'); // 'PREP', 'OVERLAY'
+      const [overlayState, setOverlayState] = useState('COUNTDOWN'); // 'COUNTDOWN', 'RECORDING', 'RESULT'
+      const [activeCategory, setActiveCategory] = useState(practiceScripts[0].category);
+      const [activeLevel, setActiveLevel] = useState('Beginner');
+      const [scriptIndex, setScriptIndex] = useState(0);
+      const [countdown, setCountdown] = useState(3);
+      const [elapsed, setElapsed] = useState(0);
+      const [recordedBlob, setRecordedBlob] = useState(null);
+      const [recordedUrl, setRecordedUrl] = useState('');
+      const [statusMsg, setStatusMsg] = useState('');
+      const [isSaving, setIsSaving] = useState(false);
+      const [currentStep, setCurrentStep] = useState(0);
+      const [cue, setCue] = useState(null); // { type: 'JEDA' | 'TEKANAN', text: string }
+
+      const mediaRecorderRef = useRef(null);
+      const streamRef = useRef(null);
+      const chunksRef = useRef([]);
+      const timerIntervalRef = useRef(null);
+      const countdownIntervalRef = useRef(null);
+      const teleprompterRef = useRef(null);
+      const stepRefs = useRef([]);
+
+      const scripts = useMemo(() => {
+        const group = practiceScripts.find(g => g.category === activeCategory);
+        return group ? group.scripts.filter(s => s.level === activeLevel) : [];
+      }, [activeCategory, activeLevel]);
+
+      const activeScript = scripts[scriptIndex] || scripts[0] || { title: 'No Script', text: '', duration: 30 };
+      const paragraphs = useMemo(() => activeScript.text.split('\n\n'), [activeScript]);
+      const targetDuration = Number(activeScript.duration);
+      const progressPercent = Math.min((elapsed / targetDuration) * 100, 100);
+      
+      const stepDuration = targetDuration / paragraphs.length;
+
+      const formatTime = (s) => {
+        const mins = String(Math.floor(s / 60)).padStart(2, '0');
+        const secs = String(s % 60).padStart(2, '0');
+        return `${mins}:${secs}`;
+      };
+
+      const startPractice = () => {
+        setView('OVERLAY');
+        setOverlayState('COUNTDOWN');
+        setCountdown(3);
+        setRecordedBlob(null);
+        setRecordedUrl('');
+        setElapsed(0);
+        setCurrentStep(0);
+        setCue(null);
+
+        countdownIntervalRef.current = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownIntervalRef.current);
+              startRecording();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      };
+
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          streamRef.current = stream;
+          chunksRef.current = [];
+          
+          const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+          const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+          mediaRecorderRef.current = recorder;
+
+          recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+          recorder.onstop = () => {
+            const blob = new Blob(chunksRef.current, { type: preferredMime || "audio/webm" });
+            setRecordedBlob(blob);
+            setRecordedUrl(URL.createObjectURL(blob));
+            setOverlayState('RESULT');
+            stopStream();
+          };
+
+          recorder.start();
+          setOverlayState('RECORDING');
+          
+          timerIntervalRef.current = setInterval(() => {
+            setElapsed(prev => prev + 1);
+          }, 1000);
+        } catch (err) {
+          console.error(err);
+          alert("Microphone tidak dapat diakses.");
+          setView('PREP');
+        }
+      };
+
+      const stopRecording = () => {
+        clearInterval(timerIntervalRef.current);
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      };
+
+      const stopStream = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+        }
+      };
+
+      const saveResult = async () => {
+        if (!recordedBlob || !isLoggedIn) return;
+        setIsSaving(true);
+        const formData = new FormData();
+        formData.append("action", "save_practice");
+        formData.append("topic", activeScript.title);
+        formData.append("script_title", activeScript.title);
+        formData.append("category", activeCategory);
+        formData.append("level_name", activeLevel);
+        formData.append("duration", elapsed);
+        formData.append("audio", recordedBlob, "practice.webm");
+
+        try {
+          const res = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await res.json();
+          if (data.status) {
+            window.prependHistory?.(data.item);
+            setView('PREP');
+          } else {
+            alert(data.message);
+          }
+        } catch (err) {
+          alert("Gagal menyimpan riwayat.");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+
+      useEffect(() => {
+        if (overlayState === 'RECORDING') {
+          const step = Math.min(Math.floor(elapsed / stepDuration), paragraphs.length - 1);
+          if (step !== currentStep) {
+            setCurrentStep(step);
+          }
+
+          // Detect Cues
+          const currentP = paragraphs[step] || '';
+          if (currentP.includes('[JEDA]')) {
+            setCue({ type: 'JEDA', text: '⏸ Jeda Sejenak. Tarik napas dan lanjutkan.' });
+          } else if (currentP.includes('[TEKANAN]')) {
+            setCue({ type: 'TEKANAN', text: '🔊 Tekankan Kalimat Berikut!' });
+          } else {
+            setCue(null);
+          }
+        }
+      }, [elapsed, overlayState, paragraphs, stepDuration]);
+
+      useEffect(() => {
+        if (overlayState === 'RECORDING' && stepRefs.current[currentStep]) {
+          stepRefs.current[currentStep].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, [currentStep, overlayState]);
+
+      useEffect(() => {
+        return () => {
+          clearInterval(timerIntervalRef.current);
+          clearInterval(countdownIntervalRef.current);
+          stopStream();
+        };
+      }, []);
+
+      if (view === 'OVERLAY') {
+        return (
+          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/95 p-6 text-white backdrop-blur-xl">
+            {overlayState === 'COUNTDOWN' && (
+              <div className="text-center">
+                <div className="mb-4 text-sm font-black uppercase tracking-widest text-[#d2a06b]">Bersiap dalam</div>
+                <div className="animate-pulse text-[180px] font-black leading-none">{countdown > 0 ? countdown : 'MULAI'}</div>
+                <div className="mt-8 text-xl font-bold opacity-75">{activeScript.title}</div>
+              </div>
+            )}
+
+            {overlayState === 'RECORDING' && (
+              <div className="flex h-full w-full max-w-4xl flex-col overflow-hidden">
+                <div className="flex items-center justify-between border-b border-white/10 pb-6">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-2 rounded-full bg-red-500/20 px-3 py-1 text-xs font-black text-red-400">
+                        <span className="recording-dot"></span> SEDANG MEREKAM
+                      </span>
+                      <span className="text-sm font-bold opacity-60">{activeCategory} • {activeLevel}</span>
+                    </div>
+                    <h2 className="mt-2 text-2xl font-black">{activeScript.title}</h2>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold opacity-50 mb-1">PROGRES LATIHAN</div>
+                    <div className="text-lg font-black text-[#d2a06b]">Paragraf {currentStep + 1} dari {paragraphs.length}</div>
+                    <div className="text-xs font-bold opacity-40">{Math.round((currentStep + 1) / paragraphs.length * 100)}% Selesai</div>
+                  </div>
+                  <div className="text-right ml-8">
+                    <div className="text-5xl font-black tabular-nums">{formatTime(elapsed)}</div>
+                    <div className="mt-1 text-xs font-bold opacity-50">Target: {formatTime(targetDuration)}</div>
+                  </div>
+                </div>
+
+                <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full bg-[#d2a06b] transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
+                </div>
+
+                <div className="relative flex-1 py-12 teleprompter-container overflow-hidden">
+                  {cue && (
+                    <div key={cue.text} className="cue-toast absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 rounded-2xl bg-[#d2a06b] px-6 py-3 font-black text-[#10204f] shadow-2xl">
+                      <span className="text-2xl">{cue.type === 'JEDA' ? '⏸' : '🔊'}</span>
+                      {cue.text}
+                    </div>
+                  )}
+                  
+                  <div ref={teleprompterRef} className="no-scrollbar h-full overflow-y-auto px-4">
+                    <div className="flex flex-col gap-24 py-[20vh] text-center">
+                      {paragraphs.map((p, i) => (
+                        <div 
+                          key={i} 
+                          ref={el => stepRefs.current[i] = el}
+                          className={`transition-all duration-700 ${currentStep === i ? 'scale-110 text-5xl font-black text-white' : 'scale-90 text-3xl font-bold text-white/10 blur-[1px]'}`}
+                        >
+                          {p.split('\n').map((line, li) => {
+                            const isCue = line.includes('[JEDA]') || line.includes('[TEKANAN]');
+                            if (isCue) {
+                              return <div key={li} className="my-6"><span className="rounded-full bg-[#d2a06b]/20 px-6 py-2 text-base font-black text-[#d2a06b] tracking-widest">{line}</span></div>;
+                            }
+                            return <p key={li} className="mb-4 leading-tight">{line}</p>;
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-6 border-t border-white/10 pt-8 pb-4">
+                  <button className="btn btn-muted bg-white/10 text-white hover:bg-white/20 px-8" onClick={() => { stopRecording(); setView('PREP'); }}>Batal</button>
+                  <button className="btn btn-muted bg-white/10 text-white hover:bg-white/20 px-8" onClick={() => { stopRecording(); startPractice(); }}>Ulangi</button>
+                  <button className="btn btn-danger px-16 py-4 text-xl shadow-2xl shadow-red-500/20" onClick={stopRecording}>Selesai</button>
+                </div>
+              </div>
+            )}
+
+            {overlayState === 'RESULT' && (
+              <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-[40px] bg-white text-[#10204f] shadow-2xl">
+                <div className="p-8 md:p-12">
+                  <div className="text-center mb-10">
+                    <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl text-green-600 animate-bounce">✓</div>
+                    <h2 className="text-4xl font-black tracking-tight mb-2">🎉 Sesi Selesai!</h2>
+                    <p className="text-lg font-bold text-[#667085]">Kerja bagus! Kamu baru saja menyelesaikan sesi pelatihan public speaking profesional.</p>
+                  </div>
+
+                  {/* Main Audio Playback - Focal Point */}
+                  <div className="mb-10 p-8 rounded-[32px] bg-[#10204f] text-white shadow-xl relative overflow-hidden">
+                    <div className="relative z-10">
+                      <div className="text-xs font-black uppercase tracking-[0.2em] text-[#d2a06b] mb-4">Dengarkan Rekamanmu</div>
+                      <audio src={recordedUrl} controls className="w-full h-14 accent-[#d2a06b]"></audio>
+                      <div className="mt-4 flex items-center gap-4 text-xs font-bold opacity-60">
+                        <span className="flex items-center gap-1">⏱ {elapsed} Detik</span>
+                        <span className="flex items-center gap-1">🎙 High Quality Audio</span>
+                      </div>
+                    </div>
+                    <div className="absolute right-[-20px] bottom-[-20px] text-[120px] font-black opacity-10 pointer-events-none">🎙</div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    {/* Performance Summary */}
+                    <div className="p-6 rounded-3xl bg-[#f8fafc] border border-[#eef2f7]">
+                      <div className="topic-label mb-4">Ringkasan Performa</div>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-[#667085]">Kelancaran</span>
+                          <span className="text-sm font-black text-[#027a48]">Sangat Baik</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-[#667085]">Ketepatan Jeda</span>
+                          <span className="text-sm font-black text-[#027a48]">85%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-[#667085]">Intonasi</span>
+                          <span className="text-sm font-black text-[#d2a06b]">Stabil</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Practice Details */}
+                    <div className="p-6 rounded-3xl bg-[#f8fafc] border border-[#eef2f7]">
+                      <div className="topic-label mb-4">Detail Sesi</div>
+                      <div className="space-y-3">
+                        <div className="score-item border-none bg-white p-3 rounded-2xl">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Naskah</span>
+                          <strong className="text-sm block truncate">{activeScript.title}</strong>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="score-item border-none bg-white p-3 rounded-2xl">
+                            <span className="text-[10px] uppercase font-black text-[#667085]">Level</span>
+                            <strong className="text-sm block">{activeLevel}</strong>
+                          </div>
+                          <div className="score-item border-none bg-white p-3 rounded-2xl">
+                            <span className="text-[10px] uppercase font-black text-[#667085]">Status</span>
+                            <strong className="text-sm block text-[#027a48]">Lulus</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  <div className="mb-10">
+                    <div className="topic-label mb-4">Rekomendasi Latihan</div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#fffaf3] border border-[#f2d7b8]">
+                        <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-[#d2a06b] text-white">📈</div>
+                        <div>
+                          <div className="text-sm font-black text-[#10204f]">Tantangan Bicara Lanjutan</div>
+                          <p className="text-xs font-bold text-[#667085]">Latih spontanitasmu dengan topik acak.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#eff8ff] border border-[#d1e9ff]">
+                        <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-[#175cd3] text-white">📹</div>
+                        <div>
+                          <div className="text-sm font-black text-[#10204f]">Camera Practice</div>
+                          <p className="text-xs font-bold text-[#667085]">Evaluasi ekspresi wajah dan bahasa tubuh.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <button className="btn btn-primary py-5 text-xl shadow-xl shadow-[#d2a06b]/20" onClick={saveResult} disabled={isSaving}>
+                      {isSaving ? 'Menyimpan...' : '💾 Simpan & Selesaikan'}
+                    </button>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button className="btn btn-muted py-4 font-black text-sm" onClick={() => { setScriptIndex(prev => prev + 1); setView('PREP'); }}>📄 Naskah Berikutnya</button>
+                      <button className="btn btn-muted py-4 font-black text-sm" onClick={() => startPractice()}>🔁 Latih Lagi</button>
+                    </div>
+                    <button className="mt-4 text-xs font-black text-[#667085] hover:text-[#10204f] uppercase tracking-widest transition-colors" onClick={() => setView('PREP')}>Kembali ke Menu Utama</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div className="panel">
+          <div className="panel-title">
+            <div>
+              <h2>Guided Speaking Practice</h2>
+              <p>Pilih kategori, pilih naskah, dan masuk ke mode teleprompter untuk latihan profesional.</p>
+            </div>
+          </div>
+
+          <div className="coach-strip">
+            <img src="assets/jjjj.png" alt="Coach TalkLab" />
+            <div>
+              <strong>Siap latihan suara?</strong>
+              <span>Gunakan mode teleprompter untuk membantumu fokus pada artikulasi dan intonasi.</span>
+            </div>
+          </div>
+
+          <div className="category-grid">
+            {practiceScripts.map((group) => (
+              <button
+                key={group.category}
+                className={`category-btn ${activeCategory === group.category ? 'active' : ''}`}
+                onClick={() => { setActiveCategory(group.category); setScriptIndex(0); }}
+              >
+                {group.category}
+              </button>
+            ))}
+          </div>
+
+          <div className="script-layout">
+            <article className="script-card">
+              <div className="topic-label">Training Script</div>
+              <h3 className="script-title">{activeScript.title}</h3>
+              <div className="script-meta">
+                <span className="badge">Kategori: {activeCategory}</span>
+                <span className="badge">Durasi: {activeScript.duration} Detik</span>
+                <span className="badge">Level: {activeLevel}</span>
+              </div>
+              <div className="script-text line-clamp-6 opacity-60">
+                {activeScript.text}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button className="text-sm font-bold text-[#d2a06b]" onClick={() => setScriptIndex(prev => prev + 1)}>Lihat Naskah Lainnya →</button>
+              </div>
+            </article>
+
+            <aside className="guide-card">
+              <h3>Speaking Guide</h3>
+              <ul className="guide-list">
+                <li>Baca dengan suara jelas</li>
+                <li>Berikan jeda pada tanda [JEDA]</li>
+                <li>Tekankan kata pada tanda [TEKANAN]</li>
+                <li>Gunakan mode teleprompter</li>
+              </ul>
+            </aside>
+          </div>
+
+          <div className="control-grid">
+            <div className="control-box">
+              <h3>Tingkat Latihan</h3>
+              <div className="duration-options">
+                {['Beginner', 'Intermediate', 'Advanced'].map(l => (
+                  <button
+                    key={l}
+                    className={`duration-btn ${activeLevel === l ? 'active' : ''}`}
+                    onClick={() => { setActiveLevel(l); setScriptIndex(0); }}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-end">
+              <button 
+                className="btn btn-primary w-full py-4 text-lg shadow-xl"
+                onClick={startPractice}
+              >
+                🟡 Mulai Latihan
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById("guided-speaking-root")).render(<GuidedSpeakingPractice />);
   </script>
 </body>
 
