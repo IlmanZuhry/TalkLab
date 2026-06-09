@@ -55,7 +55,7 @@ $practiceScripts = [
         'level' => 'Intermediate',
         'duration' => 60,
         'title' => 'Pentingnya Berani Berbicara',
-        'text' => "Selamat pagi dan salam sejahtera untuk kita semua.\n\n[JEDA]\n\Kemampuan berbicara di depan umum bukan hanya bakat, tetapi keterampilan yang dapat dilatih.\n\nSaat kita berani menyampaikan pendapat, kita belajar menyusun pikiran dengan lebih jelas.\n\n[TEKANAN]\n\nKeberanian berbicara membuka kesempatan untuk memimpin, bekerja sama, dan memberi pengaruh positif.\n\nMari mulai dari langkah kecil: berbicara jelas, mendengar dengan baik, dan menyampaikan pesan dengan percaya diri."
+        'text' => "Selamat pagi dan salam sejahtera untuk kita semua.\n\n[JEDA]\n\nKemampuan berbicara di depan umum bukan hanya bakat, tetapi keterampilan yang dapat dilatih.\n\nSaat kita berani menyampaikan pendapat, kita belajar menyusun pikiran dengan lebih jelas.\n\n[TEKANAN]\n\nKeberanian berbicara membuka kesempatan untuk memimpin, bekerja sama, dan memberi pengaruh positif.\n\nMari mulai dari langkah kecil: berbicara jelas, mendengar dengan baik, dan menyampaikan pesan dengan percaya diri."
       ],
       [
         'level' => 'Advanced',
@@ -1708,8 +1708,8 @@ $practiceScripts = [
       ];
 
       const tingkatKesulitan = [
-        { nama: "Pemula", jumlah: 3, persiapan: 20, jawab: 45, deskripsi: "3 pertanyaan, persiapan 20 detik, menjawab 45 detik." },
-        { nama: "Menengah", jumlah: 5, persiapan: 15, jawab: 60, deskripsi: "5 pertanyaan, persiapan 15 detik, menjawab 60 detik." },
+        { nama: "Pemula", jumlah: 8, persiapan: 20, jawab: 45, deskripsi: "8 pertanyaan, persiapan 20 detik, menjawab 45 detik." },
+        { nama: "Menengah", jumlah: 8, persiapan: 15, jawab: 60, deskripsi: "8 pertanyaan, persiapan 15 detik, menjawab 60 detik." },
         { nama: "Lanjutan", jumlah: 8, persiapan: 10, jawab: 90, deskripsi: "8 pertanyaan, persiapan 10 detik, menjawab 90 detik." }
       ];
 
@@ -2715,6 +2715,7 @@ $practiceScripts = [
     const voiceMentorInfo = <?= json_encode($mentorInfo['voice'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 
     const GuidedSpeakingPractice = () => {
+      const { useEffect, useMemo, useRef, useState } = React;
       const [view, setView] = useState('PREP'); // 'PREP', 'OVERLAY'
       const [overlayState, setOverlayState] = useState('COUNTDOWN'); // 'COUNTDOWN', 'RECORDING', 'RESULT'
       const [activeCategory, setActiveCategory] = useState(practiceScripts[0].category);
@@ -3204,7 +3205,7 @@ $practiceScripts = [
     ReactDOM.createRoot(document.getElementById("guided-speaking-root")).render(<GuidedSpeakingPractice />);
   </script>
 
-  <script type="text/babel">
+  <script type="text/plain" data-disabled-duplicate="conversation-challenge">
     const { useEffect, useMemo, useRef, useState } = React;
 
     (function () {
@@ -3823,7 +3824,7 @@ $practiceScripts = [
     })();
   </script>
 
-  <script type="text/babel">
+  <script type="text/plain" data-disabled-duplicate="camera-practice">
     const { useEffect: useEff, useMemo: useMem, useRef: useRefC, useState: useSt } = React;
 
     const cameraTopics = [
