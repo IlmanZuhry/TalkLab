@@ -460,6 +460,13 @@ $practiceScripts = [
       z-index: 1;
     }
 
+    .feature-icon svg,
+    .mic-orb svg {
+      width: 32px;
+      height: 32px;
+      fill: currentColor;
+    }
+
     .feature-card[data-feature="challenge"] .feature-icon { background: #6d2d59; }
     .feature-card[data-feature="ai"] .feature-icon { background: #b8752b; }
 
@@ -873,6 +880,11 @@ $practiceScripts = [
       isolation: isolate;
     }
 
+    .mic-orb svg {
+      width: 68px;
+      height: 68px;
+    }
+
     .mic-orb::before,
     .mic-orb::after {
       content: "";
@@ -964,6 +976,37 @@ $practiceScripts = [
       background: #d2a06b;
       border-radius: 999px;
       transition: width 0.2s;
+    }
+
+    .save-notice {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid #fedf89;
+      border-radius: 14px;
+      background: #fffaeb;
+      color: #7a4b00;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .save-notice.is-hidden {
+      display: none;
+    }
+
+    .save-notice a {
+      flex: 0 0 auto;
+      border-radius: 10px;
+      background: #10204f;
+      color: #fff;
+      padding: 9px 13px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
     }
 
     audio {
@@ -1345,12 +1388,17 @@ $practiceScripts = [
             </div>
           </div>
 
+          <div class="save-notice <?= $currentUser ? 'is-hidden' : '' ?>" id="loginNotice">
+            <span>Latihan tetap bisa dicoba, tetapi riwayat hanya tersimpan setelah kamu login.</span>
+            <a href="login.php" target="_blank" rel="noopener">Masuk</a>
+          </div>
+
           <div class="action-row">
             <button class="btn btn-primary" type="button" id="startBtn">Mulai Latihan</button>
             <button class="btn btn-danger" type="button" id="stopBtn" disabled>Stop Recording</button>
             <button class="btn btn-muted" type="button" id="replayBtn" disabled>Putar Ulang Hasil</button>
-            <button class="btn btn-dark" type="button" id="saveBtn" disabled>Simpan Riwayat</button>
-            <button class="btn btn-primary" type="button" id="submitMentorBtn" disabled style="background:#027a48;">📤 Kirim ke Mentor</button>
+            <button class="btn btn-dark" type="button" id="saveBtn" disabled><?= $currentUser ? 'Simpan Riwayat' : 'Login untuk Simpan' ?></button>
+            <button class="btn btn-primary" type="button" id="submitMentorBtn" disabled style="background:#027a48;">Kirim ke Mentor</button>
           </div>
 
           <div class="result-box" id="resultBox">
@@ -1393,6 +1441,84 @@ $practiceScripts = [
 
     <section class="workspace feature-section" id="challengeSection">
       <div id="conversation-challenge-root"></div>
+          </div>
+
+          <div class="control-box">
+            <h3>Speaking Challenge Level</h3>
+            <div class="option-grid">
+              <button class="option-card challenge-level active" type="button" data-level="Beginner" data-prep="20" data-speak="45" data-weight="1">
+                <strong>Beginner</strong>
+                <span>Persiapan 20 detik, bicara 45 detik. Cocok untuk pemanasan.</span>
+              </button>
+              <button class="option-card challenge-level" type="button" data-level="Intermediate" data-prep="15" data-speak="60" data-weight="1.12">
+                <strong>Intermediate</strong>
+                <span>Persiapan 15 detik, bicara 1 menit. Fokus pada struktur ide.</span>
+              </button>
+              <button class="option-card challenge-level" type="button" data-level="Advanced" data-prep="10" data-speak="90" data-weight="1.25">
+                <strong>Advanced</strong>
+                <span>Persiapan 10 detik, bicara 90 detik. Latihan tekanan waktu.</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="topic-box">
+          <div class="topic-label" id="challengeTypeLabel">Random Topic Challenge</div>
+          <div class="topic-text" id="challengePrompt">Mengapa public speaking penting?</div>
+        </div>
+
+        <div class="recorder-box">
+          <div class="timer-wrap">
+            <div class="countdown-card">
+              <div class="timer challenge-timer" id="challengeTimer">00:20</div>
+              <div class="timer-caption" id="challengePhaseText">Fase persiapan. Susun pembuka, isi, dan penutup.</div>
+            </div>
+            <div class="status-pill" id="challengeStatus">Siap Challenge</div>
+          </div>
+
+          <div class="meter" aria-hidden="true">
+            <div class="meter-fill" id="challengeMeterFill"></div>
+          </div>
+
+          <div class="save-notice <?= $currentUser ? 'is-hidden' : '' ?>" id="challengeLoginNotice">
+            <span>Challenge bisa dijalankan tanpa login, tetapi skor hanya tersimpan setelah kamu login.</span>
+            <a href="login.php" target="_blank" rel="noopener">Masuk</a>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-primary" type="button" id="newChallengeBtn">Challenge Baru</button>
+            <button class="btn btn-dark" type="button" id="startChallengeBtn">Mulai Challenge</button>
+            <button class="btn btn-danger" type="button" id="finishChallengeBtn" disabled>Selesai Bicara</button>
+            <button class="btn btn-muted" type="button" id="saveChallengeBtn" disabled><?= $currentUser ? 'Simpan Challenge' : 'Login untuk Simpan' ?></button>
+          </div>
+
+          <div class="result-box" id="challengeResultBox">
+            <h3>Challenge Result & Score</h3>
+            <div class="result-meta">
+              <span class="badge" id="challengeResultType">Jenis: -</span>
+              <span class="badge" id="challengeResultLevel">Level: -</span>
+              <span class="badge" id="challengeResultDone">Status: -</span>
+            </div>
+            <div class="score-card">
+              <div class="score-item">
+                <span>Durasi Bicara</span>
+                <strong id="challengeActualDuration">0s</strong>
+              </div>
+              <div class="score-item">
+                <span>Target</span>
+                <strong id="challengeTargetDuration">0s</strong>
+              </div>
+              <div class="score-item">
+                <span>Skor</span>
+                <strong id="challengeScore">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="toast info" id="challengeMessageBox">Pilih jenis challenge dan level, lalu tekan Mulai Challenge.</div>
+        </div>
+      </div>
+>>>>>>> f019a77 (Perbaikan bug session dan UX latihan)
 
       <aside class="panel history-panel">
         <h2>Riwayat Tantangan</h2>
@@ -1458,6 +1584,8 @@ $practiceScripts = [
     const voiceWave = document.getElementById("voiceWave");
     const messageBox = document.getElementById("messageBox");
     const historyList = document.getElementById("historyList");
+    const loginNotice = document.getElementById("loginNotice");
+    const challengeLoginNotice = document.getElementById("challengeLoginNotice");
     const featureCards = document.querySelectorAll(".feature-card");
     const voiceSection = document.getElementById("voiceSection");
     const challengeSection = document.getElementById("challengeSection");
@@ -1488,6 +1616,35 @@ $practiceScripts = [
       messageBox.textContent = text;
     }
 
+<<<<<<< HEAD
+=======
+    function setChallengeMessage(type, text) {
+      challengeMessageBox.className = `toast ${type}`;
+      challengeMessageBox.textContent = text;
+    }
+
+    const voiceIconSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>';
+    const featureIcons = {
+      voice: voiceIconSvg,
+      challenge: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 1H9v2h6V1Zm-4 13h2V8h-2v6Zm1 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Zm0-2a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/></svg>',
+      ai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4ZM15 17H5V7h10v10Z"/></svg>'
+    };
+
+    featureCards.forEach(card => {
+      const icon = card.querySelector(".feature-icon");
+      if (icon && featureIcons[card.dataset.feature]) {
+        icon.innerHTML = featureIcons[card.dataset.feature];
+      }
+    });
+    micOrb.innerHTML = voiceIconSvg;
+
+    function showLoginExpiredMessage(setter) {
+      if (loginNotice) loginNotice.classList.remove("is-hidden");
+      if (challengeLoginNotice) challengeLoginNotice.classList.remove("is-hidden");
+      setter("error", "Sesi login habis. Buka login di tab baru, lalu kembali ke halaman ini untuk menyimpan ulang.");
+    }
+
+>>>>>>> f019a77 (Perbaikan bug session dan UX latihan)
     function switchFeature(feature) {
       featureCards.forEach(card => {
         card.classList.toggle("active", card.dataset.feature === feature);
@@ -1701,6 +1858,8 @@ $practiceScripts = [
       }
 
       if (!isLoggedIn) {
+        if (loginNotice) loginNotice.classList.remove("is-hidden");
+        if (challengeLoginNotice) challengeLoginNotice.classList.remove("is-hidden");
         setMessage("error", "Silakan login terlebih dahulu agar riwayat latihan tersimpan ke akun.");
         return;
       }
@@ -1722,6 +1881,13 @@ $practiceScripts = [
           method: "POST",
           body: formData
         });
+
+        if (response.status === 401) {
+          saveBtn.disabled = false;
+          showLoginExpiredMessage(setMessage);
+          return;
+        }
+
         const data = await response.json();
 
         if (!data.status) {
@@ -1738,7 +1904,7 @@ $practiceScripts = [
         setMessage("success", data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
       } catch (error) {
         saveBtn.disabled = false;
-        setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan.");
+        setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan. Rekaman tetap tersedia untuk dicoba simpan ulang.");
       }
     }
 
@@ -1802,6 +1968,63 @@ $practiceScripts = [
       historyList.prepend(card);
     }
 
+<<<<<<< HEAD
+=======
+    async function saveChallenge() {
+      if (!latestChallengeResult) {
+        setChallengeMessage("error", "Belum ada hasil challenge yang bisa disimpan.");
+        return;
+      }
+
+      if (!isLoggedIn) {
+        if (challengeLoginNotice) challengeLoginNotice.classList.remove("is-hidden");
+        setChallengeMessage("error", "Silakan login terlebih dahulu agar riwayat challenge tersimpan ke akun.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("action", "save_challenge");
+      formData.append("challenge_type", latestChallengeResult.challenge_type);
+      formData.append("level_name", latestChallengeResult.level_name);
+      formData.append("prompt", latestChallengeResult.prompt);
+      formData.append("prep_seconds", latestChallengeResult.prep_seconds);
+      formData.append("speak_seconds", latestChallengeResult.speak_seconds);
+      formData.append("actual_seconds", latestChallengeResult.actual_seconds);
+      formData.append("score", latestChallengeResult.score);
+      formData.append("completed", latestChallengeResult.completed);
+
+      saveChallengeBtn.disabled = true;
+      setChallengeMessage("info", "Menyimpan riwayat challenge...");
+
+      try {
+        const response = await fetch("Latihan.php", {
+          method: "POST",
+          body: formData
+        });
+
+        if (response.status === 401) {
+          saveChallengeBtn.disabled = false;
+          showLoginExpiredMessage(setChallengeMessage);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (!data.status) {
+          saveChallengeBtn.disabled = false;
+          setChallengeMessage("error", data.message || "Gagal menyimpan riwayat challenge.");
+          return;
+        }
+
+        prependChallengeHistory(data.item);
+        setChallengeMessage("success", data.message);
+      } catch (error) {
+        saveChallengeBtn.disabled = false;
+        setChallengeMessage("error", "Terjadi kesalahan saat menyimpan riwayat challenge. Hasil challenge tetap tersedia untuk dicoba simpan ulang.");
+      }
+    }
+
+>>>>>>> f019a77 (Perbaikan bug session dan UX latihan)
     function prependChallengeHistory(item) {
       const empty = challengeHistoryList.querySelector(".empty-state");
       if (empty) empty.remove();
