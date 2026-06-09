@@ -49,7 +49,27 @@ $menus = [
 ];
 ?>
 
+<?php
+$mentorLabel = 'Mentor';
+if (isset($mentor) && $mentor) {
+    if ($mentor['specialty'] === 'voice') $mentorLabel = 'Mentor Suara';
+    elseif ($mentor['specialty'] === 'challenge') $mentorLabel = 'Mentor Tantangan';
+    elseif ($mentor['specialty'] === 'camera') $mentorLabel = 'Mentor Kamera';
+}
+?>
+
 <aside class="sidebar">
+    <?php if (isset($mentor) && $mentor): ?>
+    <div style="padding: 20px; text-align: center; border-bottom: 1px solid #eef2f7; margin-bottom: 10px;">
+        <div style="width: 50px; height: 50px; background: #eef2f7; color: #10204f; font-weight: bold; font-size: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px;">
+            <?= strtoupper(substr($mentor['name'], 0, 1)) ?>
+        </div>
+        <div style="color: #10204f; font-weight: 800; font-size: 15px; margin-bottom: 4px;"><?= htmlspecialchars($mentor['name']) ?></div>
+        <div style="display: inline-block; background: #d2a06b; color: #fff; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 999px; letter-spacing: 0.5px; text-transform: uppercase;">
+            <?= $mentorLabel ?>
+        </div>
+    </div>
+    <?php endif; ?>
     <ul>
         <?php foreach ($menus as $menu): ?>
             <li class="menu-item <?= $active === $menu['key'] ? 'active' : '' ?>">

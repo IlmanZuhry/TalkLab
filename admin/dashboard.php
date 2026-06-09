@@ -44,8 +44,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'save_
     }
 }
 
-$stats = $app->getMentorDashboardStats();
-$queue = $app->getMentorReviewQueue();
+$stats = $app->getMentorDashboardStats($mentor['specialty'] ?? null);
+$queue = $app->getMentorReviewQueue(12, $mentor['specialty'] ?? null);
 $selectedSubmissionId = (int) ($_GET['submission'] ?? 0);
 $selectedSubmission = $selectedSubmissionId > 0 ? $app->getMentorSubmissionById($selectedSubmissionId) : false;
 $reviewSaved = isset($_GET['saved']);
@@ -66,534 +66,499 @@ function mentorScoreValue($submission, $key, $fallback = 75) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TALKLAB - Dashboard Mentor</title>
+    <?php include 'inc/layout_css.php'; ?>
     <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            color: #142033;
-            background: #f4f6fa;
-            font-family: system-ui, sans-serif;
-        }
-
-        button,
-        input,
-        textarea { font: inherit; }
-
-        .shell {
-            min-height: 100vh;
-            display: grid;
-            grid-template-columns: 248px minmax(0, 1fr);
-        }
-
-        .sidebar {
-            background: #10204f;
+        /* ===== HERO BANNER ===== */
+        .dashboard-hero {
+            background: linear-gradient(135deg, #10204f 0%, #1c3a6e 60%, #2a4e8e 100%);
+            border-radius: 20px;
+            padding: 40px 38px;
             color: #fff;
-            padding: 30px 24px;
             display: flex;
-            flex-direction: column;
-            gap: 34px;
-        }
-
-        .brand {
-            color: inherit;
-            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
-            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 32px;
+            box-shadow: 0 12px 36px rgba(16, 32, 79, 0.18);
         }
 
-        .brand img {
-            width: 56px;
-            height: 56px;
-            object-fit: contain;
+        .dashboard-hero .ornamen-circle-1 {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            background: rgba(210, 160, 107, 0.12);
+            left: -90px;
+            bottom: -130px;
         }
 
-        .brand strong {
-            display: block;
-            font-size: 26px;
-            letter-spacing: 0;
+        .dashboard-hero .ornamen-circle-2 {
+            position: absolute;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.06);
+            right: -60px;
+            top: -100px;
         }
 
-        .brand span,
-        .mentor-meta span {
-            color: #e0b278;
+        .hero-text {
+            position: relative;
+            z-index: 2;
+            max-width: 540px;
         }
 
-        .mentor-meta {
-            border-top: 1px solid rgb(255 255 255 / 0.18);
-            padding-top: 22px;
+        .hero-text h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 10px;
+            color: #fff;
+            line-height: 1.25;
         }
 
-        .mentor-meta strong,
-        .mentor-meta span {
-            display: block;
-            overflow-wrap: anywhere;
+        .hero-text p {
+            font-size: 17px;
+            color: #d2a06b;
+            margin: 0 0 22px;
+            line-height: 1.5;
         }
 
-        .mentor-meta strong { font-size: 18px; }
-        .mentor-meta span { margin-top: 6px; }
-
-        .nav {
-            display: grid;
-            gap: 10px;
-        }
-
-        .nav a {
-            border-radius: 8px;
-            color: inherit;
-            padding: 13px 14px;
-            text-decoration: none;
-        }
-
-        .nav a.active { background: #d2a06b; font-weight: 700; }
-        .nav a:not(.active) { background: rgb(255 255 255 / 0.09); }
-
-        .logout {
-            margin-top: auto;
-            background: #fff;
-            border-radius: 8px;
-            color: #10204f;
-            font-weight: 700;
-            padding: 13px 14px;
-            text-align: center;
-            text-decoration: none;
-        }
-
-        main {
-            min-width: 0;
-            padding: 36px;
-        }
-
-        .topbar {
-            align-items: end;
+        .hero-stats {
             display: flex;
             gap: 18px;
-            justify-content: space-between;
-            margin-bottom: 28px;
+            flex-wrap: wrap;
         }
 
-        h1,
-        h2,
-        h3,
-        p { margin-top: 0; }
-
-        h1 {
-            color: #10204f;
-            font-size: 36px;
-            letter-spacing: 0;
-            margin-bottom: 8px;
+        .hero-stat-box {
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(6px);
+            border-radius: 14px;
+            padding: 18px 22px;
+            min-width: 120px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .muted { color: #667085; }
+        .hero-stat-box .stat-number {
+            display: block;
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
 
-        .date-pill,
-        .status {
+        .hero-stat-box .stat-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-date {
+            position: relative;
+            z-index: 2;
+            align-self: flex-start;
+        }
+
+        .hero-date .date-pill {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
             border-radius: 999px;
-            display: inline-flex;
-            padding: 8px 12px;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 700;
             white-space: nowrap;
         }
 
-        .date-pill {
-            background: #fff;
-            border: 1px solid #d8dee9;
-            color: #344054;
-        }
-
-        .stats {
-            display: grid;
-            gap: 16px;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            margin-bottom: 24px;
-        }
-
-        .stat,
-        .panel {
-            background: #fff;
-            border: 1px solid #e4e7ec;
-            border-radius: 8px;
-            box-shadow: 0 12px 32px rgb(16 32 79 / 0.07);
-        }
-
-        .stat {
-            min-height: 132px;
-            padding: 22px;
-        }
-
-        .stat span {
-            color: #667085;
-            display: block;
-            margin-bottom: 18px;
-        }
-
-        .stat strong {
+        /* ===== QUICK ACCESS ===== */
+        .section-title {
+            font-size: 26px;
+            font-weight: 800;
             color: #10204f;
-            font-size: 38px;
-            letter-spacing: 0;
+            margin: 0 0 20px;
         }
 
-        .layout {
-            align-items: start;
+        .quick-access-grid {
             display: grid;
+            grid-template-columns: repeat(3, 1fr);
             gap: 20px;
-            grid-template-columns: minmax(360px, 1.08fr) minmax(380px, 0.92fr);
+            margin-bottom: 36px;
         }
 
-        .panel { padding: 24px; }
-
-        .panel-head {
-            align-items: center;
-            display: flex;
-            gap: 14px;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .panel h2 {
-            color: #10204f;
-            font-size: 24px;
-            letter-spacing: 0;
-            margin-bottom: 6px;
-        }
-
-        .queue {
-            display: grid;
-            gap: 12px;
-        }
-
-        .queue-item {
-            align-items: start;
-            background: #f8fafc;
-            border: 1px solid #e4e7ec;
-            border-radius: 8px;
-            color: inherit;
-            display: grid;
-            gap: 12px;
-            grid-template-columns: minmax(0, 1fr) auto;
-            padding: 16px;
-            text-decoration: none;
-        }
-
-        .queue-item:hover,
-        .queue-item.selected {
-            border-color: #d2a06b;
-            background: #fff8ef;
-        }
-
-        .queue-item strong,
-        .queue-item small { display: block; }
-
-        .queue-item strong {
-            color: #10204f;
-            margin-bottom: 6px;
-        }
-
-        .queue-item small,
-        .queue-item p {
-            color: #667085;
-            margin-bottom: 0;
-        }
-
-        .queue-item p {
-            line-height: 1.45;
-            margin-top: 10px;
-        }
-
-        .status {
-            background: #fff1df;
-            color: #9a5600;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .status.reviewed {
-            background: #dcfae6;
-            color: #067647;
-        }
-
-        .empty {
-            border: 1px dashed #c7cfdb;
-            border-radius: 8px;
-            color: #667085;
-            padding: 34px 20px;
+        .quick-card {
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px 24px;
             text-align: center;
+            box-shadow: 0 6px 24px rgba(16, 32, 79, 0.07);
+            border: 1px solid #e4e7ec;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.28s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .notice {
-            border-radius: 8px;
-            margin-bottom: 16px;
-            padding: 13px 15px;
+        .quick-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            border-radius: 18px 18px 0 0;
+            transition: height 0.28s ease;
         }
 
-        .notice.success {
-            background: #dcfae6;
-            color: #067647;
+        .quick-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 36px rgba(16, 32, 79, 0.13);
         }
 
-        .notice.error {
-            background: #fee4e2;
-            color: #b42318;
+        .quick-card:hover::before {
+            height: 6px;
         }
 
-        .submission-meta {
+        .quick-card.card-penilaian::before { background: linear-gradient(135deg, #d2a06b, #e8c49a); }
+        .quick-card.card-ebook::before { background: linear-gradient(135deg, #175cd3, #4a8aec); }
+        .quick-card.card-materi::before { background: linear-gradient(135deg, #067647, #34c77b); }
+
+        .quick-card-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .quick-card.card-penilaian .quick-card-icon { background: linear-gradient(135deg, #fdf0e0, #fce4c3); }
+        .quick-card.card-ebook .quick-card-icon { background: linear-gradient(135deg, #e0edff, #c5d9f7); }
+        .quick-card.card-materi .quick-card-icon { background: linear-gradient(135deg, #dcfae6, #b8f0cc); }
+
+        .quick-card-icon svg {
+            width: 30px;
+            height: 30px;
+        }
+
+        .quick-card.card-penilaian .quick-card-icon svg { color: #9a5600; }
+        .quick-card.card-ebook .quick-card-icon svg { color: #175cd3; }
+        .quick-card.card-materi .quick-card-icon svg { color: #067647; }
+
+        .quick-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #10204f;
+            margin: 0 0 6px;
+        }
+
+        .quick-card p {
+            font-size: 14px;
+            color: #667085;
+            margin: 0;
+            line-height: 1.45;
+        }
+
+        /* ===== RECENT QUEUE ===== */
+        .dashboard-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+
+        .dash-panel {
+            background: #fff;
+            border: 1px solid #e4e7ec;
+            border-radius: 16px;
+            box-shadow: 0 6px 24px rgba(16, 32, 79, 0.06);
+            padding: 26px;
+        }
+
+        .dash-panel h2 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #10204f;
+            margin: 0 0 6px;
+        }
+
+        .dash-panel .muted {
+            color: #667085;
+            font-size: 14px;
+            margin: 0 0 18px;
+        }
+
+        .queue-mini {
             display: grid;
             gap: 10px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            margin-bottom: 18px;
         }
 
-        .submission-meta div {
+        .queue-mini-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
             background: #f8fafc;
-            border-radius: 8px;
-            min-width: 0;
-            padding: 12px;
+            border: 1px solid #e4e7ec;
+            border-radius: 12px;
+            padding: 14px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s;
         }
 
-        .submission-meta span,
-        label {
-            color: #667085;
-            display: block;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 6px;
+        .queue-mini-item:hover {
+            border-color: #d2a06b;
+            background: #fffaf3;
         }
 
-        .submission-meta strong {
-            display: block;
-            overflow-wrap: anywhere;
-        }
-
-        audio {
-            margin-bottom: 18px;
-            width: 100%;
-        }
-
-        .score-grid {
-            display: grid;
-            gap: 12px;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        input[type="number"],
-        textarea {
-            background: #fff;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            color: #142033;
-            outline: none;
-            padding: 12px;
-            width: 100%;
-        }
-
-        input[type="number"]:focus,
-        textarea:focus {
-            border-color: #1c407a;
-            box-shadow: 0 0 0 3px rgb(28 64 122 / 0.14);
-        }
-
-        textarea {
-            min-height: 86px;
-            resize: vertical;
-        }
-
-        .field { margin-top: 14px; }
-
-        .save {
+        .queue-mini-item .q-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
             background: #10204f;
-            border: 0;
-            border-radius: 8px;
             color: #fff;
-            cursor: pointer;
-            font-weight: 800;
-            margin-top: 16px;
-            padding: 14px 18px;
-            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
         }
 
-        @media (max-width: 1080px) {
-            .shell,
-            .layout { grid-template-columns: 1fr; }
+        .queue-mini-item .q-info {
+            flex: 1;
+            min-width: 0;
+        }
 
-            .sidebar {
-                gap: 18px;
-                position: static;
-            }
+        .queue-mini-item .q-name {
+            font-weight: 700;
+            color: #10204f;
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-            .nav { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .logout { margin-top: 0; }
-            .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .queue-mini-item .q-detail {
+            font-size: 12px;
+            color: #667085;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .queue-mini-item .q-status {
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .q-status.pending { background: #fff1df; color: #9a5600; }
+        .q-status.reviewed { background: #dcfae6; color: #067647; }
+
+        .empty-mini {
+            border: 1px dashed #c7cfdb;
+            border-radius: 12px;
+            color: #667085;
+            padding: 28px 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .view-all-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 14px;
+            color: #d2a06b;
+            font-weight: 700;
+            font-size: 14px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .view-all-link:hover { color: #b8864f; }
+
+        /* ===== INFO PANEL ===== */
+        .info-card {
+            background: linear-gradient(135deg, #f8fafc, #f0f3f8);
+            border: 1px solid #e4e7ec;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .info-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #10204f;
+            margin: 0 0 8px;
+        }
+
+        .info-card p {
+            font-size: 14px;
+            color: #667085;
+            margin: 0;
+            line-height: 1.55;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1100px) {
+            main { margin-left: 0; padding: 112px 20px 36px; }
+            .quick-access-grid { grid-template-columns: 1fr; }
+            .dashboard-panels { grid-template-columns: 1fr; }
+            .hero-stats { flex-direction: column; }
         }
 
         @media (max-width: 640px) {
-            main { padding: 24px 16px; }
-            .topbar { align-items: start; flex-direction: column; }
-            .stats,
-            .score-grid,
-            .submission-meta { grid-template-columns: 1fr; }
-            .queue-item { grid-template-columns: 1fr; }
+            .dashboard-hero { flex-direction: column; gap: 20px; padding: 28px 22px; }
+            .hero-text h1 { font-size: 24px; }
+            .quick-access-grid { gap: 14px; }
         }
     </style>
-    <?php include 'inc/layout_css.php'; ?>
 </head>
 <body>
     <?php include 'inc/header.php'; ?>
     <?php include 'inc/sidebar.php'; ?>
-        <main>
-            <header class="topbar">
-                <div>
-                    <h1>Dashboard Mentor</h1>
-                    <p class="muted">Review latihan public speaking yang masuk dari peserta.</p>
+
+    <main>
+        <!-- Hero Banner -->
+        <section class="dashboard-hero">
+            <div class="ornamen-circle-1"></div>
+            <div class="ornamen-circle-2"></div>
+
+            <div class="hero-text">
+                <h1>Selamat Datang, <?= htmlspecialchars($mentor['name']) ?>!</h1>
+                <p>Kelola penilaian, materi, dan e-book untuk peserta TalkLab dari sini.</p>
+
+                <div class="hero-stats">
+                    <div class="hero-stat-box">
+                        <span class="stat-number"><?= (int) $stats['pending'] ?></span>
+                        <span class="stat-label">Menunggu Nilai</span>
+                    </div>
+                    <div class="hero-stat-box">
+                        <span class="stat-number"><?= (int) $stats['reviewed'] ?></span>
+                        <span class="stat-label">Sudah Dinilai</span>
+                    </div>
+                    <div class="hero-stat-box">
+                        <span class="stat-number"><?= (int) $stats['students'] ?></span>
+                        <span class="stat-label">Peserta Aktif</span>
+                    </div>
+                    <div class="hero-stat-box">
+                        <span class="stat-number"><?= (int) $stats['average_score'] ?></span>
+                        <span class="stat-label">Rata-rata Nilai</span>
+                    </div>
                 </div>
+            </div>
+
+            <div class="hero-date">
                 <span class="date-pill"><?= htmlspecialchars(date('d M Y')) ?></span>
-            </header>
+            </div>
+        </section>
 
-            <section class="stats" aria-label="Statistik mentor">
-                <div class="stat">
-                    <span>Menunggu nilai</span>
-                    <strong><?= (int) $stats['pending'] ?></strong>
+        <!-- Quick Access -->
+        <h2 class="section-title">Akses Cepat</h2>
+        <section class="quick-access-grid">
+            <a href="penilaian.php" class="quick-card card-penilaian">
+                <div class="quick-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 11l3 3L22 4"/>
+                        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                    </svg>
                 </div>
-                <div class="stat">
-                    <span>Sudah dinilai</span>
-                    <strong><?= (int) $stats['reviewed'] ?></strong>
+                <h3>Penilaian</h3>
+                <p>Review dan nilai latihan peserta</p>
+            </a>
+
+            <a href="ebook.php" class="quick-card card-ebook">
+                <div class="quick-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 7v14"/>
+                        <path d="M3 18a1 1 0 01-1-1V4a1 1 0 011-1h5a4 4 0 014 4 4 4 0 014-4h5a1 1 0 011 1v13a1 1 0 01-1 1h-6a3 3 0 00-3 3 3 3 0 00-3-3H3z"/>
+                    </svg>
                 </div>
-                <div class="stat">
-                    <span>Peserta terkirim</span>
-                    <strong><?= (int) $stats['students'] ?></strong>
+                <h3>Tambah E-Book</h3>
+                <p>Upload e-book baru untuk peserta</p>
+            </a>
+
+            <a href="materi.php" class="quick-card card-materi">
+                <div class="quick-card-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
                 </div>
-                <div class="stat">
-                    <span>Rata-rata review</span>
-                    <strong><?= (int) $stats['average_score'] ?></strong>
-                </div>
-            </section>
+                <h3>Tambah Materi</h3>
+                <p>Kelola materi dan video pembelajaran</p>
+            </a>
+        </section>
 
-            <section class="layout">
-                <article class="panel" id="review-queue">
-                    <div class="panel-head">
-                        <div>
-                            <h2>Latihan Masuk</h2>
-                            <p class="muted"><?= (int) $stats['practice_audio'] ?> rekaman latihan tersimpan</p>
-                        </div>
-                    </div>
+        <!-- Panels Row -->
+        <h2 class="section-title">Ringkasan Terbaru</h2>
+        <section class="dashboard-panels">
+            <!-- Recent Submissions -->
+            <div class="dash-panel">
+                <h2>Latihan Masuk</h2>
+                <p class="muted"><?= (int) $stats['practice_audio'] ?> rekaman tersimpan</p>
 
-                    <div class="queue">
-                        <?php if (empty($queue)): ?>
-                            <div class="empty">Belum ada latihan yang dikirim ke mentor.</div>
-                        <?php else: ?>
-                            <?php foreach ($queue as $item): ?>
-                                <a class="queue-item <?= $selectedSubmissionId === (int) $item['id'] ? 'selected' : '' ?>" href="dashboard.php?submission=<?= (int) $item['id'] ?>">
-                                    <div>
-                                        <strong><?= htmlspecialchars($item['student_name']) ?> @<?= htmlspecialchars($item['student_username']) ?></strong>
-                                        <small><?= htmlspecialchars(date('d M Y H:i', strtotime($item['submitted_at']))) ?> - <?= (int) $item['duration_seconds'] ?> detik</small>
-                                        <p><?= htmlspecialchars($item['topic']) ?></p>
-                                    </div>
-                                    <span class="status <?= $item['status'] === 'reviewed' ? 'reviewed' : '' ?>">
-                                        <?= htmlspecialchars(mentorStatusLabel($item['status'])) ?>
-                                    </span>
-                                </a>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                </article>
-
-                <article class="panel">
-                    <?php if ($reviewSaved): ?>
-                        <div class="notice success">Penilaian mentor tersimpan.</div>
-                    <?php endif; ?>
-
-                    <?php if ($error !== ''): ?>
-                        <div class="notice error"><?= htmlspecialchars($error) ?></div>
-                    <?php endif; ?>
-
-                    <?php if (!$selectedSubmission): ?>
-                        <div>
-                            <h2>Panel Penilaian</h2>
-                            <p class="muted">Pilih latihan masuk untuk mendengarkan rekaman dan mengisi nilai.</p>
-                            <div class="empty">Rubric mentor siap untuk artikulasi, kelancaran, percaya diri, struktur, dan intonasi.</div>
-                        </div>
+                <div class="queue-mini">
+                    <?php if (empty($queue)): ?>
+                        <div class="empty-mini">Belum ada latihan yang dikirim ke mentor.</div>
                     <?php else: ?>
-                        <div class="panel-head">
-                            <div>
-                                <h2>Nilai Latihan</h2>
-                                <p class="muted"><?= htmlspecialchars($selectedSubmission['topic']) ?></p>
-                            </div>
-                            <span class="status <?= $selectedSubmission['status'] === 'reviewed' ? 'reviewed' : '' ?>">
-                                <?= htmlspecialchars(mentorStatusLabel($selectedSubmission['status'])) ?>
-                            </span>
-                        </div>
-
-                        <div class="submission-meta">
-                            <div>
-                                <span>Peserta</span>
-                                <strong><?= htmlspecialchars($selectedSubmission['student_name']) ?></strong>
-                            </div>
-                            <div>
-                                <span>Username</span>
-                                <strong>@<?= htmlspecialchars($selectedSubmission['student_username']) ?></strong>
-                            </div>
-                            <div>
-                                <span>Durasi</span>
-                                <strong><?= (int) $selectedSubmission['duration_seconds'] ?> detik</strong>
-                            </div>
-                            <div>
-                                <span>Dikirim</span>
-                                <strong><?= htmlspecialchars(date('d M Y H:i', strtotime($selectedSubmission['submitted_at']))) ?></strong>
-                            </div>
-                        </div>
-
-                        <audio controls src="../<?= htmlspecialchars($selectedSubmission['audio_path']) ?>"></audio>
-
-                        <form method="POST" action="dashboard.php?submission=<?= (int) $selectedSubmission['id'] ?>">
-                            <input type="hidden" name="action" value="save_review">
-                            <input type="hidden" name="submission_id" value="<?= (int) $selectedSubmission['id'] ?>">
-
-                            <div class="score-grid">
-                                <div>
-                                    <label for="articulation_score">Artikulasi</label>
-                                    <input id="articulation_score" type="number" name="articulation_score" min="0" max="100" value="<?= mentorScoreValue($selectedSubmission, 'articulation_score') ?>" required>
+                        <?php foreach (array_slice($queue, 0, 5) as $item): ?>
+                            <a class="queue-mini-item" href="penilaian.php?submission=<?= (int) $item['id'] ?>">
+                                <div class="q-avatar"><?= strtoupper(substr($item['student_name'], 0, 1)) ?></div>
+                                <div class="q-info">
+                                    <div class="q-name"><?= htmlspecialchars($item['student_name']) ?></div>
+                                    <div class="q-detail"><?= htmlspecialchars($item['topic']) ?> · <?= htmlspecialchars(date('d M H:i', strtotime($item['submitted_at']))) ?></div>
                                 </div>
-                                <div>
-                                    <label for="fluency_score">Kelancaran</label>
-                                    <input id="fluency_score" type="number" name="fluency_score" min="0" max="100" value="<?= mentorScoreValue($selectedSubmission, 'fluency_score') ?>" required>
-                                </div>
-                                <div>
-                                    <label for="confidence_score">Percaya Diri</label>
-                                    <input id="confidence_score" type="number" name="confidence_score" min="0" max="100" value="<?= mentorScoreValue($selectedSubmission, 'confidence_score') ?>" required>
-                                </div>
-                                <div>
-                                    <label for="structure_score">Struktur</label>
-                                    <input id="structure_score" type="number" name="structure_score" min="0" max="100" value="<?= mentorScoreValue($selectedSubmission, 'structure_score') ?>" required>
-                                </div>
-                                <div>
-                                    <label for="intonation_score">Intonasi</label>
-                                    <input id="intonation_score" type="number" name="intonation_score" min="0" max="100" value="<?= mentorScoreValue($selectedSubmission, 'intonation_score') ?>" required>
-                                </div>
-                                <div>
-                                    <label>Nilai Akhir</label>
-                                    <input type="number" value="<?= mentorScoreValue($selectedSubmission, 'final_score') ?>" disabled>
-                                </div>
-                            </div>
-
-                            <div class="field">
-                                <label for="strengths">Kelebihan</label>
-                                <textarea id="strengths" name="strengths" required><?= htmlspecialchars($selectedSubmission['strengths'] ?? '') ?></textarea>
-                            </div>
-
-                            <div class="field">
-                                <label for="improvements">Perlu Diperbaiki</label>
-                                <textarea id="improvements" name="improvements" required><?= htmlspecialchars($selectedSubmission['improvements'] ?? '') ?></textarea>
-                            </div>
-
-                            <div class="field">
-                                <label for="feedback">Feedback Mentor</label>
-                                <textarea id="feedback" name="feedback" required><?= htmlspecialchars($selectedSubmission['feedback'] ?? '') ?></textarea>
-                            </div>
-
-                            <button class="save" type="submit">Simpan Penilaian</button>
-                        </form>
+                                <span class="q-status <?= $item['status'] === 'reviewed' ? 'reviewed' : 'pending' ?>">
+                                    <?= htmlspecialchars(mentorStatusLabel($item['status'])) ?>
+                                </span>
+                            </a>
+                        <?php endforeach; ?>
                     <?php endif; ?>
-                </article>
-            </section>
-        </main>
+                </div>
+
+                <?php if (!empty($queue)): ?>
+                    <a href="penilaian.php" class="view-all-link">
+                        Lihat semua penilaian →
+                    </a>
+                <?php endif; ?>
+            </div>
+
+            <!-- Info & Tips -->
+            <div class="dash-panel">
+                <h2>Informasi Mentor</h2>
+                <p class="muted">Tips dan panduan untuk penilaian</p>
+
+                <div class="info-card">
+                    <h3>📋 Rubrik Penilaian</h3>
+                    <p>Setiap latihan dinilai berdasarkan 5 aspek: <strong>Artikulasi, Kelancaran, Percaya Diri, Struktur,</strong> dan <strong>Intonasi.</strong> Berikan skor 0–100 untuk setiap aspek.</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>💡 Tips Feedback</h3>
+                    <p>Berikan feedback yang spesifik dan membangun. Sebutkan kelebihan peserta terlebih dahulu, lalu area yang perlu diperbaiki dengan contoh konkret.</p>
+                </div>
+
+                <div class="info-card">
+                    <h3>📚 Konten Pembelajaran</h3>
+                    <p>Anda dapat menambah materi video dan e-book kapan saja melalui menu <strong>Materi</strong> dan <strong>E-Book</strong> di sidebar.</p>
+                </div>
+            </div>
+        </section>
+    </main>
 </body>
 </html>
