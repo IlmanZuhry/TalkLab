@@ -173,12 +173,7 @@ $app->ensureSession();
 
     
     <div class="user-area">
-        <div class="notif">
-            <svg viewBox="0 0 24 24" class="icon-bell">
-                <path fill="white"
-                    d="M12 2a7 7 0 00-7 7v4.268l-.894 2.683A1 1 0 005 18h14a1 1 0 00.894-1.449L19 13.268V9a7 7 0 00-7-7zm0 20a3 3 0 003-3H9a3 3 0 003 3z" />
-            </svg>
-        </div>
+        
 
         <?php if ($app->isLoggedIn()):
             $displayName = $app->getDisplayName();
