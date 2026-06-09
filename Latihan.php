@@ -55,7 +55,7 @@ $practiceScripts = [
         'level' => 'Intermediate',
         'duration' => 60,
         'title' => 'Pentingnya Berani Berbicara',
-        'text' => "Selamat pagi dan salam sejahtera untuk kita semua.\n\n[JEDA]\n\nKemampuan berbicara di depan umum bukan hanya bakat, tetapi keterampilan yang dapat dilatih.\n\nSaat kita berani menyampaikan pendapat, kita belajar menyusun pikiran dengan lebih jelas.\n\n[TEKANAN]\n\nKeberanian berbicara membuka kesempatan untuk memimpin, bekerja sama, dan memberi pengaruh positif.\n\nMari mulai dari langkah kecil: berbicara jelas, mendengar dengan baik, dan menyampaikan pesan dengan percaya diri."
+        'text' => "Selamat pagi dan salam sejahtera untuk kita semua.\n\n[JEDA]\n\Kemampuan berbicara di depan umum bukan hanya bakat, tetapi keterampilan yang dapat dilatih.\n\nSaat kita berani menyampaikan pendapat, kita belajar menyusun pikiran dengan lebih jelas.\n\n[TEKANAN]\n\nKeberanian berbicara membuka kesempatan untuk memimpin, bekerja sama, dan memberi pengaruh positif.\n\nMari mulai dari langkah kecil: berbicara jelas, mendengar dengan baik, dan menyampaikan pesan dengan percaya diri."
       ],
       [
         'level' => 'Advanced',
@@ -223,13 +223,26 @@ $practiceScripts = [
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    body { background: #f7f7fc; }
+    body { 
+      background: #f7f7fc; 
+      width: 100%; 
+      display: flex; 
+      margin: 0; 
+      padding: 0; 
+      overflow-x: hidden;
+    }
 
     main {
-      flex: 1;
       margin-left: 260px;
       padding: 120px 40px 48px;
       color: #101828;
+      width: calc(100% - 260px) !important;
+      min-height: 100vh;
+      box-sizing: border-box;
+      max-width: calc(100% - 260px) !important;
+      display: block !important;
+      flex-grow: 1;
+      overflow-x: hidden;
     }
 
     .page-head {
@@ -238,6 +251,7 @@ $practiceScripts = [
       align-items: flex-end;
       gap: 20px;
       margin-bottom: 28px;
+      width: 100% !important;
     }
 
     .page-head h1 {
@@ -406,6 +420,7 @@ $practiceScripts = [
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 18px;
       margin-bottom: 28px;
+      width: 100% !important;
     }
 
     .feature-card {
@@ -494,9 +509,11 @@ $practiceScripts = [
 
     .workspace {
       display: grid;
-      grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr);
+      grid-template-columns: 1fr 340px;
       gap: 24px;
       align-items: start;
+      width: 100% !important;
+      max-width: none !important;
     }
 
     .feature-section {
@@ -523,8 +540,9 @@ $practiceScripts = [
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 18px;
+      gap: 20px;
       margin-bottom: 24px;
+      padding-right: 4px;
     }
 
     .panel-title h2 {
@@ -537,7 +555,6 @@ $practiceScripts = [
       color: #667085;
       font-size: 15px;
       line-height: 1.5;
-      max-width: 720px;
     }
 
     .coach-strip {
@@ -607,7 +624,6 @@ $practiceScripts = [
       font-size: 28px;
       font-weight: 800;
       line-height: 1.25;
-      max-width: 760px;
     }
 
     .control-grid {
@@ -619,15 +635,146 @@ $practiceScripts = [
 
     .challenge-layout {
       display: grid;
-      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-      gap: 18px;
+      grid-template-columns: 280px 1fr 340px;
+      gap: 20px;
+      align-items: stretch;
       margin-bottom: 22px;
     }
 
-    .option-grid {
+    .challenge-layout > .control-box {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .challenge-layout .option-grid {
       display: grid;
       grid-template-columns: 1fr;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .challenge-layout .option-card {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .challenge-layout .option-card strong {
+      font-size: 14px;
+    }
+
+    .challenge-layout .option-card span {
+      font-size: 11px;
+    }
+
+    .briefing-card {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
       gap: 12px;
+    }
+
+    .stat-item {
+      background: #fff;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid #f2d7b8;
+      text-align: center;
+    }
+
+    .fokus-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .fokus-tag {
+      background: #10204f;
+      color: #fff;
+      font-size: 10px;
+      font-weight: 900;
+      padding: 6px 10px;
+      border-radius: 8px;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .simulation-sidebar {
+      background: #fff;
+      border-radius: 22px;
+      padding: 24px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 14px rgb(0 0 0 / 0.04);
+    }
+
+    .simulation-sidebar h4 {
+      color: #10204f;
+      font-size: 14px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tip-item {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #667085;
+      line-height: 1.4;
+    }
+
+    .tip-item span {
+      color: #027a48;
+    }
+
+    .xp-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fffaf3;
+      border: 1px solid #f2d7b8;
+      color: #d2a06b;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 14px;
+    }
+
+    .streak-card {
+      background: #10204f;
+      color: #fff;
+      padding: 16px;
+      border-radius: 18px;
+      text-align: center;
+    }
+
+    .streak-card strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 2px;
+    }
+
+    .streak-card span {
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      opacity: 0.6;
     }
 
     .option-card {
@@ -1155,6 +1302,30 @@ $practiceScripts = [
       margin-top: 8px;
     }
 
+    /* Hide scrollbars but keep functionality */
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+
+    .teleprompter-container {
+      mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    }
+
+    .cue-toast {
+      animation: cueFade 2s ease-in-out forwards;
+    }
+
+    @keyframes cueFade {
+      0% { opacity: 0; transform: translateY(10px); }
+      15% { opacity: 1; transform: translateY(0); }
+      85% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(-10px); }
+    }
+
     .empty-state {
       color: #667085;
       background: #f8fafc;
@@ -1168,6 +1339,7 @@ $practiceScripts = [
       main {
         margin-left: 0;
         padding: 112px 24px 36px;
+        width: 100% !important;
       }
 
       .feature-grid,
@@ -1251,122 +1423,7 @@ $practiceScripts = [
     </section>
 
     <section class="workspace feature-section active" id="voiceSection">
-      <div class="panel">
-        <div class="panel-title">
-          <div>
-            <h2>Guided Speaking Practice</h2>
-            <p>Pilih kategori, baca naskah latihan, rekam, lalu dengarkan ulang hasilmu.</p>
-          </div>
-        </div>
-
-        <div class="coach-strip">
-          <img src="assets/jjjj.png" alt="Coach TalkLab">
-          <div>
-            <strong><?= $mentorInfo['voice'] ? 'Mentor: ' . htmlspecialchars($mentorInfo['voice']['name']) : 'Siap latihan suara?' ?></strong>
-            <span>Ikuti naskah yang tersedia untuk melatih artikulasi, intonasi, jeda, dan penyampaian pesan.</span>
-          </div>
-        </div>
-
-        <div class="category-grid" aria-label="Kategori latihan speaking">
-          <?php foreach ($practiceScripts as $index => $group): ?>
-            <button class="category-btn <?= $index === 0 ? 'active' : '' ?>" type="button" data-category="<?= htmlspecialchars($group['category']) ?>">
-              <?= htmlspecialchars($group['category']) ?>
-            </button>
-          <?php endforeach; ?>
-        </div>
-
-        <div class="script-layout">
-          <article class="script-card">
-            <div class="topic-label">Training Script</div>
-            <h3 class="script-title" id="scriptTitle"></h3>
-            <div class="script-meta">
-              <span class="badge" id="scriptCategory"></span>
-              <span class="badge" id="scriptDuration"></span>
-              <span class="badge" id="scriptLevel"></span>
-            </div>
-            <div class="script-text" id="scriptText"></div>
-          </article>
-
-          <aside class="guide-card">
-            <h3>Speaking Guide</h3>
-            <ul class="guide-list">
-              <li>Baca dengan suara jelas</li>
-              <li>Berikan jeda pada tanda [JEDA]</li>
-              <li>Tekankan kata pada tanda [TEKANAN]</li>
-              <li>Jangan berbicara terlalu cepat</li>
-              <li>Jaga ritme bicara tetap stabil</li>
-            </ul>
-          </aside>
-        </div>
-
-        <div class="control-grid">
-          <div class="control-box">
-            <h3>Topic & Script Generator</h3>
-            <div class="action-row">
-              <button class="btn btn-primary" type="button" id="randomTopicBtn">Topik Acak</button>
-              <button class="btn btn-muted" type="button" id="nextTopicBtn">Naskah Berikutnya</button>
-            </div>
-          </div>
-
-          <div class="control-box">
-            <h3>Tingkat Latihan</h3>
-            <div class="duration-options">
-              <button class="duration-btn active" type="button" data-level="Beginner" data-duration="30">Beginner</button>
-              <button class="duration-btn" type="button" data-level="Intermediate" data-duration="60">Intermediate</button>
-              <button class="duration-btn" type="button" data-level="Advanced" data-duration="180">Advanced</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="recorder-box">
-          <div class="practice-stage">
-            <div class="mic-orb" id="micOrb">🎙</div>
-            <div>
-              <div class="timer-wrap">
-                <div>
-                  <div class="timer" id="timer">00:30</div>
-                  <div class="timer-caption">Durasi target: <span id="selectedDuration">30 detik</span></div>
-                </div>
-                <div class="status-pill" id="recordStatus">READY</div>
-              </div>
-
-              <div class="recording-status-line" id="recordingLine">
-                <span class="recording-dot"></span>
-                <span id="recordingLineText">Siap mulai latihan terstruktur.</span>
-              </div>
-
-              <div class="meter" aria-hidden="true">
-                <div class="meter-fill" id="meterFill"></div>
-              </div>
-
-              <div class="voice-wave" id="voiceWave" aria-hidden="true">
-                <span></span><span></span><span></span><span></span><span></span>
-              </div>
-            </div>
-          </div>
-
-          <div class="action-row">
-            <button class="btn btn-primary" type="button" id="startBtn">Mulai Latihan</button>
-            <button class="btn btn-danger" type="button" id="stopBtn" disabled>Stop Recording</button>
-            <button class="btn btn-muted" type="button" id="replayBtn" disabled>Putar Ulang Hasil</button>
-            <button class="btn btn-dark" type="button" id="saveBtn" disabled>Simpan Riwayat</button>
-            <button class="btn btn-primary" type="button" id="submitMentorBtn" disabled style="background:#027a48;">📤 Kirim ke Mentor</button>
-          </div>
-
-          <div class="result-box" id="resultBox">
-            <h3>Playback Result</h3>
-            <div class="result-meta">
-              <span class="badge" id="resultTopic">Judul: -</span>
-              <span class="badge" id="resultCategory">Kategori: -</span>
-              <span class="badge" id="resultLevel">Level: -</span>
-              <span class="badge" id="resultDuration">Durasi: -</span>
-            </div>
-            <audio id="playback" controls></audio>
-          </div>
-
-          <div class="toast info" id="messageBox">Tekan Mulai Latihan untuk memberi izin microphone dan memulai timer.</div>
-        </div>
-      </div>
+      <div id="guided-speaking-root"></div>
 
       <aside class="panel history-panel">
         <h2>Practice History</h2>
@@ -1395,8 +1452,13 @@ $practiceScripts = [
       <div id="conversation-challenge-root"></div>
 
       <aside class="panel history-panel">
-        <h2>Riwayat Tantangan</h2>
-        <p>Riwayat menampilkan nama simulasi, tingkat kesulitan, jumlah pertanyaan, tanggal latihan, durasi total, dan status penyelesaian.</p>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="m-0">Riwayat Tantangan</h2>
+          <?php if (count($challengeHistory) > 3): ?>
+            <a href="HasilLatihan.php" class="text-xs font-black text-[#d2a06b] uppercase tracking-wider hover:underline">Lihat Semua →</a>
+          <?php endif; ?>
+        </div>
+        <p>3 simulasi terakhir Anda. Selesaikan tantangan untuk melihat progres terbaru.</p>
 
         <div class="history-list" id="challengeHistoryList">
           <?php if (!$currentUser): ?>
@@ -1404,7 +1466,10 @@ $practiceScripts = [
           <?php elseif (empty($challengeHistory)): ?>
             <div class="empty-state">Belum ada riwayat tantangan. Selesaikan satu simulasi lalu simpan hasilnya.</div>
           <?php else: ?>
-            <?php foreach ($challengeHistory as $item): ?>
+            <?php 
+              $limitedHistory = array_slice($challengeHistory, 0, 3);
+              foreach ($limitedHistory as $item): 
+            ?>
               <div class="history-card">
                 <strong><?= htmlspecialchars($item['challenge_type']) ?></strong>
                 <small><?= htmlspecialchars($item['level_name']) ?></small>
@@ -1428,65 +1493,12 @@ $practiceScripts = [
   <script>
     const practiceScripts = <?= json_encode($practiceScripts, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
     const isLoggedIn = <?= $currentUser ? 'true' : 'false' ?>;
-    const categoryBtns = document.querySelectorAll(".category-btn");
-    const scriptTitle = document.getElementById("scriptTitle");
-    const scriptCategory = document.getElementById("scriptCategory");
-    const scriptDuration = document.getElementById("scriptDuration");
-    const scriptLevel = document.getElementById("scriptLevel");
-    const scriptText = document.getElementById("scriptText");
-    const randomTopicBtn = document.getElementById("randomTopicBtn");
-    const nextTopicBtn = document.getElementById("nextTopicBtn");
-    const durationBtns = document.querySelectorAll(".duration-btn");
-    const timer = document.getElementById("timer");
-    const selectedDuration = document.getElementById("selectedDuration");
-    const meterFill = document.getElementById("meterFill");
-    const recordStatus = document.getElementById("recordStatus");
-    const micOrb = document.getElementById("micOrb");
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
-    const replayBtn = document.getElementById("replayBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const submitMentorBtn = document.getElementById("submitMentorBtn");
-    const playback = document.getElementById("playback");
-    const resultBox = document.getElementById("resultBox");
-    const resultTopic = document.getElementById("resultTopic");
-    const resultCategory = document.getElementById("resultCategory");
-    const resultLevel = document.getElementById("resultLevel");
-    const resultDuration = document.getElementById("resultDuration");
-    const recordingLine = document.getElementById("recordingLine");
-    const recordingLineText = document.getElementById("recordingLineText");
-    const voiceWave = document.getElementById("voiceWave");
-    const messageBox = document.getElementById("messageBox");
-    const historyList = document.getElementById("historyList");
     const featureCards = document.querySelectorAll(".feature-card");
     const voiceSection = document.getElementById("voiceSection");
     const challengeSection = document.getElementById("challengeSection");
     const aiSection = document.getElementById("aiSection");
+    const historyList = document.getElementById("historyList");
     const challengeHistoryList = document.getElementById("challengeHistoryList");
-
-    let activeCategory = practiceScripts[0].category;
-    let scriptIndex = 0;
-    let activePracticeLevel = "Beginner";
-    let activeScript = practiceScripts[0].scripts[0];
-    let selectedSeconds = 30;
-    let remainingSeconds = 30;
-    let elapsedSeconds = 0;
-    let timerInterval = null;
-    let mediaRecorder = null;
-    let audioChunks = [];
-    let recordedBlob = null;
-    let lastSavedPracticeId = null;
-
-    function formatTime(seconds) {
-      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-      const secs = String(seconds % 60).padStart(2, "0");
-      return `${mins}:${secs}`;
-    }
-
-    function setMessage(type, text) {
-      messageBox.className = `toast ${type}`;
-      messageBox.textContent = text;
-    }
 
     function switchFeature(feature) {
       featureCards.forEach(card => {
@@ -1498,286 +1510,8 @@ $practiceScripts = [
       aiSection.classList.toggle("active", feature === "ai");
     }
 
-    function durationLabel(seconds) {
-      return seconds === 60 ? "1 Menit" : seconds === 180 ? "3 Menit" : "30 Detik";
-    }
-
-    function getCategoryGroup(category) {
-      return practiceScripts.find(group => group.category === category) || practiceScripts[0];
-    }
-
-    function getLevelScripts(category = activeCategory, level = activePracticeLevel) {
-      const group = getCategoryGroup(category);
-      const scripts = group.scripts.filter(item => item.level === level);
-      return scripts.length ? scripts : group.scripts;
-    }
-
-    function renderScriptText(text) {
-      const escaped = text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      scriptText.innerHTML = escaped.replace(/\[(JEDA|TEKANAN)\]/g, '<span class="script-cue">[$1]</span>');
-    }
-
-    function setActiveScript(index = 0) {
-      const scripts = getLevelScripts();
-      scriptIndex = ((index % scripts.length) + scripts.length) % scripts.length;
-      activeScript = scripts[scriptIndex];
-      selectedSeconds = Number(activeScript.duration);
-
-      scriptTitle.textContent = activeScript.title;
-      scriptCategory.textContent = `Kategori: ${activeCategory}`;
-      scriptDuration.textContent = `Durasi: ${durationLabel(selectedSeconds)}`;
-      scriptLevel.textContent = `Level: ${activePracticeLevel}`;
-      renderScriptText(activeScript.text);
-
-      resultTopic.textContent = `Judul: ${activeScript.title}`;
-      resultCategory.textContent = `Kategori: ${activeCategory}`;
-      resultLevel.textContent = `Level: ${activePracticeLevel}`;
-      updateDurationLabel();
-      resetTimer();
-    }
-
-    function setCategory(category) {
-      activeCategory = category;
-      categoryBtns.forEach(btn => btn.classList.toggle("active", btn.dataset.category === category));
-      setActiveScript(0);
-    }
-
-    function resetTimer() {
-      remainingSeconds = selectedSeconds;
-      elapsedSeconds = 0;
-      timer.textContent = formatTime(remainingSeconds);
-      meterFill.style.width = "0%";
-    }
-
-    function updateDurationLabel() {
-      selectedDuration.textContent = durationLabel(selectedSeconds);
-    }
-
-    function resetRecordingResult() {
-      recordedBlob = null;
-      lastSavedPracticeId = null;
-      playback.removeAttribute("src");
-      resultBox.style.display = "none";
-      saveBtn.disabled = true;
-      replayBtn.disabled = true;
-      submitMentorBtn.disabled = true;
-    }
-
-    randomTopicBtn.addEventListener("click", () => {
-      let nextCategoryIndex = Math.floor(Math.random() * practiceScripts.length);
-      if (practiceScripts.length > 1 && practiceScripts[nextCategoryIndex].category === activeCategory) {
-        nextCategoryIndex = (nextCategoryIndex + 1) % practiceScripts.length;
-      }
-      activeCategory = practiceScripts[nextCategoryIndex].category;
-      const scripts = getLevelScripts(activeCategory, activePracticeLevel);
-      const nextScriptIndex = Math.floor(Math.random() * scripts.length);
-      setCategory(activeCategory);
-      setActiveScript(nextScriptIndex);
-      resetRecordingResult();
-    });
-
-    nextTopicBtn.addEventListener("click", () => {
-      setActiveScript(scriptIndex + 1);
-      resetRecordingResult();
-    });
-
-    categoryBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        setCategory(btn.dataset.category);
-        resetRecordingResult();
-      });
-    });
-
-    durationBtns.forEach(btn => {
-      btn.addEventListener("click", () => {
-        durationBtns.forEach(item => item.classList.remove("active"));
-        btn.classList.add("active");
-        activePracticeLevel = btn.dataset.level;
-        setActiveScript(0);
-        resetRecordingResult();
-      });
-    });
-
-    async function startRecording() {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setMessage("error", "Browser ini belum mendukung rekaman suara.");
-        return;
-      }
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        audioChunks = [];
-        recordedBlob = null;
-        const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-        mediaRecorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
-
-        mediaRecorder.ondataavailable = event => {
-          if (event.data.size > 0) {
-            audioChunks.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = () => {
-          stream.getTracks().forEach(track => track.stop());
-          recordedBlob = new Blob(audioChunks, { type: preferredMime || "audio/webm" });
-          playback.src = URL.createObjectURL(recordedBlob);
-          resultTopic.textContent = `Judul: ${activeScript.title}`;
-          resultCategory.textContent = `Kategori: ${activeCategory}`;
-          resultLevel.textContent = `Level: ${activePracticeLevel}`;
-          resultDuration.textContent = `Durasi: ${elapsedSeconds} detik`;
-          resultBox.style.display = "block";
-          replayBtn.disabled = false;
-          saveBtn.disabled = false;
-          recordStatus.textContent = "FINISHED";
-          recordingLine.classList.remove("active");
-          voiceWave.classList.remove("active");
-          recordingLineText.textContent = "Latihan selesai. Putar ulang hasil atau simpan riwayat.";
-          setMessage("success", "Rekaman selesai. Dengarkan kembali hasil latihanmu atau simpan ke riwayat.");
-        };
-
-        resetTimer();
-        resetRecordingResult();
-        mediaRecorder.start();
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-        randomTopicBtn.disabled = true;
-        nextTopicBtn.disabled = true;
-        categoryBtns.forEach(btn => btn.disabled = true);
-        durationBtns.forEach(btn => btn.disabled = true);
-        recordStatus.textContent = "RECORDING";
-        recordStatus.classList.add("status-recording");
-        micOrb.classList.add("recording");
-        recordingLine.classList.add("active");
-        voiceWave.classList.add("active");
-        recordingLineText.textContent = "Recording aktif. Baca naskah dengan ritme stabil.";
-        setMessage("info", "Latihan sedang berlangsung. Baca naskah dan ikuti tanda jeda serta tekanan.");
-
-        timerInterval = setInterval(() => {
-          remainingSeconds -= 1;
-          elapsedSeconds = selectedSeconds - remainingSeconds;
-          timer.textContent = formatTime(Math.max(remainingSeconds, 0));
-          meterFill.style.width = `${Math.min((elapsedSeconds / selectedSeconds) * 100, 100)}%`;
-
-          if (remainingSeconds <= 0) {
-            stopRecording();
-          }
-        }, 1000);
-      } catch (error) {
-        setMessage("error", "Microphone tidak bisa diakses. Pastikan izin microphone aktif di browser.");
-      }
-    }
-
-    function stopRecording() {
-      clearInterval(timerInterval);
-      if (mediaRecorder && mediaRecorder.state !== "inactive") {
-        mediaRecorder.stop();
-      }
-
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-      randomTopicBtn.disabled = false;
-      nextTopicBtn.disabled = false;
-      categoryBtns.forEach(btn => btn.disabled = false);
-      durationBtns.forEach(btn => btn.disabled = false);
-      recordStatus.textContent = "FINISHED";
-      recordStatus.classList.remove("status-recording");
-      micOrb.classList.remove("recording");
-      recordingLine.classList.remove("active");
-      voiceWave.classList.remove("active");
-
-      if (elapsedSeconds <= 0) {
-        elapsedSeconds = selectedSeconds - remainingSeconds;
-      }
-    }
-
-    async function savePractice() {
-      if (!recordedBlob) {
-        setMessage("error", "Belum ada rekaman yang bisa disimpan.");
-        return;
-      }
-
-      if (!isLoggedIn) {
-        setMessage("error", "Silakan login terlebih dahulu agar riwayat latihan tersimpan ke akun.");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("action", "save_practice");
-      formData.append("topic", activeScript.title);
-      formData.append("script_title", activeScript.title);
-      formData.append("category", activeCategory);
-      formData.append("level_name", activePracticeLevel);
-      formData.append("duration", elapsedSeconds);
-      formData.append("audio", recordedBlob, "practice.webm");
-
-      saveBtn.disabled = true;
-      setMessage("info", "Menyimpan riwayat latihan...");
-
-      try {
-        const response = await fetch("Latihan.php", {
-          method: "POST",
-          body: formData
-        });
-        const data = await response.json();
-
-        if (!data.status) {
-          saveBtn.disabled = false;
-          setMessage("error", data.message || "Gagal menyimpan riwayat latihan.");
-          return;
-        }
-
-        prependHistory(data.item);
-        lastSavedPracticeId = data.practice_history_id || null;
-        if (lastSavedPracticeId) {
-          submitMentorBtn.disabled = false;
-        }
-        setMessage("success", data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
-      } catch (error) {
-        saveBtn.disabled = false;
-        setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan.");
-      }
-    }
-
-    async function submitToMentor() {
-      if (!lastSavedPracticeId) {
-        setMessage("error", "Simpan riwayat latihan terlebih dahulu.");
-        return;
-      }
-      if (!isLoggedIn) {
-        setMessage("error", "Silakan login terlebih dahulu.");
-        return;
-      }
-
-      submitMentorBtn.disabled = true;
-      setMessage("info", "Mengirim latihan ke mentor...");
-
-      try {
-        const formData = new FormData();
-        formData.append("action", "submit_to_mentor");
-        formData.append("practice_history_id", lastSavedPracticeId);
-        formData.append("feature_type", "voice");
-
-        const response = await fetch("Latihan.php", { method: "POST", body: formData });
-        const data = await response.json();
-
-        if (!data.status) {
-          submitMentorBtn.disabled = false;
-          setMessage("error", data.message || "Gagal mengirim ke mentor.");
-          return;
-        }
-
-        setMessage("success", data.message);
-      } catch (error) {
-        submitMentorBtn.disabled = false;
-        setMessage("error", "Terjadi kesalahan saat mengirim ke mentor.");
-      }
-    }
-
     function prependHistory(item) {
+      if (!historyList) return;
       const empty = historyList.querySelector(".empty-state");
       if (empty) empty.remove();
 
@@ -1803,6 +1537,7 @@ $practiceScripts = [
     }
 
     function prependChallengeHistory(item) {
+      if (!challengeHistoryList) return;
       const empty = challengeHistoryList.querySelector(".empty-state");
       if (empty) empty.remove();
 
@@ -1833,6 +1568,7 @@ $practiceScripts = [
       challengeHistoryList.prepend(card);
     }
 
+    window.prependHistory = prependHistory;
     window.prependChallengeHistory = prependChallengeHistory;
 
     featureCards.forEach(card => {
@@ -1841,26 +1577,23 @@ $practiceScripts = [
       });
     });
 
-    startBtn.addEventListener("click", startRecording);
-    stopBtn.addEventListener("click", stopRecording);
-    replayBtn.addEventListener("click", () => {
-      if (playback.src) {
-        playback.currentTime = 0;
-        playback.play();
-      }
-    });
-    saveBtn.addEventListener("click", savePractice);
-    submitMentorBtn.addEventListener("click", submitToMentor);
-
-    setActiveScript(0);
     switchFeature("voice");
   </script>
+
   <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
+
     (function () {
       const simulasiPercakapan = [
         {
+          id: "wawancara",
           nama: "Simulasi Wawancara",
+          persona: "Pewawancara Virtual",
+          personaIcon: "👤",
+          pesanPersona: "Selamat datang. Saya akan mengajukan beberapa pertanyaan rekrutmen. Jawablah seolah-olah Anda sedang dalam sesi interview nyata.",
           deskripsi: "Latihan menjawab pertanyaan wawancara kerja dengan jelas, percaya diri, dan terstruktur.",
+          fokus: ["Struktur Jawaban", "Kejelasan Penyampaian", "Kepercayaan Diri", "Respons Spontan"],
+          tips: ["Gunakan metode STAR (Situation, Task, Action, Result)", "Jaga kontak mata dengan kamera", "Hindari jawaban 'ya' atau 'tidak' saja"],
           pertanyaan: [
             "Ceritakan tentang diri Anda.",
             "Apa kelebihan terbesar Anda?",
@@ -1873,8 +1606,14 @@ $practiceScripts = [
           ]
         },
         {
+          id: "seminar",
           nama: "Tanya Jawab Seminar",
+          persona: "Moderator Seminar",
+          personaIcon: "🎤",
+          pesanPersona: "Terima kasih atas pemaparannya. Sekarang, saya akan menyampaikan beberapa pertanyaan dari audiens. Jawablah secara profesional.",
           deskripsi: "Latihan menjawab pertanyaan audiens setelah menyampaikan materi seminar.",
+          fokus: ["Kedalaman Materi", "Etika Menjawab", "Kejelasan Argumen", "Manajemen Waktu"],
+          tips: ["Apresiasi pertanyaan audiens", "Berikan jawaban yang edukatif", "Jika tidak tahu, sampaikan akan didiskusikan lanjut"],
           pertanyaan: [
             "Apa inti dari presentasi Anda?",
             "Mengapa topik ini penting?",
@@ -1887,8 +1626,14 @@ $practiceScripts = [
           ]
         },
         {
+          id: "presentasi",
           nama: "Simulasi Presentasi",
+          persona: "Audiens Virtual",
+          personaIcon: "👥",
+          pesanPersona: "Ide yang menarik. Namun kami memiliki beberapa pertanyaan kritis mengenai ide yang Anda sampaikan.",
           deskripsi: "Latihan mempertahankan ide presentasi melalui pertanyaan lanjutan.",
+          fokus: ["Penguasaan Ide", "Ketangguhan Argumen", "Ketenangan", "Persuasi"],
+          tips: ["Gunakan data untuk mendukung argumen", "Tetap tenang saat ditanya hal kritis", "Arahkan kembali ke manfaat utama ide Anda"],
           pertanyaan: [
             "Jelaskan ide utama presentasi Anda.",
             "Apa manfaat dari solusi yang Anda tawarkan?",
@@ -1901,8 +1646,14 @@ $practiceScripts = [
           ]
         },
         {
+          id: "mc",
           nama: "Pembawa Acara",
-          deskripsi: "Latihan merespons situasi acara sebagai MC secara ramah dan profesional.",
+          persona: "Koordinator Acara",
+          personaIcon: "🎙️",
+          pesanPersona: "Acara akan segera dimulai. Anda akan menghadapi situasi panggung yang dinamis. Jaga energi penonton tetap tinggi.",
+          deskripsi: "Latihan merespons situasi acara sebagai MC secara ramah and profesional.",
+          fokus: ["Energi & Vokal", "Kelikatan Bicara", "Keramahan", "Improvisasi"],
+          tips: ["Mulai dengan senyum yang tulus", "Gunakan intonasi yang variatif", "Siap dengan kalimat cadangan jika ada kendala teknis"],
           pertanyaan: [
             "Buka acara seminar ini.",
             "Perkenalkan narasumber.",
@@ -1915,8 +1666,14 @@ $practiceScripts = [
           ]
         },
         {
-          nama: "Perkenalan Profesional",
+          id: "perkenalan",
+          nama: "Networking",
+          persona: "Rekan Profesional",
+          personaIcon: "🤝",
+          pesanPersona: "Senang bertemu Anda. Mari berkenalan lebih jauh mengenai latar belakang dan keahlian Anda.",
           deskripsi: "Latihan memperkenalkan diri dalam kegiatan formal, komunitas, atau dunia kerja.",
+          fokus: ["Personal Branding", "Artikulasi Nama", "Kesan Pertama", "Relevansi Pengalaman"],
+          tips: ["Sampaikan 'Elevator Pitch' Anda", "Hubungkan keahlian dengan kebutuhan lawan bicara", "Tanyakan balik untuk membangun koneksi"],
           pertanyaan: [
             "Perkenalkan diri Anda.",
             "Ceritakan latar belakang Anda.",
@@ -1929,8 +1686,14 @@ $practiceScripts = [
           ]
         },
         {
+          id: "diskusi",
           nama: "Diskusi Kelompok",
+          persona: "Fasilitator Diskusi",
+          personaIcon: "👨‍🏫",
+          pesanPersona: "Kita perlu mencapai kesepakatan. Saya ingin mendengar kontribusi dan tanggapan Anda atas poin berikut.",
           deskripsi: "Latihan memberi respons dalam diskusi, menyanggah dengan sopan, dan merangkum pendapat.",
+          fokus: ["Kerja Sama Tim", "Kesopanan", "Analisis Masalah", "Gaya Diplomatis"],
+          tips: ["Gunakan kalimat 'Saya setuju, namun...' untuk menyanggah", "Berikan solusi, bukan hanya kritik", "Pastikan semua poin tersampaikan ringkas"],
           pertanyaan: [
             "Apa pendapat Anda tentang ide kelompok ini?",
             "Bagaimana Anda menanggapi pendapat yang berbeda?",
@@ -1950,393 +1713,482 @@ $practiceScripts = [
         { nama: "Lanjutan", jumlah: 8, persiapan: 10, jawab: 90, deskripsi: "8 pertanyaan, persiapan 10 detik, menjawab 90 detik." }
       ];
 
-      function formatDurasi(seconds) {
-        const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
-        const secs = String(seconds % 60).padStart(2, "0");
-        return `${mins}:${secs}`;
-      }
-
-      function susunPertanyaan(simulasi, level, modeCepat) {
-        const semua = modeCepat
-          ? simulasiPercakapan.flatMap((item) => item.pertanyaan.map((teks) => ({ teks, asal: item.nama })))
-          : simulasi.pertanyaan.map((teks) => ({ teks, asal: simulasi.nama }));
-        const pool = modeCepat ? [...semua].sort(() => Math.random() - 0.5) : semua;
-        const jumlah = modeCepat ? 5 : level.jumlah;
-        return Array.from({ length: jumlah }, (_, index) => pool[index % pool.length]);
-      }
-
       function TantanganPercakapan() {
-        const [simulasi, setSimulasi] = React.useState(simulasiPercakapan[0]);
-        const [level, setLevel] = React.useState(tingkatKesulitan[0]);
-        const [modeCepat, setModeCepat] = React.useState(false);
-        const [fase, setFase] = React.useState("ringkasan");
-        const [pertanyaan, setPertanyaan] = React.useState([]);
-        const [nomor, setNomor] = React.useState(0);
-        const [sisaWaktu, setSisaWaktu] = React.useState(tingkatKesulitan[0].persiapan);
-        const [durasiJawaban, setDurasiJawaban] = React.useState([]);
-        const [pesan, setPesan] = React.useState("Pilih jenis simulasi dan tingkat kesulitan, lalu mulai tantangan.");
-        const [tersimpan, setTersimpan] = React.useState(false);
-        const [terkirim, setTerkirim] = React.useState(false);
-        const [practiceHistoryId, setPracticeHistoryId] = React.useState(null);
-        const recorderRef = React.useRef(null);
-        const streamRef = React.useRef(null);
-        const chunksRef = React.useRef([]);
-        // Accumulate all audio chunks across all questions for upload
-        const allAudioChunksRef = React.useRef([]);
-        const fullRecorderRef = React.useRef(null);
-        const fullStreamRef = React.useRef(null);
+        const [simulasi, setSimulasi] = useState(simulasiPercakapan[0]);
+        const [level, setLevel] = useState(tingkatKesulitan[0]);
+        const [modeCepat, setModeCepat] = useState(false);
+        const [view, setView] = useState("PREP"); // "PREP", "TRANSITION", "ACTIVE", "RESULT"
+        const [pertanyaan, setPertanyaan] = useState([]);
+        const [nomor, setNomor] = useState(0);
+        const [fase, setFase] = useState("persiapan"); // "persiapan", "menjawab", "jawaban"
+        const [sisaWaktu, setSisaWaktu] = useState(0);
+        const [durasiJawaban, setDurasiJawaban] = useState([]);
+        const [isSaving, setIsSaving] = useState(false);
+        const [isSaved, setIsSaved] = useState(false);
+        const [isSubmitted, setIsSubmitted] = useState(false);
+        const [practiceHistoryId, setPracticeHistoryId] = useState(null);
+        const [transitionCountdown, setTransitionCountdown] = useState(3);
+        const [stepCountdown, setStepCountdown] = useState(0);
+        const [lastDuration, setLastDuration] = useState(0);
 
-        const aturan = modeCepat
+        const recorderRef = useRef(null);
+        const streamRef = useRef(null);
+        const chunksRef = useRef([]);
+        const allAudioChunksRef = useRef([]);
+        const fullRecorderRef = useRef(null);
+        const fullStreamRef = useRef(null);
+
+        const currentRules = modeCepat
           ? { nama: "Mode Respon Cepat", jumlah: 5, persiapan: 5, jawab: 30, deskripsi: "Pertanyaan acak, persiapan 5 detik, menjawab 30 detik." }
           : level;
-        const aktif = pertanyaan[nomor] || { teks: simulasi.pertanyaan[0], asal: simulasi.nama };
-        const selesai = fase === "selesai";
-        const jumlahTerjawab = durasiJawaban.length;
-        const progres = pertanyaan.length ? Math.min((jumlahTerjawab / pertanyaan.length) * 100, 100) : 0;
-        const waktuTotal = durasiJawaban.reduce((total, item) => total + item, 0);
 
-        React.useEffect(() => {
-          if (fase !== "persiapan" && fase !== "menjawab") return;
-          if (sisaWaktu <= 0) {
-            if (fase === "persiapan") mulaiMenjawab();
-            if (fase === "menjawab") selesaiMenjawab(true);
-            return;
-          }
-          const timerId = setTimeout(() => setSisaWaktu((current) => Math.max(current - 1, 0)), 1000);
-          return () => clearTimeout(timerId);
-        }, [fase, sisaWaktu]);
+        const progres = pertanyaan.length ? Math.min((durasiJawaban.length / pertanyaan.length) * 100, 100) : 0;
+        const waktuTotal = durasiJawaban.reduce((t, v) => t + v, 0);
 
-        React.useEffect(() => {
-          return () => hentikanStream();
-        }, []);
+        const formatTime = (s) => {
+          const mins = String(Math.floor(s / 60)).padStart(2, "0");
+          const secs = String(s % 60).padStart(2, "0");
+          return `${mins}:${secs}`;
+        };
 
-        function pilihSimulasi(item) {
-          if (fase !== "ringkasan") return;
-          setModeCepat(false);
-          setSimulasi(item);
-          setPesan("Jenis simulasi diperbarui. Baca ringkasan sebelum memulai.");
-        }
-
-        function pilihModeCepat() {
-          if (fase !== "ringkasan") return;
-          setModeCepat(true);
-          setPesan("Mode Respon Cepat aktif. Pertanyaan akan muncul secara acak.");
-        }
-
-        function pilihLevel(item) {
-          if (fase !== "ringkasan") return;
-          setLevel(item);
-          setPesan("Tingkat kesulitan diperbarui. Waktu dan jumlah pertanyaan akan mengikuti pilihan ini.");
-        }
-
-        async function mulaiTantangan() {
-          const daftar = susunPertanyaan(simulasi, level, modeCepat);
+        const startSimulationFlow = () => {
+          const daftar = modeCepat
+            ? [...simulasiPercakapan.flatMap(s => s.pertanyaan.map(t => ({ teks: t, asal: s.nama })))].sort(() => Math.random() - 0.5).slice(0, 5)
+            : simulasi.pertanyaan.map(t => ({ teks: t, asal: simulasi.nama }));
+          
           setPertanyaan(daftar);
           setNomor(0);
           setDurasiJawaban([]);
-          setTersimpan(false);
-          setTerkirim(false);
+          setIsSaved(false);
+          setIsSubmitted(false);
           setPracticeHistoryId(null);
+          setTransitionCountdown(3);
+          setView("TRANSITION");
+          
+          const interval = setInterval(() => {
+            setTransitionCountdown(prev => {
+              if (prev <= 1) {
+                clearInterval(interval);
+                mulaiTantangan(daftar);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        };
+
+        async function mulaiTantangan(daftar) {
           allAudioChunksRef.current = [];
-          // Start a single continuous recording for the entire challenge
           try {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
               const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
               fullStreamRef.current = stream;
               const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-              const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
-              recorder.ondataavailable = (event) => {
-                if (event.data.size > 0) allAudioChunksRef.current.push(event.data);
-              };
-              recorder.onstop = () => {
-                if (fullStreamRef.current) {
-                  fullStreamRef.current.getTracks().forEach((t) => t.stop());
-                  fullStreamRef.current = null;
-                }
-              };
+              const recorder = new MediaRecorder(stream, preferredMime ? { mimeType: preferredMime } : {});
+              recorder.ondataavailable = e => { if (e.data.size > 0) allAudioChunksRef.current.push(e.data); };
               fullRecorderRef.current = recorder;
               recorder.start();
             }
-          } catch (e) { /* mic not available, continue without recording */ }
+          } catch (e) {}
+
+          setView("ACTIVE");
           setFase("persiapan");
           setSisaWaktu(modeCepat ? 5 : level.persiapan);
-          setPesan("Fase persiapan dimulai. Susun jawaban singkat dan jelas.");
         }
+
+        useEffect(() => {
+          if (view !== "ACTIVE") return;
+          if (fase === "jawaban") return;
+
+          if (sisaWaktu <= 0) {
+            if (fase === "persiapan") mulaiMenjawab();
+            else if (fase === "menjawab") selesaiMenjawab(true);
+            return;
+          }
+
+          const id = setTimeout(() => setSisaWaktu(s => Math.max(s - 1, 0)), 1000);
+          return () => clearTimeout(id);
+        }, [view, fase, sisaWaktu]);
 
         async function mulaiMenjawab() {
           try {
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
               const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
               streamRef.current = stream;
-              chunksRef.current = [];
-              const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
-              const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
-              recorder.ondataavailable = (event) => {
-                if (event.data.size > 0) chunksRef.current.push(event.data);
-              };
-              recorder.onstop = () => {
-                chunksRef.current = [];
-                hentikanStream();
-              };
+              const recorder = new MediaRecorder(stream);
+              recorder.onstop = () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
               recorderRef.current = recorder;
               recorder.start();
             }
             setFase("menjawab");
             setSisaWaktu(modeCepat ? 30 : level.jawab);
-            setPesan("Mulai menjawab. Rekaman aktif, jaga jawaban tetap fokus.");
-          } catch (error) {
+          } catch (e) {
             setFase("menjawab");
             setSisaWaktu(modeCepat ? 30 : level.jawab);
-            setPesan("Mikrofon tidak dapat diakses. Timer tetap berjalan untuk latihan simulasi.");
           }
-        }
-
-        function hentikanStream() {
-          if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => track.stop());
-            streamRef.current = null;
-          }
-          recorderRef.current = null;
         }
 
         function selesaiMenjawab(otomatis = false) {
-          if (recorderRef.current && recorderRef.current.state !== "inactive") {
-            recorderRef.current.stop();
-          } else {
-            hentikanStream();
-          }
+          if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+          
           const target = modeCepat ? 30 : level.jawab;
           const durasi = otomatis ? target : Math.max(target - sisaWaktu, 1);
-          setDurasiJawaban((current) => [...current, durasi]);
-          setFase("jawaban");
-          setPesan("Jawaban berhasil disimpan. Lanjut ke pertanyaan berikutnya?");
+          setDurasiJawaban(curr => [...curr, durasi]);
+          setLastDuration(durasi);
+          
+          if (nomor + 1 >= pertanyaan.length) {
+            if (fullRecorderRef.current && fullRecorderRef.current.state !== "inactive") fullRecorderRef.current.stop();
+            setView("RESULT");
+          } else {
+            setFase("jawaban");
+            setStepCountdown(3);
+            const interval = setInterval(() => {
+              setStepCountdown(prev => {
+                if (prev <= 1) {
+                  clearInterval(interval);
+                  lanjutPertanyaan();
+                  return 0;
+                }
+                return prev - 1;
+              });
+            }, 1000);
+          }
         }
 
         function lanjutPertanyaan() {
-          if (nomor + 1 >= pertanyaan.length) {
-            // Stop the full recording when challenge is complete
-            if (fullRecorderRef.current && fullRecorderRef.current.state !== "inactive") {
-              fullRecorderRef.current.stop();
-            }
-            setFase("selesai");
-            setPesan("Seluruh pertanyaan selesai. Simpan hasil latihan ke riwayat tantangan.");
-            return;
-          }
-          setNomor((current) => current + 1);
+          setNomor(n => n + 1);
           setFase("persiapan");
           setSisaWaktu(modeCepat ? 5 : level.persiapan);
-          setPesan("Pertanyaan berikutnya siap. Gunakan waktu persiapan dengan efektif.");
         }
 
         async function simpanRiwayat() {
-          if (!isLoggedIn) {
-            setPesan("Silakan login terlebih dahulu agar riwayat tantangan tersimpan ke akun.");
-            return;
-          }
-
+          if (!isLoggedIn) return;
+          setIsSaving(true);
           const formData = new FormData();
           formData.append("action", "save_challenge");
           formData.append("challenge_type", modeCepat ? "Mode Respon Cepat" : simulasi.nama);
-          formData.append("level_name", aturan.nama);
+          formData.append("level_name", currentRules.nama);
           formData.append("question_count", pertanyaan.length);
           formData.append("prompt", pertanyaan.map((item, index) => `${index + 1}. ${item.teks}`).join("\n"));
-          formData.append("prep_seconds", aturan.persiapan);
-          formData.append("speak_seconds", aturan.jawab);
+          formData.append("prep_seconds", currentRules.persiapan);
+          formData.append("speak_seconds", currentRules.jawab);
           formData.append("actual_seconds", waktuTotal);
           formData.append("score", Math.round(progres));
-          formData.append("completed", selesai ? 1 : 0);
-
-          // Attach accumulated audio recording
+          formData.append("completed", 1);
           if (allAudioChunksRef.current.length > 0) {
-            const audioBlob = new Blob(allAudioChunksRef.current, { type: "audio/webm" });
-            formData.append("audio", audioBlob, "challenge.webm");
+            formData.append("audio", new Blob(allAudioChunksRef.current, { type: "audio/webm" }), "challenge.webm");
           }
 
-          setPesan("Menyimpan riwayat tantangan...");
           try {
-            const response = await fetch("Latihan.php", { method: "POST", body: formData });
-            const data = await response.json();
-            if (!data.status) {
-              setPesan(data.message || "Gagal menyimpan riwayat tantangan.");
-              return;
+            const res = await fetch("Latihan.php", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.status) {
+              setIsSaved(true);
+              setPracticeHistoryId(data.practice_history_id);
+              window.prependChallengeHistory?.(data.item);
             }
-            setTersimpan(true);
-            setPracticeHistoryId(data.practice_history_id || null);
-            window.prependChallengeHistory?.(data.item);
-            setPesan(data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
-          } catch (error) {
-            setPesan("Terjadi kesalahan saat menyimpan riwayat tantangan.");
-          }
+          } catch (e) {} finally { setIsSaving(false); }
         }
 
         async function submitToMentor() {
-          if (!practiceHistoryId) {
-            setPesan("Simpan riwayat latihan terlebih dahulu.");
-            return;
-          }
-          if (!isLoggedIn) {
-            setPesan("Silakan login terlebih dahulu.");
-            return;
-          }
-
-          setPesan("Mengirim latihan ke mentor...");
-
+          if (!practiceHistoryId || !isLoggedIn) return;
+          setIsSubmitted(false);
+          const formData = new FormData();
+          formData.append("action", "submit_to_mentor");
+          formData.append("practice_history_id", practiceHistoryId);
+          formData.append("feature_type", "challenge");
           try {
-            const formData = new FormData();
-            formData.append("action", "submit_to_mentor");
-            formData.append("practice_history_id", practiceHistoryId);
-            formData.append("feature_type", "challenge");
-
-            const response = await fetch("Latihan.php", { method: "POST", body: formData });
-            const data = await response.json();
-
-            if (!data.status) {
-              setPesan(data.message || "Gagal mengirim ke mentor.");
-              return;
-            }
-
-            setTerkirim(true);
-            setPesan(data.message);
-          } catch (error) {
-            setPesan("Terjadi kesalahan saat mengirim ke mentor.");
-          }
+            const res = await fetch("Latihan.php", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.status) setIsSubmitted(true);
+          } catch (e) {}
         }
 
-        function resetSimulasi() {
-          hentikanStream();
-          // Stop continuous recorder if still running
-          if (fullRecorderRef.current && fullRecorderRef.current.state !== "inactive") {
-            fullRecorderRef.current.stop();
-          }
-          allAudioChunksRef.current = [];
-          setFase("ringkasan");
-          setPertanyaan([]);
-          setNomor(0);
-          setDurasiJawaban([]);
-          setTersimpan(false);
-          setTerkirim(false);
-          setPracticeHistoryId(null);
-          setSisaWaktu(aturan.persiapan);
-          setPesan("Pilih jenis simulasi dan tingkat kesulitan, lalu mulai tantangan.");
+        if (view === "TRANSITION") {
+          return (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#10204f]/95 text-white backdrop-blur-xl">
+              <div className="text-center animate-in fade-in zoom-in duration-500">
+                <div className="mb-4 text-sm font-black uppercase tracking-[0.3em] text-[#d2a06b]">Simulasi Akan Dimulai</div>
+                <div className="text-[180px] font-black leading-none">{transitionCountdown > 0 ? transitionCountdown : 'MULAI'}</div>
+                <div className="mt-8 space-y-2">
+                  <div className="text-2xl font-black">{modeCepat ? "Mode Respon Cepat" : simulasi.nama}</div>
+                  <div className="text-sm font-bold opacity-60">Level: {currentRules.nama} • {pertanyaan.length} Pertanyaan</div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (view === "ACTIVE") {
+          const aktif = pertanyaan[nomor];
+          return (
+            <div className="fixed inset-0 z-[9999] flex flex-col bg-[#f7f7fc]">
+              <div className="flex items-center justify-between bg-white px-8 py-4 shadow-sm">
+                <div className="flex items-center gap-6">
+                  <div className="h-12 w-12 rounded-2xl bg-[#10204f] flex items-center justify-center text-white text-xl">{simulasi.personaIcon}</div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-[#d2a06b]">{modeCepat ? "MODE RESPON CEPAT" : simulasi.nama}</div>
+                    <div className="text-lg font-black text-[#10204f]">{simulasi.persona}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-8">
+                  <div className="text-right">
+                    <div className="text-[10px] font-black text-[#667085] uppercase tracking-wider">Progres Simulasi</div>
+                    <div className="text-lg font-black text-[#10204f]">Pertanyaan {nomor + 1} <span className="text-xs opacity-40">dari {pertanyaan.length}</span></div>
+                    <div className="text-[10px] font-bold text-[#d2a06b]">{Math.round((nomor / pertanyaan.length) * 100)}% Selesai</div>
+                  </div>
+                  <div className="h-10 w-[2px] bg-slate-100"></div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-black text-[#667085] uppercase">{fase === "persiapan" ? "Persiapan" : "Bicara"}</div>
+                    <div className={`text-4xl font-black tabular-nums ${fase === "menjawab" ? "text-red-500" : "text-[#10204f]"}`}>{formatTime(sisaWaktu)}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-1.5 w-full bg-slate-100">
+                <div className="h-full bg-[#d2a06b] transition-all duration-500" style={{ width: `${progres}%` }}></div>
+              </div>
+
+              <main className="flex-1 flex gap-8 p-12 overflow-hidden" style={{ width: '100%', marginLeft: 0 }}>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  {fase === "jawaban" ? (
+                    <div className="text-center animate-in fade-in zoom-in duration-300">
+                      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl text-green-600">✓</div>
+                      <h2 className="text-3xl font-black text-[#10204f]">Jawaban Berhasil Disimpan</h2>
+                      <p className="text-lg font-bold text-[#667085] mb-8">Durasi: {lastDuration} Detik</p>
+                      <div className="text-sm font-black uppercase tracking-widest text-[#d2a06b]">Bersiap ke pertanyaan berikutnya</div>
+                      <div className="text-6xl font-black text-[#10204f] mt-4">{stepCountdown}</div>
+                    </div>
+                  ) : (
+                    <div className="w-full max-w-4xl">
+                      <div className="mb-12">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-lg">{simulasi.personaIcon}</div>
+                          <span className="text-sm font-black text-[#667085] uppercase tracking-widest">{simulasi.persona}</span>
+                        </div>
+                        <div className="bg-white p-10 rounded-[40px] rounded-tl-none shadow-sm border border-slate-100 relative">
+                          <div className="text-3xl font-bold text-[#10204f] leading-relaxed italic">"{aktif.teks}"</div>
+                          <div className="absolute -left-3 top-0 w-6 h-6 bg-white border-l border-t border-slate-100 transform -rotate-45"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className={`inline-flex items-center gap-3 rounded-full px-8 py-4 text-sm font-black transition-all ${fase === "menjawab" ? "bg-red-50 text-red-600 animate-pulse border border-red-100 shadow-lg shadow-red-500/10" : "bg-[#fffaf3] text-[#d2a06b] border border-[#f2d7b8]"}`}>
+                          {fase === "menjawab" ? <><span className="h-3 w-3 rounded-full bg-red-600"></span> SEDANG MEREKAM JAWABAN</> : "TAHAP PERSIAPAN"}
+                        </div>
+                        <p className="mt-8 text-xl font-bold text-[#667085]">
+                          {fase === "persiapan" ? "Gunakan waktu ini untuk menyusun poin jawaban Anda..." : "Bicaralah dengan tenang, jelas, and penuh percaya diri."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <aside className="w-80 space-y-6">
+                  <div className="simulation-sidebar">
+                    <h4><span>💡</span> Tips Menjawab</h4>
+                    <div className="space-y-4">
+                      {(simulasi.tips || ["Jawab dengan jelas", "Gunakan contoh nyata", "Jaga kontak mata"]).map((tip, i) => (
+                        <div key={i} className="tip-item">
+                          <span>✓</span> {tip}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="simulation-sidebar">
+                    <h4><span>🎯</span> Fokus Penilaian</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {simulasi.fokus.map(f => (
+                        <span key={f} className="bg-[#10204f] text-white text-[10px] font-black px-3 py-1.5 rounded-lg">✓ {f}</span>
+                      ))}
+                    </div>
+                  </div>
+                </aside>
+              </main>
+
+              <div className="bg-white border-t border-slate-100 p-8 flex justify-center gap-4">
+                <button className="btn btn-muted px-10 font-black text-sm" onClick={() => { if(confirm("Batalkan simulasi? Progres tidak akan disimpan.")) { setView("PREP"); if (fullStreamRef.current) fullStreamRef.current.getTracks().forEach(t => t.stop()); } }}>Batalkan Latihan</button>
+                {fase === "menjawab" && <button className="btn btn-danger px-16 py-5 text-xl font-black shadow-xl shadow-red-500/20" onClick={() => selesaiMenjawab(false)}>Selesai Menjawab</button>}
+              </div>
+            </div>
+          );
+        }
+
+        if (view === "RESULT") {
+          return (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#10204f]/95 p-6 text-white backdrop-blur-xl">
+              <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-[40px] bg-white text-[#10204f] shadow-2xl">
+                <div className="p-8 md:p-12 text-center">
+                  <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl text-green-600 animate-bounce">✓</div>
+                  <h2 className="text-4xl font-black tracking-tight mb-2">🎉 Simulasi Selesai!</h2>
+                  <p className="text-lg font-bold text-[#667085] mb-8">Luar biasa! Kamu telah menyelesaikan tantangan {simulasi.nama}.</p>
+                  
+                  <div className="flex items-center justify-center gap-4 mb-10">
+                    <div className="xp-badge"><span>✨</span> +120 XP</div>
+                    <div className="xp-badge" style={{ background: '#ecfdf3', borderColor: '#abefc6', color: '#027a48' }}><span>🔥</span> Streak 7 Hari</div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div className="rounded-[32px] bg-[#f8fafc] border border-[#eef2f7] p-8 text-left">
+                      <div className="topic-label mb-6 text-center">Statistik Sesi</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Pertanyaan</span>
+                          <strong className="text-xl">{pertanyaan.length}</strong>
+                        </div>
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Durasi</span>
+                          <strong className="text-xl">{waktuTotal}s</strong>
+                        </div>
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Tingkat</span>
+                          <strong className="text-lg">{currentRules.nama}</strong>
+                        </div>
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Status</span>
+                          <strong className="text-xl text-[#027a48]">Lulus</strong>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="streak-card flex flex-col justify-center items-center shadow-xl shadow-[#10204f]/20">
+                      <div className="text-sm font-black text-[#d2a06b] mb-4 uppercase tracking-widest">Level Speaking</div>
+                      <div className="relative h-24 w-24 flex items-center justify-center mb-4">
+                        <svg className="absolute inset-0 h-full w-full -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
+                          <circle cx="48" cy="48" r="40" stroke="#d2a06b" strokeWidth="8" fill="none" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * 0.68)} strokeLinecap="round" />
+                        </svg>
+                        <span className="text-2xl font-black">68%</span>
+                      </div>
+                      <div className="bg-[#d2a06b] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">+8% Naik</div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <button className="btn btn-primary py-5 text-xl font-black shadow-xl shadow-[#d2a06b]/20" onClick={simpanRiwayat} disabled={isSaving || isSaved}>
+                      {isSaving ? 'Menyimpan...' : isSaved ? '✓ Tersimpan di Riwayat' : '💾 Simpan & Selesaikan'}
+                    </button>
+                    {isSaved && (
+                      <button className="btn py-5 text-xl font-black text-white shadow-xl shadow-green-500/20 transition-all hover:scale-[1.02]" style={{ background: '#027a48' }} onClick={submitToMentor} disabled={isSubmitted}>
+                        {isSubmitted ? '✓ Terkirim ke Mentor' : '📤 Kirim ke Mentor'}
+                      </button>
+                    )}
+                    <button className="btn btn-muted py-4 font-black text-sm" onClick={() => setView("PREP")}>Kembali ke Menu Utama</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
         }
 
         return (
           <div className="panel">
             <div className="panel-title">
               <div>
-                <h2>Tantangan Bicara</h2>
-                <p>Latihan simulasi percakapan dan tanya jawab interaktif untuk melatih respons spontan tanpa naskah.</p>
+                <h2 className="text-3xl font-black">Tantangan Bicara</h2>
+                <p>Uji kemampuan bicara spontan Anda melalui simulasi percakapan interaktif.</p>
               </div>
-              <span className={`status-pill ${fase === "menjawab" ? "status-recording" : ""}`}>
-                {fase === "menjawab" ? "SEDANG MEREKAM" : selesai ? "SELESAI" : "SIAP SIMULASI"}
-              </span>
+              <span className="status-pill border border-slate-200">MODE SIMULASI AKTIF</span>
             </div>
 
-            <div className="challenge-layout">
+            <div className="challenge-layout mb-8">
               <div className="control-box">
-                <h3>Jenis Simulasi</h3>
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="m-0 text-sm font-black uppercase tracking-wider text-[#667085]">Pilih Jenis Simulasi</h3>
+                  {modeCepat && <span className="rounded-full bg-[#d2a06b] px-3 py-1 text-[10px] font-black text-white">RESPON CEPAT AKTIF</span>}
+                </div>
                 <div className="option-grid">
                   {simulasiPercakapan.map((item) => (
                     <button
-                      key={item.nama}
+                      key={item.id}
                       type="button"
-                      className={`option-card ${!modeCepat && simulasi.nama === item.nama ? "active" : ""}`}
-                      onClick={() => pilihSimulasi(item)}
+                      className={`option-card transition-all duration-300 ${!modeCepat && simulasi.id === item.id ? "active scale-[1.02] border-[#d2a06b] shadow-lg shadow-[#d2a06b]/10" : "hover:border-slate-300"}`}
+                      onClick={() => { setSimulasi(item); setModeCepat(false); }}
                     >
-                      <strong>{item.nama}</strong>
-                      <span>{item.deskripsi}</span>
+                      <div className="text-2xl mb-2">{item.personaIcon}</div>
+                      <strong className="text-sm font-black">{item.nama}</strong>
                     </button>
                   ))}
-                  <button type="button" className={`option-card ${modeCepat ? "active" : ""}`} onClick={pilihModeCepat}>
-                    <strong>Mode Respon Cepat</strong>
-                    <span>Pertanyaan acak, persiapan 5 detik, dan menjawab maksimal 30 detik.</span>
+                  <button type="button" className={`option-card transition-all duration-300 ${modeCepat ? "active scale-[1.02] border-[#d2a06b] shadow-lg shadow-[#d2a06b]/10" : "hover:border-slate-300"}`} onClick={() => setModeCepat(true)}>
+                    <div className="text-2xl mb-2">⚡</div>
+                    <strong className="text-sm font-black">Respon Cepat</strong>
                   </button>
                 </div>
               </div>
 
-              <div className="control-box">
-                <h3>Tingkat Kesulitan</h3>
-                <div className="option-grid">
-                  {tingkatKesulitan.map((item) => (
-                    <button
-                      key={item.nama}
-                      type="button"
-                      className={`option-card ${!modeCepat && level.nama === item.nama ? "active" : ""}`}
-                      onClick={() => pilihLevel(item)}
-                    >
-                      <strong>{item.nama}</strong>
-                      <span>{item.deskripsi}</span>
-                    </button>
-                  ))}
-                </div>
-
-                <div className="mt-4 rounded-2xl border border-[#f2d7b8] bg-[#fffaf3] p-4">
-                  <div className="topic-label">Ringkasan Simulasi</div>
-                  <h3 className="mb-2 text-xl font-extrabold text-[#10204f]">{modeCepat ? "Mode Respon Cepat" : simulasi.nama}</h3>
-                  <p className="text-sm font-semibold leading-6 text-[#667085]">
-                    {modeCepat ? "Pertanyaan muncul secara acak untuk melatih improvisasi cepat." : simulasi.deskripsi}
-                  </p>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <div className="score-item"><span>Jumlah Pertanyaan</span><strong>{aturan.jumlah}</strong></div>
-                    <div className="score-item"><span>Waktu Persiapan</span><strong>{aturan.persiapan}s</strong></div>
-                    <div className="score-item"><span>Waktu Menjawab</span><strong>{aturan.jawab}s</strong></div>
+              <div className="space-y-6">
+                <div className="control-box">
+                  <h3 className="m-0 text-sm font-black uppercase tracking-wider text-[#667085] mb-4">Tingkat Kesulitan</h3>
+                  <div className="flex gap-3">
+                    {tingkatKesulitan.map((item) => (
+                      <button
+                        key={item.nama}
+                        type="button"
+                        className={`flex-1 rounded-xl py-3 text-sm font-black transition-all ${level.nama === item.nama ? "bg-[#10204f] text-white shadow-lg shadow-[#10204f]/20" : "bg-white text-slate-500 ring-1 ring-slate-200 hover:ring-slate-300"}`}
+                        onClick={() => setLevel(item)}
+                      >
+                        {item.nama}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
-            </div>
 
-            <div className="topic-box">
-              <div className="topic-label">{modeCepat ? "Mode Respon Cepat" : aktif.asal}</div>
-              <div className="topic-text">
-                {fase === "ringkasan"
-                  ? "Tekan Mulai Tantangan untuk memulai simulasi pertanyaan."
-                  : `Pertanyaan ${Math.min(nomor + 1, pertanyaan.length)} dari ${pertanyaan.length}`}
-              </div>
-              {fase !== "ringkasan" && (
-                <p className="relative z-[1] mt-4 text-xl font-bold leading-relaxed text-white">"{aktif.teks}"</p>
-              )}
-            </div>
+                <div className="rounded-[40px] border border-[#f2d7b8] bg-[#fffaf3] p-10 shadow-sm relative overflow-hidden">
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-5 mb-8">
+                      <div className="h-16 w-16 rounded-3xl bg-[#d2a06b] flex items-center justify-center text-white text-3xl shadow-xl shadow-[#d2a06b]/20">{modeCepat ? '⚡' : simulasi.personaIcon}</div>
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d2a06b] mb-1">Simulasi Briefing</div>
+                        <h3 className="text-2xl font-black text-[#10204f] uppercase tracking-tight m-0">{modeCepat ? "Tantangan Respon Cepat" : simulasi.nama}</h3>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-8">
+                      <div className="text-[10px] font-black text-[#667085] uppercase tracking-widest mb-3">Tujuan Latihan</div>
+                      <p className="text-base font-bold leading-relaxed text-[#10204f]">
+                        {modeCepat 
+                          ? "Latih spontanitas maksimal dengan menjawab pertanyaan acak dalam waktu terbatas."
+                          : `Anda akan mengikuti simulasi ${simulasi.nama.toLowerCase()}. Jawablah setiap pertanyaan dari ${simulasi.persona} secara terstruktur and profesional.`}
+                      </p>
+                    </div>
 
-            <div className="recorder-box">
-              <div className="timer-wrap">
-                <div className="countdown-card">
-                  <div className="topic-label">{fase === "persiapan" ? "PERSIAPAN" : fase === "menjawab" ? "MULAI MENJAWAB" : selesai ? "TANTANGAN SELESAI" : "SIMULASI"}</div>
-                  <div className="timer challenge-timer">{formatDurasi(fase === "ringkasan" || fase === "jawaban" || selesai ? 0 : sisaWaktu)}</div>
-                  <div className="timer-caption">
-                    {fase === "persiapan"
-                      ? "Gunakan waktu ini untuk menyusun jawaban Anda."
-                      : fase === "menjawab"
-                        ? "Jawab dengan jelas, ringkas, dan percaya diri."
-                        : selesai
-                          ? "Semua pertanyaan sudah dijawab."
-                          : "Ringkasan simulasi siap dibaca."}
+                    <div className="mb-8">
+                      <div className="text-[10px] font-black text-[#667085] uppercase tracking-widest mb-4">Target Kompetensi</div>
+                      <div className="flex flex-wrap gap-2">
+                        {(modeCepat ? ["Spontanitas", "Kecepatan", "Improvisasi", "Ketajaman"] : simulasi.fokus).map(f => (
+                          <span key={f} className="rounded-xl bg-white border border-[#f2d7b8] px-4 py-2 text-xs font-black text-[#10204f]">✓ {f}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-10 grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <span className="text-[10px] font-black text-[#667085] uppercase block mb-1">Pertanyaan</span>
+                        <strong className="text-xl text-[#10204f]">{currentRules.jumlah}</strong>
+                      </div>
+                      <div className="text-center border-x border-[#f2d7b8]">
+                        <span className="text-[10px] font-black text-[#667085] uppercase block mb-1">Persiapan</span>
+                        <strong className="text-xl text-[#10204f]">{currentRules.persiapan}s</strong>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-[10px] font-black text-[#667085] uppercase block mb-1">Menjawab</span>
+                        <strong className="text-xl text-[#10204f]">{currentRules.jawab}s</strong>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <button 
+                        className="btn btn-primary w-full py-5 text-2xl font-black shadow-2xl shadow-[#d2a06b]/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        onClick={startSimulationFlow}
+                      >
+                        🎯 MULAI SIMULASI
+                      </button>
+                      <p className="text-center text-[11px] font-black text-[#667085] uppercase tracking-wider">Siapkan mikrofon Anda sebelum memulai</p>
+                    </div>
                   </div>
+                  <div className="absolute -right-10 -bottom-10 text-[200px] font-black opacity-[0.03] pointer-events-none">{simulasi.personaIcon}</div>
                 </div>
-                <div className={`status-pill ${fase === "menjawab" ? "status-recording" : ""}`}>
-                  {fase === "menjawab" && <span className="recording-dot" style={{ display: "inline-flex", marginRight: 8 }}></span>}
-                  {fase === "menjawab" ? "SEDANG MEREKAM" : fase === "persiapan" ? "PERSIAPAN" : selesai ? "SELESAI" : "SIAP"}
-                </div>
-              </div>
-
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <span className="text-sm font-extrabold text-[#667085]">Progres Simulasi</span>
-                <span className="text-sm font-black text-[#d2a06b]">{Math.round(progres)}% Selesai</span>
-              </div>
-              <div className="meter" aria-hidden="true">
-                <div className="meter-fill" style={{ width: `${progres}%` }}></div>
-              </div>
-
-              <div className="action-row">
-                {fase === "ringkasan" && <button className="btn btn-primary" type="button" onClick={mulaiTantangan}>Mulai Tantangan</button>}
-                {fase === "menjawab" && <button className="btn btn-danger" type="button" onClick={() => selesaiMenjawab(false)}>Selesai Menjawab</button>}
-                {fase === "jawaban" && <button className="btn btn-primary" type="button" onClick={lanjutPertanyaan}>Lanjut</button>}
-                {selesai && <button className="btn btn-dark" type="button" onClick={simpanRiwayat} disabled={tersimpan}>Simpan Riwayat</button>}
-                {selesai && <button className="btn btn-primary" type="button" onClick={submitToMentor} disabled={!tersimpan || terkirim} style={{ background: '#027a48' }}>📤 Kirim ke Mentor</button>}
-                {(fase !== "ringkasan") && <button className="btn btn-muted" type="button" onClick={resetSimulasi}>Ulangi Simulasi</button>}
-              </div>
-
-              <div className={`toast ${pesan.includes("berhasil") || pesan.includes("selesai") ? "success" : pesan.includes("Gagal") || pesan.includes("kesalahan") ? "error" : "info"}`}>
-                {pesan}
               </div>
             </div>
           </div>
@@ -2346,8 +2198,9 @@ $practiceScripts = [
       ReactDOM.createRoot(document.getElementById("conversation-challenge-root")).render(<TantanganPercakapan />);
     })();
   </script>
+
   <script type="text/babel">
-    const { useEffect, useMemo, useRef, useState } = React;
+    const { useEffect: useEff, useMemo: useMem, useRef: useRefC, useState: useSt } = React;
 
     const cameraTopics = [
       "Ceritakan pengalaman paling berkesan saat berbicara di depan orang.",
@@ -2380,7 +2233,7 @@ $practiceScripts = [
       },
       {
         name: "MC Opening",
-        objective: "Buka acara dengan salam, perkenalan, dan energi yang ramah.",
+        objective: "Buka acara dengan salam, perkenalan, and energi yang ramah.",
         tip: "Mulai dengan senyum dan intonasi naik di kalimat pembuka."
       }
     ];
@@ -2394,21 +2247,21 @@ $practiceScripts = [
     }
 
     function CameraPracticeDashboard() {
-      const liveVideoRef = useRef(null);
-      const replayVideoRef = useRef(null);
-      const mediaRecorderRef = useRef(null);
-      const streamRef = useRef(null);
-      const chunksRef = useRef([]);
-      const timerRef = useRef(null);
-      const elapsedRef = useRef(0);
-      const recordedBlobRef = useRef(null);
+      const liveVideoRef = useRefC(null);
+      const replayVideoRef = useRefC(null);
+      const mediaRecorderRef = useRefC(null);
+      const streamRef = useRefC(null);
+      const chunksRef = useRefC([]);
+      const timerRef = useRefC(null);
+      const elapsedRef = useRefC(0);
+      const recordedBlobRef = useRefC(null);
 
-      const [selectedDuration, setSelectedDuration] = useState(60);
-      const [topic, setTopic] = useState(cameraTopics[0]);
-      const [isRecording, setIsRecording] = useState(false);
-      const [elapsed, setElapsed] = useState(0);
-      const [recordedUrl, setRecordedUrl] = useState("");
-      const [statusMessage, setStatusMessage] = useState("Camera dan microphone akan aktif saat latihan dimulai.");
+      const [selectedDuration, setSelectedDuration] = useSt(60);
+      const [topic, setTopic] = useSt(cameraTopics[0]);
+      const [isRecording, setIsRecording] = useSt(false);
+      const [elapsed, setElapsed] = useSt(0);
+      const [recordedUrl, setRecordedUrl] = useSt("");
+      const [statusMessage, setStatusMessage] = useSt("Camera dan microphone akan aktif saat latihan dimulai.");
       // Build initial history from DB records
       const dbHistory = cameraHistoryFromDB.map((item) => ({
         id: `db-${item.id}`,
@@ -2419,20 +2272,20 @@ $practiceScripts = [
         videoUrl: item.video_path || "",
         confidence: item.simulation_mode || "Practice"
       }));
-      const [history, setHistory] = useState(dbHistory);
-      const [activeMode, setActiveMode] = useState(simulationModes[0]);
-      const [focusProgress, setFocusProgress] = useState({
+      const [history, setHistory] = useSt(dbHistory);
+      const [activeMode, setActiveMode] = useSt(simulationModes[0]);
+      const [focusProgress, setFocusProgress] = useSt({
         "Eye contact": false,
         "Facial expression": false,
         "Body language": false,
         "Confidence": false
       });
-      const [cameraReady, setCameraReady] = useState(false);
-      const [micReady, setMicReady] = useState(false);
-      const [isSaving, setIsSaving] = useState(false);
-      const [isSaved, setIsSaved] = useState(false);
-      const [practiceHistoryId, setPracticeHistoryId] = useState(null);
-      const [isSubmitted, setIsSubmitted] = useState(false);
+      const [cameraReady, setCameraReady] = useSt(false);
+      const [micReady, setMicReady] = useSt(false);
+      const [isSaving, setIsSaving] = useSt(false);
+      const [isSaved, setIsSaved] = useSt(false);
+      const [practiceHistoryId, setPracticeHistoryId] = useSt(null);
+      const [isSubmitted, setIsSubmitted] = useSt(false);
 
       const remainingTime = Math.max(selectedDuration - elapsed, 0);
       const progress = Math.min((elapsed / selectedDuration) * 100, 100);
@@ -2618,16 +2471,16 @@ $practiceScripts = [
         setTimeout(() => replayVideoRef.current?.play(), 100);
       };
 
-      useEffect(() => {
+      useEff(() => {
         return () => {
           clearInterval(timerRef.current);
           stopTracks();
         };
       }, []);
 
-      const instruction = useMemo(() => {
-        if (isRecording) return "Bicara menghadap kamera, jaga gestur tetap natural, dan gunakan jeda yang jelas.";
-        return "Pilih durasi dan topik, lalu mulai recording untuk melatih ekspresi, eye contact, dan body language.";
+      const instruction = useMem(() => {
+        if (isRecording) return "Bicara menghadap kamera, jaga gestur tetap natural, and gunakan jeda yang jelas.";
+        return "Pilih durasi dan topik, lalu mulai recording untuk melatih ekspresi, eye contact, and body language.";
       }, [isRecording]);
 
       const toggleFocus = (item) => {
@@ -2641,7 +2494,1631 @@ $practiceScripts = [
               <div>
                 <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Camera Speaking Practice</div>
                 <h2 className="mt-2 text-3xl font-extrabold text-[#10204f]">Latihan dengan webcam</h2>
-                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Latih ekspresi, eye contact, body language, dan confidence langsung dari browser.</p>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Latih ekspresi, eye contact, body language, and confidence langsung dari browser.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                {cameraMentorInfo && <div className="camera-status-pill live">Mentor: {cameraMentorInfo.name}</div>}
+                <button type="button" className="camera-btn btn-muted-camera" onClick={randomTopic}>
+                  Topik Acak
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <section className="grid gap-4 md:grid-cols-3">
+            {simulationModes.map((mode) => (
+              <button
+                key={mode.name}
+                type="button"
+                onClick={() => setActiveMode(mode)}
+                className={`camera-card interactive p-5 text-left transition ${activeMode.name === mode.name ? "border-[#d2a06b] bg-[#fffaf3]" : ""}`}
+              >
+                <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Simulation</div>
+                <h3 className="mt-2 text-xl font-extrabold text-[#10204f]">{mode.name}</h3>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">{mode.objective}</p>
+              </button>
+            ))}
+          </section>
+
+          <section className="grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.55fr)]">
+            <div className="camera-card overflow-hidden">
+              <div className="border-b border-[#e5e7eb] p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                  <div>
+                    <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Topic Prompt</div>
+                    <h3 className="mt-2 text-2xl font-extrabold leading-snug text-[#10204f]">{topic}</h3>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className={`camera-status-pill ${cameraReady ? "live" : ""}`}>
+                      <span className={cameraReady ? "recording-dot" : ""}></span>
+                      LIVE Camera
+                    </div>
+                    <div className={`camera-status-pill ${micReady ? "live" : ""}`}>
+                      Mic {micReady ? "On" : "Standby"}
+                    </div>
+                    <div className={`camera-status-pill ${isRecording ? "live" : ""}`}>
+                      {isRecording && <span className="recording-dot"></span>}
+                      {recordingStatus}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-6 p-6 lg:grid-cols-[minmax(0,1fr)_240px]">
+                <div className={`relative overflow-hidden rounded-[18px] bg-[#10204f] transition duration-300 ${isRecording ? "recording-glow" : ""}`}>
+                  <video ref={liveVideoRef} className="aspect-video w-full bg-[#10204f] object-cover" autoPlay muted playsInline></video>
+                  <div className="pointer-events-none absolute left-4 top-4 flex items-center gap-2 rounded-full bg-black/35 px-3 py-2 text-xs font-black uppercase tracking-wide text-white">
+                    {isRecording && <span className="recording-dot"></span>}
+                    {recordingStatus}
+                  </div>
+                  <div className="pointer-events-none absolute right-4 top-4 hidden rounded-full bg-black/35 px-3 py-2 text-xs font-black uppercase tracking-wide text-white sm:block">
+                    {activeMode.name} Mode
+                  </div>
+                  <div className={`audio-wave ${isRecording ? "active" : ""} pointer-events-none absolute bottom-4 left-4 rounded-full bg-black/35 px-3 py-2`}>
+                    <span></span><span></span><span></span><span></span><span></span>
+                  </div>
+                  <div className="pointer-events-none absolute bottom-4 right-4 hidden rounded-full bg-black/35 px-3 py-2 text-xs font-black uppercase tracking-wide text-white sm:block">
+                    Eye Contact Practice
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-5">
+                    <div className="text-sm font-extrabold text-[#667085]">Speaking Timer</div>
+                    <div className="mt-2 text-6xl font-black tracking-tight text-[#10204f]">{formatCameraTime(remainingTime)}</div>
+                    <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#e5e7eb]">
+                      <div className="h-full rounded-full bg-[#d2a06b] transition-all" style={{ width: `${progress}%` }}></div>
+                    </div>
+                    <div className="mt-3 text-xs font-black uppercase tracking-wide text-[#d2a06b]">{recordingStatus}</div>
+                  </div>
+
+                  <div className="rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-5">
+                    <div className="mb-3 text-sm font-extrabold text-[#667085]">Duration</div>
+                    <div className="flex flex-wrap gap-2">
+                      {cameraDurations.map((duration) => (
+                        <button
+                          key={duration.seconds}
+                          type="button"
+                          disabled={isRecording}
+                          onClick={() => {
+                            setSelectedDuration(duration.seconds);
+                            setElapsed(0);
+                          }}
+                          className={`rounded-xl px-4 py-2 text-sm font-extrabold transition ${
+                            selectedDuration === duration.seconds
+                              ? "bg-[#d2a06b] text-white"
+                              : "bg-white text-[#344054] ring-1 ring-[#d0d5dd]"
+                          }`}
+                        >
+                          {duration.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4 border-t border-[#e5e7eb] p-6 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                  <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Instruction</div>
+                  <p className="mt-1 max-w-2xl text-sm font-semibold leading-6 text-[#667085]">{instruction}</p>
+                  <div className="mt-3 grid gap-2 md:grid-cols-2">
+                    <div className="rounded-2xl bg-[#f8fafc] px-4 py-3 text-sm font-bold text-[#344054] ring-1 ring-[#e5e7eb]">
+                      Objective: {activeMode.objective}
+                    </div>
+                    <div className="rounded-2xl bg-[#fffaf3] px-4 py-3 text-sm font-bold text-[#7c4a12] ring-1 ring-[#f2d7b8]">
+                      Tip: {speakingTip}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  <button type="button" className="camera-btn btn-primary-camera start-recording-cta" onClick={startRecording} disabled={isRecording}>Start Recording</button>
+                  <button type="button" className="camera-btn btn-danger-camera" onClick={stopRecording} disabled={!isRecording}>Stop Recording</button>
+                  <button type="button" className="camera-btn btn-primary-camera" onClick={saveCameraPractice} disabled={!recordedUrl || isRecording || isSaving || isSaved} style={{ background: '#10204f' }}>💾 Simpan Riwayat</button>
+                  <button type="button" className="camera-btn btn-primary-camera" onClick={submitToMentor} disabled={!isSaved || isSubmitted} style={{ background: '#027a48' }}>📤 Kirim ke Mentor</button>
+                </div>
+              </div>
+
+              {/* Status toast */}
+              <div className="px-6 pb-6">
+                <div className={`rounded-2xl px-4 py-3 text-sm font-bold ${statusMessage.includes("berhasil") || statusMessage.includes("dikirim") ? "bg-[#ecfdf3] text-[#027a48]" : statusMessage.includes("Gagal") || statusMessage.includes("kesalahan") || statusMessage.includes("tidak bisa") ? "bg-[#fef3f2] text-[#b42318]" : "bg-[#eff8ff] text-[#175cd3]"}`}>
+                  {statusMessage}
+                </div>
+              </div>
+            </div>
+
+            <aside className="space-y-6">
+              <div className="camera-card p-6">
+                <h2 className="text-2xl font-extrabold text-[#10204f]">Replay Result</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">{recordedUrl ? "Putar ulang hasil rekaman terakhir." : "Hasil recording akan muncul di sini."}</p>
+                <div className="mt-5 overflow-hidden rounded-[18px] bg-[#10204f]">
+                  {recordedUrl ? (
+                    <video ref={replayVideoRef} className="aspect-video w-full object-cover" src={recordedUrl} controls></video>
+                  ) : (
+                    <div className="flex aspect-video items-center justify-center text-sm font-bold text-white/75">Hasil recording akan muncul di sini</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="camera-card p-6">
+                <h2 className="text-2xl font-extrabold text-[#10204f]">Practice Focus</h2>
+                <div className="mt-4 grid gap-3">
+                  {focusItems.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      onClick={() => toggleFocus(item)}
+                      className={`flex items-center justify-between rounded-2xl px-4 py-3 text-left text-sm font-extrabold ring-1 transition ${
+                        focusProgress[item]
+                          ? "bg-[#ecfdf3] text-[#027a48] ring-[#abefc6]"
+                          : isRecording
+                            ? "bg-[#fffaf3] text-[#7c4a12] ring-[#f2d7b8]"
+                            : "bg-[#f8fafc] text-[#344054] ring-[#e5e7eb]"
+                      }`}
+                    >
+                      <span>{item}</span>
+                      <span>{focusProgress[item] ? "Completed" : isRecording ? "Active" : "Ready"}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="camera-card p-6">
+                <h2 className="text-2xl font-extrabold text-[#10204f]">Daily Challenge</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Selesaikan 1 rekaman camera practice hari ini untuk mendapatkan 120 XP.</p>
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-[#e5e7eb]">
+                  <div className="h-full w-[68%] rounded-full bg-[#d2a06b]"></div>
+                </div>
+                <div className="mt-3 text-sm font-black text-[#d2a06b]">68% menuju target harian</div>
+              </div>
+            </aside>
+          </section>
+
+          <section className="camera-card p-6">
+            <div className="mb-5">
+              <h2 className="text-2xl font-extrabold text-[#10204f]">History Camera Practice</h2>
+              <p className="mt-1 text-sm font-semibold text-[#667085]">Riwayat latihan camera practice yang tersimpan di akun.</p>
+            </div>
+
+            {history.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-[#cbd5e1] bg-[#f8fafc] px-6 py-10 text-center text-sm font-semibold text-[#667085]">
+                Belum ada riwayat camera practice. Mulai rekaman lalu simpan riwayat.
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {history.map((item) => (
+                  <article key={item.id} className="camera-card interactive rounded-[18px] border border-[#e5e7eb] bg-[#fbfbfd] p-4">
+                    <div className="history-video-card relative overflow-hidden rounded-2xl bg-[#10204f]">
+                      {item.videoUrl ? (
+                        <video className="aspect-video w-full object-cover" src={item.videoUrl} controls></video>
+                      ) : (
+                        <div className="flex aspect-video items-center justify-center px-4 text-center text-sm font-bold text-white/75">Video tidak tersedia</div>
+                      )}
+                    </div>
+                    <h3 className="mt-4 text-base font-extrabold leading-snug text-[#10204f]">{item.topic}</h3>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-[#eef2f7] px-3 py-1 text-xs font-black text-[#344054]">{item.date}</span>
+                      <span className="rounded-full bg-[#fffaf3] px-3 py-1 text-xs font-black text-[#7c4a12]">{formatCameraTime(item.duration)}</span>
+                      <span className="rounded-full bg-[#ecfdf3] px-3 py-1 text-xs font-black text-[#027a48]">{item.confidence}</span>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("camera-practice-root")).render(<CameraPracticeDashboard />);
+
+    const voiceMentorInfo = <?= json_encode($mentorInfo['voice'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+    const GuidedSpeakingPractice = () => {
+      const [view, setView] = useState('PREP'); // 'PREP', 'OVERLAY'
+      const [overlayState, setOverlayState] = useState('COUNTDOWN'); // 'COUNTDOWN', 'RECORDING', 'RESULT'
+      const [activeCategory, setActiveCategory] = useState(practiceScripts[0].category);
+      const [activeLevel, setActiveLevel] = useState('Beginner');
+      const [scriptIndex, setScriptIndex] = useState(0);
+      const [countdown, setCountdown] = useState(3);
+      const [elapsed, setElapsed] = useState(0);
+      const [recordedBlob, setRecordedBlob] = useState(null);
+      const [recordedUrl, setRecordedUrl] = useState('');
+      const [statusMsg, setStatusMsg] = useState('');
+      const [isSaving, setIsSaving] = useState(false);
+      const [isSaved, setIsSaved] = useState(false);
+      const [isSubmitted, setIsSubmitted] = useState(false);
+      const [practiceHistoryId, setPracticeHistoryId] = useState(null);
+      const [currentStep, setCurrentStep] = useState(0);
+      const [cue, setCue] = useState(null); // { type: 'JEDA' | 'TEKANAN', text: string }
+
+      const mediaRecorderRef = useRef(null);
+      const streamRef = useRef(null);
+      const chunksRef = useRef([]);
+      const timerIntervalRef = useRef(null);
+      const countdownIntervalRef = useRef(null);
+      const teleprompterRef = useRef(null);
+      const stepRefs = useRef([]);
+
+      const scripts = useMemo(() => {
+        const group = practiceScripts.find(g => g.category === activeCategory);
+        return group ? group.scripts.filter(s => s.level === activeLevel) : [];
+      }, [activeCategory, activeLevel]);
+
+      const activeScript = scripts[scriptIndex] || scripts[0] || { title: 'No Script', text: '', duration: 30 };
+      const paragraphs = useMemo(() => activeScript.text.split('\n\n'), [activeScript]);
+      const targetDuration = Number(activeScript.duration);
+      const progressPercent = Math.min((elapsed / targetDuration) * 100, 100);
+      
+      const stepDuration = targetDuration / paragraphs.length;
+
+      const formatTime = (s) => {
+        const mins = String(Math.floor(s / 60)).padStart(2, '0');
+        const secs = String(s % 60).padStart(2, '0');
+        return `${mins}:${secs}`;
+      };
+
+      const startPractice = () => {
+        setView('OVERLAY');
+        setOverlayState('COUNTDOWN');
+        setCountdown(3);
+        setRecordedBlob(null);
+        setRecordedUrl('');
+        setElapsed(0);
+        setCurrentStep(0);
+        setCue(null);
+
+        countdownIntervalRef.current = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownIntervalRef.current);
+              startRecording();
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      };
+
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          streamRef.current = stream;
+          chunksRef.current = [];
+          
+          const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+          const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+          mediaRecorderRef.current = recorder;
+
+          recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+          recorder.onstop = () => {
+            const blob = new Blob(chunksRef.current, { type: preferredMime || "audio/webm" });
+            setRecordedBlob(blob);
+            setRecordedUrl(URL.createObjectURL(blob));
+            setOverlayState('RESULT');
+            stopStream();
+          };
+
+          recorder.start();
+          setOverlayState('RECORDING');
+          
+          timerIntervalRef.current = setInterval(() => {
+            setElapsed(prev => prev + 1);
+          }, 1000);
+        } catch (err) {
+          console.error(err);
+          alert("Microphone tidak dapat diakses.");
+          setView('PREP');
+        }
+      };
+
+      const stopRecording = () => {
+        clearInterval(timerIntervalRef.current);
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+          mediaRecorderRef.current.stop();
+        }
+      };
+
+      const stopStream = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(t => t.stop());
+          streamRef.current = null;
+        }
+      };
+
+      const saveResult = async () => {
+        if (!recordedBlob || !isLoggedIn) return;
+        setIsSaving(true);
+        const formData = new FormData();
+        formData.append("action", "save_practice");
+        formData.append("topic", activeScript.title);
+        formData.append("script_title", activeScript.title);
+        formData.append("category", activeCategory);
+        formData.append("level_name", activeLevel);
+        formData.append("duration", elapsed);
+        formData.append("audio", recordedBlob, "practice.webm");
+
+        try {
+          const res = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await res.json();
+          if (data.status) {
+            setIsSaved(true);
+            setPracticeHistoryId(data.practice_history_id || null);
+            window.prependHistory?.(data.item);
+          } else {
+            alert(data.message);
+          }
+        } catch (err) {
+          alert("Gagal menyimpan riwayat.");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+
+      const submitToMentor = async () => {
+        if (!practiceHistoryId) {
+          alert("Simpan riwayat latihan terlebih dahulu.");
+          return;
+        }
+        if (!isLoggedIn) {
+          alert("Silakan login terlebih dahulu.");
+          return;
+        }
+
+        setStatusMsg("Mengirim latihan ke mentor...");
+
+        try {
+          const formData = new FormData();
+          formData.append("action", "submit_to_mentor");
+          formData.append("practice_history_id", practiceHistoryId);
+          formData.append("feature_type", "voice");
+
+          const response = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await response.json();
+
+          if (!data.status) {
+            alert(data.message || "Gagal mengirim ke mentor.");
+            return;
+          }
+
+          setIsSubmitted(true);
+          alert(data.message);
+        } catch (error) {
+          alert("Terjadi kesalahan saat mengirim ke mentor.");
+        }
+      };
+
+      useEffect(() => {
+        if (overlayState === 'RECORDING') {
+          const step = Math.min(Math.floor(elapsed / stepDuration), paragraphs.length - 1);
+          if (step !== currentStep) {
+            setCurrentStep(step);
+          }
+
+          // Detect Cues
+          const currentP = paragraphs[step] || '';
+          if (currentP.includes('[JEDA]')) {
+            setCue({ type: 'JEDA', text: '⏸ Jeda Sejenak. Tarik napas dan lanjutkan.' });
+          } else if (currentP.includes('[TEKANAN]')) {
+            setCue({ type: 'TEKANAN', text: '🔊 Tekankan Kalimat Berikut!' });
+          } else {
+            setCue(null);
+          }
+        }
+      }, [elapsed, overlayState, paragraphs, stepDuration]);
+
+      useEffect(() => {
+        if (overlayState === 'RECORDING' && stepRefs.current[currentStep]) {
+          stepRefs.current[currentStep].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, [currentStep, overlayState]);
+
+      useEffect(() => {
+        return () => {
+          clearInterval(timerIntervalRef.current);
+          clearInterval(countdownIntervalRef.current);
+          stopStream();
+        };
+      }, []);
+
+      if (view === 'OVERLAY') {
+        return (
+          <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-slate-900/95 p-6 text-white backdrop-blur-xl">
+            {overlayState === 'COUNTDOWN' && (
+              <div className="text-center">
+                <div className="mb-4 text-sm font-black uppercase tracking-widest text-[#d2a06b]">Bersiap dalam</div>
+                <div className="animate-pulse text-[180px] font-black leading-none">{countdown > 0 ? countdown : 'MULAI'}</div>
+                <div className="mt-8 text-xl font-bold opacity-75">{activeScript.title}</div>
+              </div>
+            )}
+
+            {overlayState === 'RECORDING' && (
+              <div className="flex h-full w-full max-w-4xl flex-col overflow-hidden">
+                <div className="flex items-center justify-between border-b border-white/10 pb-6">
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center gap-2 rounded-full bg-red-500/20 px-3 py-1 text-xs font-black text-red-400">
+                        <span className="recording-dot"></span> SEDANG MEREKAM
+                      </span>
+                      <span className="text-sm font-bold opacity-60">{activeCategory} • {activeLevel}</span>
+                    </div>
+                    <h2 className="mt-2 text-2xl font-black">{activeScript.title}</h2>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold opacity-50 mb-1">PROGRES LATIHAN</div>
+                    <div className="text-lg font-black text-[#d2a06b]">Paragraf {currentStep + 1} dari {paragraphs.length}</div>
+                    <div className="text-xs font-bold opacity-40">{Math.round((currentStep + 1) / paragraphs.length * 100)}% Selesai</div>
+                  </div>
+                  <div className="text-right ml-8">
+                    <div className="text-5xl font-black tabular-nums">{formatTime(elapsed)}</div>
+                    <div className="mt-1 text-xs font-bold opacity-50">Target: {formatTime(targetDuration)}</div>
+                  </div>
+                </div>
+
+                <div className="mt-6 h-2 w-full overflow-hidden rounded-full bg-white/10">
+                  <div className="h-full bg-[#d2a06b] transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
+                </div>
+
+                <div className="relative flex-1 py-12 teleprompter-container overflow-hidden">
+                  {cue && (
+                    <div key={cue.text} className="cue-toast absolute top-0 left-1/2 -translate-x-1/2 z-10 flex items-center gap-3 rounded-2xl bg-[#d2a06b] px-6 py-3 font-black text-[#10204f] shadow-2xl">
+                      <span className="text-2xl">{cue.type === 'JEDA' ? '⏸' : '🔊'}</span>
+                      {cue.text}
+                    </div>
+                  )}
+                  
+                  <div ref={teleprompterRef} className="no-scrollbar h-full overflow-y-auto px-4">
+                    <div className="flex flex-col gap-24 py-[20vh] text-center">
+                      {paragraphs.map((p, i) => (
+                        <div 
+                          key={i} 
+                          ref={el => stepRefs.current[i] = el}
+                          className={`transition-all duration-700 ${currentStep === i ? 'scale-110 text-5xl font-black text-white' : 'scale-90 text-3xl font-bold text-white/10 blur-[1px]'}`}
+                        >
+                          {p.split('\n').map((line, li) => {
+                            const isCue = line.includes('[JEDA]') || line.includes('[TEKANAN]');
+                            if (isCue) {
+                              return <div key={li} className="my-6"><span className="rounded-full bg-[#d2a06b]/20 px-6 py-2 text-base font-black text-[#d2a06b] tracking-widest">{line}</span></div>;
+                            }
+                            return <p key={li} className="mb-4 leading-tight">{line}</p>;
+                          })}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-center gap-6 border-t border-white/10 pt-8 pb-4">
+                  <button className="btn btn-muted bg-white/10 text-white hover:bg-white/20 px-8" onClick={() => { stopRecording(); setView('PREP'); }}>Batal</button>
+                  <button className="btn btn-muted bg-white/10 text-white hover:bg-white/20 px-8" onClick={() => { stopRecording(); startPractice(); }}>Ulangi</button>
+                  <button className="btn btn-danger px-16 py-4 text-xl shadow-2xl shadow-red-500/20" onClick={stopRecording}>Selesai</button>
+                </div>
+              </div>
+            )}
+
+            {overlayState === 'RESULT' && (
+              <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-[40px] bg-white text-[#10204f] shadow-2xl">
+                <div className="p-8 md:p-12">
+                  <div className="text-center mb-10">
+                    <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl text-green-600 animate-bounce">✓</div>
+                    <h2 className="text-4xl font-black tracking-tight mb-2">🎉 Sesi Selesai!</h2>
+                    <p className="text-lg font-bold text-[#667085]">Kerja bagus! Kamu baru saja menyelesaikan sesi pelatihan public speaking profesional.</p>
+                  </div>
+
+                  {/* Main Audio Playback - Focal Point */}
+                  <div className="mb-10 p-8 rounded-[32px] bg-[#10204f] text-white shadow-xl relative overflow-hidden">
+                    <div className="relative z-10">
+                      <div className="text-xs font-black uppercase tracking-[0.2em] text-[#d2a06b] mb-4">Dengarkan Rekamanmu</div>
+                      <audio src={recordedUrl} controls className="w-full h-14 accent-[#d2a06b]"></audio>
+                      <div className="mt-4 flex items-center gap-4 text-xs font-bold opacity-60">
+                        <span className="flex items-center gap-1">⏱ {elapsed} Detik</span>
+                        <span className="flex items-center gap-1">🎙 High Quality Audio</span>
+                      </div>
+                    </div>
+                    <div className="absolute right-[-20px] bottom-[-20px] text-[120px] font-black opacity-10 pointer-events-none">🎙</div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    {/* Performance Summary */}
+                    <div className="p-6 rounded-3xl bg-[#f8fafc] border border-[#eef2f7]">
+                      <div className="topic-label mb-4">Ringkasan Performa</div>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-[#667085]">Kelancaran</span>
+                          <span className="text-sm font-black text-[#027a48]">Sangat Baik</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-[#667085]">Ketepatan Jeda</span>
+                          <span className="text-sm font-black text-[#027a48]">85%</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-bold text-[#667085]">Intonasi</span>
+                          <span className="text-sm font-black text-[#d2a06b]">Stabil</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Practice Details */}
+                    <div className="p-6 rounded-3xl bg-[#f8fafc] border border-[#eef2f7]">
+                      <div className="topic-label mb-4">Detail Sesi</div>
+                      <div className="space-y-3">
+                        <div className="score-item border-none bg-white p-3 rounded-2xl">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Naskah</span>
+                          <strong className="text-sm block truncate">{activeScript.title}</strong>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="score-item border-none bg-white p-3 rounded-2xl">
+                            <span className="text-[10px] uppercase font-black text-[#667085]">Level</span>
+                            <strong className="text-sm block">{activeLevel}</strong>
+                          </div>
+                          <div className="score-item border-none bg-white p-3 rounded-2xl">
+                            <span className="text-[10px] uppercase font-black text-[#667085]">Status</span>
+                            <strong className="text-sm block text-[#027a48]">Lulus</strong>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Recommendations */}
+                  <div className="mb-10">
+                    <div className="topic-label mb-4">Rekomendasi Latihan</div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#fffaf3] border border-[#f2d7b8]">
+                        <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-[#d2a06b] text-white">📈</div>
+                        <div>
+                          <div className="text-sm font-black text-[#10204f]">Tantangan Bicara Lanjutan</div>
+                          <p className="text-xs font-bold text-[#667085]">Latih spontanitasmu dengan topik acak.</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#eff8ff] border border-[#d1e9ff]">
+                        <div className="h-10 w-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-[#175cd3] text-white">📹</div>
+                        <div>
+                          <div className="text-sm font-black text-[#10204f]">Camera Practice</div>
+                          <p className="text-xs font-bold text-[#667085]">Evaluasi ekspresi wajah dan bahasa tubuh.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <button className="btn btn-primary py-5 text-xl shadow-xl shadow-[#d2a06b]/20" onClick={saveResult} disabled={isSaving || isSaved}>
+                      {isSaving ? 'Menyimpan...' : isSaved ? '✓ Tersimpan di Riwayat' : '💾 Simpan & Selesaikan'}
+                    </button>
+                    
+                    {isSaved && (
+                      <button 
+                        className="btn py-5 text-xl font-black text-white shadow-xl shadow-green-500/20 transition-all hover:scale-[1.02]" 
+                        style={{ background: isSubmitted ? '#027a48' : '#027a48', opacity: isSubmitted ? 0.7 : 1 }}
+                        onClick={submitToMentor} 
+                        disabled={isSubmitted}
+                      >
+                        {isSubmitted ? '✓ Terkirim ke Mentor' : '📤 Kirim ke Mentor'}
+                      </button>
+                    )}
+
+                    {statusMsg && (
+                      <div className="rounded-2xl bg-[#eff8ff] px-4 py-3 text-center text-sm font-bold text-[#175cd3]">
+                        {statusMsg}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <button className="btn btn-muted py-4 font-black text-sm" onClick={() => { setScriptIndex(prev => prev + 1); setView('PREP'); setIsSaved(false); setIsSubmitted(false); setPracticeHistoryId(null); setStatusMsg(''); }}>📄 Naskah Berikutnya</button>
+                      <button className="btn btn-muted py-4 font-black text-sm" onClick={() => { startPractice(); setIsSaved(false); setIsSubmitted(false); setPracticeHistoryId(null); setStatusMsg(''); }}>🔁 Latih Lagi</button>
+                    </div>
+                    <button className="mt-4 text-xs font-black text-[#667085] hover:text-[#10204f] uppercase tracking-widest transition-colors" onClick={() => setView('PREP')}>Kembali ke Menu Utama</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div className="panel">
+          <div className="panel-title">
+            <div>
+              <h2>Guided Speaking Practice</h2>
+              <p>Pilih kategori, pilih naskah, dan masuk ke mode teleprompter untuk latihan profesional.</p>
+            </div>
+          </div>
+
+          <div className="coach-strip">
+            <img src="assets/jjjj.png" alt="Coach TalkLab" />
+            <div>
+              <strong>{voiceMentorInfo ? `Mentor: ${voiceMentorInfo.name}` : 'Siap latihan suara?'}</strong>
+              <span>Gunakan mode teleprompter untuk membantumu fokus pada artikulasi dan intonasi.</span>
+            </div>
+          </div>
+
+          <div className="category-grid">
+            {practiceScripts.map((group) => (
+              <button
+                key={group.category}
+                className={`category-btn ${activeCategory === group.category ? 'active' : ''}`}
+                onClick={() => { setActiveCategory(group.category); setScriptIndex(0); }}
+              >
+                {group.category}
+              </button>
+            ))}
+          </div>
+
+          <div className="script-layout">
+            <article className="script-card">
+              <div className="topic-label">Training Script</div>
+              <h3 className="script-title">{activeScript.title}</h3>
+              <div className="script-meta">
+                <span className="badge">Kategori: {activeCategory}</span>
+                <span className="badge">Durasi: {activeScript.duration} Detik</span>
+                <span className="badge">Level: {activeLevel}</span>
+              </div>
+              <div className="script-text line-clamp-6 opacity-60">
+                {activeScript.text}
+              </div>
+              <div className="mt-4 flex justify-end">
+                <button className="text-sm font-bold text-[#d2a06b]" onClick={() => setScriptIndex(prev => prev + 1)}>Lihat Naskah Lainnya →</button>
+              </div>
+            </article>
+
+            <aside className="guide-card">
+              <h3>Speaking Guide</h3>
+              <ul className="guide-list">
+                <li>Baca dengan suara jelas</li>
+                <li>Berikan jeda pada tanda [JEDA]</li>
+                <li>Tekankan kata pada tanda [TEKANAN]</li>
+                <li>Gunakan mode teleprompter</li>
+              </ul>
+            </aside>
+          </div>
+
+          <div className="control-grid">
+            <div className="control-box">
+              <h3>Tingkat Latihan</h3>
+              <div className="duration-options">
+                {['Beginner', 'Intermediate', 'Advanced'].map(l => (
+                  <button
+                    key={l}
+                    className={`duration-btn ${activeLevel === l ? 'active' : ''}`}
+                    onClick={() => { setActiveLevel(l); setScriptIndex(0); }}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex items-end">
+              <button 
+                className="btn btn-primary w-full py-4 text-lg shadow-xl"
+                onClick={startPractice}
+              >
+                🟡 Mulai Latihan
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById("guided-speaking-root")).render(<GuidedSpeakingPractice />);
+  </script>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
+
+    (function () {
+      const simulasiPercakapan = [
+        {
+          id: "wawancara",
+          nama: "Simulasi Wawancara",
+          persona: "Pewawancara Virtual",
+          personaIcon: "👤",
+          pesanPersona: "Selamat datang. Saya akan mengajukan beberapa pertanyaan rekrutmen. Jawablah seolah-olah Anda sedang dalam sesi interview nyata.",
+          deskripsi: "Latihan menjawab pertanyaan wawancara kerja dengan jelas, percaya diri, dan terstruktur.",
+          fokus: ["Struktur Jawaban", "Kejelasan Penyampaian", "Kepercayaan Diri", "Respons Spontan"],
+          tips: ["Gunakan metode STAR (Situation, Task, Action, Result)", "Jaga kontak mata dengan kamera", "Hindari jawaban 'ya' atau 'tidak' saja"],
+          pertanyaan: [
+            "Ceritakan tentang diri Anda.",
+            "Apa kelebihan terbesar Anda?",
+            "Apa kelemahan terbesar Anda?",
+            "Mengapa kami harus memilih Anda?",
+            "Di mana Anda melihat diri Anda dalam lima tahun ke depan?",
+            "Ceritakan pengalaman saat Anda menyelesaikan masalah.",
+            "Bagaimana cara Anda bekerja dalam tekanan?",
+            "Apa kontribusi yang bisa Anda berikan?"
+          ]
+        },
+        {
+          id: "seminar",
+          nama: "Tanya Jawab Seminar",
+          persona: "Moderator Seminar",
+          personaIcon: "🎤",
+          pesanPersona: "Terima kasih atas pemaparannya. Sekarang, saya akan menyampaikan beberapa pertanyaan dari audiens. Jawablah secara profesional.",
+          deskripsi: "Latihan menjawab pertanyaan audiens setelah menyampaikan materi seminar.",
+          fokus: ["Kedalaman Materi", "Etika Menjawab", "Kejelasan Argumen", "Manajemen Waktu"],
+          tips: ["Apresiasi pertanyaan audiens", "Berikan jawaban yang edukatif", "Jika tidak tahu, sampaikan akan didiskusikan lanjut"],
+          pertanyaan: [
+            "Apa inti dari presentasi Anda?",
+            "Mengapa topik ini penting?",
+            "Apa solusi yang Anda tawarkan?",
+            "Apa bukti bahwa solusi tersebut dapat diterapkan?",
+            "Bagaimana cara mengukur keberhasilannya?",
+            "Apa tantangan terbesar dari gagasan Anda?",
+            "Bagaimana jika audiens tidak setuju dengan pendapat Anda?",
+            "Apa langkah pertama yang perlu dilakukan?"
+          ]
+        },
+        {
+          id: "presentasi",
+          nama: "Simulasi Presentasi",
+          persona: "Audiens Virtual",
+          personaIcon: "👥",
+          pesanPersona: "Ide yang menarik. Namun kami memiliki beberapa pertanyaan kritis mengenai ide yang Anda sampaikan.",
+          deskripsi: "Latihan mempertahankan ide presentasi melalui pertanyaan lanjutan.",
+          fokus: ["Penguasaan Ide", "Ketangguhan Argumen", "Ketenangan", "Persuasi"],
+          tips: ["Gunakan data untuk mendukung argumen", "Tetap tenang saat ditanya hal kritis", "Arahkan kembali ke manfaat utama ide Anda"],
+          pertanyaan: [
+            "Jelaskan ide utama presentasi Anda.",
+            "Apa manfaat dari solusi yang Anda tawarkan?",
+            "Bagaimana cara penerapannya?",
+            "Siapa yang paling membutuhkan solusi ini?",
+            "Apa risiko yang perlu diperhatikan?",
+            "Mengapa pendekatan Anda lebih efektif?",
+            "Apa data atau alasan yang mendukung ide Anda?",
+            "Bagaimana Anda menutup presentasi dengan kuat?"
+          ]
+        },
+        {
+          id: "mc",
+          nama: "Pembawa Acara",
+          persona: "Koordinator Acara",
+          personaIcon: "🎙️",
+          pesanPersona: "Acara akan segera dimulai. Anda akan menghadapi situasi panggung yang dinamis. Jaga energi penonton tetap tinggi.",
+          deskripsi: "Latihan merespons situasi acara sebagai MC secara ramah and profesional.",
+          fokus: ["Energi & Vokal", "Kelikatan Bicara", "Keramahan", "Improvisasi"],
+          tips: ["Mulai dengan senyum yang tulus", "Gunakan intonasi yang variatif", "Siap dengan kalimat cadangan jika ada kendala teknis"],
+          pertanyaan: [
+            "Buka acara seminar ini.",
+            "Perkenalkan narasumber.",
+            "Tutup acara secara profesional.",
+            "Arahkan peserta menuju sesi tanya jawab.",
+            "Isi jeda ketika narasumber belum siap.",
+            "Sampaikan perubahan susunan acara dengan tenang.",
+            "Ajak peserta memberi apresiasi kepada narasumber.",
+            "Berikan pengumuman singkat sebelum acara selesai."
+          ]
+        },
+        {
+          id: "perkenalan",
+          nama: "Networking",
+          persona: "Rekan Profesional",
+          personaIcon: "🤝",
+          pesanPersona: "Senang bertemu Anda. Mari berkenalan lebih jauh mengenai latar belakang dan keahlian Anda.",
+          deskripsi: "Latihan memperkenalkan diri dalam kegiatan formal, komunitas, atau dunia kerja.",
+          fokus: ["Personal Branding", "Artikulasi Nama", "Kesan Pertama", "Relevansi Pengalaman"],
+          tips: ["Sampaikan 'Elevator Pitch' Anda", "Hubungkan keahlian dengan kebutuhan lawan bicara", "Tanyakan balik untuk membangun koneksi"],
+          pertanyaan: [
+            "Perkenalkan diri Anda.",
+            "Ceritakan latar belakang Anda.",
+            "Apa tujuan Anda mengikuti kegiatan ini?",
+            "Apa pengalaman yang paling relevan dengan bidang Anda?",
+            "Apa kemampuan utama yang ingin Anda tunjukkan?",
+            "Bagaimana Anda ingin dikenal oleh orang lain?",
+            "Apa nilai yang Anda bawa dalam kerja sama?",
+            "Apa target pengembangan diri Anda saat ini?"
+          ]
+        },
+        {
+          id: "diskusi",
+          nama: "Diskusi Kelompok",
+          persona: "Fasilitator Diskusi",
+          personaIcon: "👨‍🏫",
+          pesanPersona: "Kita perlu mencapai kesepakatan. Saya ingin mendengar kontribusi dan tanggapan Anda atas poin berikut.",
+          deskripsi: "Latihan memberi respons dalam diskusi, menyanggah dengan sopan, dan merangkum pendapat.",
+          fokus: ["Kerja Sama Tim", "Kesopanan", "Analisis Masalah", "Gaya Diplomatis"],
+          tips: ["Gunakan kalimat 'Saya setuju, namun...' untuk menyanggah", "Berikan solusi, bukan hanya kritik", "Pastikan semua poin tersampaikan ringkas"],
+          pertanyaan: [
+            "Apa pendapat Anda tentang ide kelompok ini?",
+            "Bagaimana Anda menanggapi pendapat yang berbeda?",
+            "Apa usulan Anda agar diskusi lebih terarah?",
+            "Bagaimana cara Anda menyampaikan ketidaksetujuan dengan sopan?",
+            "Apa keputusan terbaik menurut Anda?",
+            "Bagaimana Anda merangkum hasil diskusi?",
+            "Apa peran yang bisa Anda ambil dalam kelompok?",
+            "Bagaimana cara menjaga semua anggota tetap terlibat?"
+          ]
+        }
+      ];
+
+      const tingkatKesulitan = [
+        { nama: "Pemula", jumlah: 3, persiapan: 20, jawab: 45, deskripsi: "3 pertanyaan, persiapan 20 detik, menjawab 45 detik." },
+        { nama: "Menengah", jumlah: 5, persiapan: 15, jawab: 60, deskripsi: "5 pertanyaan, persiapan 15 detik, menjawab 60 detik." },
+        { nama: "Lanjutan", jumlah: 8, persiapan: 10, jawab: 90, deskripsi: "8 pertanyaan, persiapan 10 detik, menjawab 90 detik." }
+      ];
+
+      function TantanganPercakapan() {
+        const [simulasi, setSimulasi] = useState(simulasiPercakapan[0]);
+        const [level, setLevel] = useState(tingkatKesulitan[0]);
+        const [modeCepat, setModeCepat] = useState(false);
+        const [view, setView] = useState("PREP"); // "PREP", "TRANSITION", "ACTIVE", "RESULT"
+        const [pertanyaan, setPertanyaan] = useState([]);
+        const [nomor, setNomor] = useState(0);
+        const [fase, setFase] = useState("persiapan"); // "persiapan", "menjawab", "jawaban"
+        const [sisaWaktu, setSisaWaktu] = useState(0);
+        const [durasiJawaban, setDurasiJawaban] = useState([]);
+        const [isSaving, setIsSaving] = useState(false);
+        const [isSaved, setIsSaved] = useState(false);
+        const [isSubmitted, setIsSubmitted] = useState(false);
+        const [practiceHistoryId, setPracticeHistoryId] = useState(null);
+        const [transitionCountdown, setTransitionCountdown] = useState(3);
+        const [stepCountdown, setStepCountdown] = useState(0);
+        const [lastDuration, setLastDuration] = useState(0);
+
+        const recorderRef = useRef(null);
+        const streamRef = useRef(null);
+        const chunksRef = useRef([]);
+        const allAudioChunksRef = useRef([]);
+        const fullRecorderRef = useRef(null);
+        const fullStreamRef = useRef(null);
+
+        const currentRules = modeCepat
+          ? { nama: "Mode Respon Cepat", jumlah: 5, persiapan: 5, jawab: 30, deskripsi: "Pertanyaan acak, persiapan 5 detik, menjawab 30 detik." }
+          : level;
+
+        const progres = pertanyaan.length ? Math.min((durasiJawaban.length / pertanyaan.length) * 100, 100) : 0;
+        const waktuTotal = durasiJawaban.reduce((t, v) => t + v, 0);
+
+        const formatTime = (s) => {
+          const mins = String(Math.floor(s / 60)).padStart(2, "0");
+          const secs = String(s % 60).padStart(2, "0");
+          return `${mins}:${secs}`;
+        };
+
+        const startSimulationFlow = () => {
+          const daftar = modeCepat
+            ? [...simulasiPercakapan.flatMap(s => s.pertanyaan.map(t => ({ teks: t, asal: s.nama })))].sort(() => Math.random() - 0.5).slice(0, 5)
+            : simulasi.pertanyaan.map(t => ({ teks: t, asal: simulasi.nama }));
+          
+          setPertanyaan(daftar);
+          setNomor(0);
+          setDurasiJawaban([]);
+          setIsSaved(false);
+          setIsSubmitted(false);
+          setPracticeHistoryId(null);
+          setTransitionCountdown(3);
+          setView("TRANSITION");
+          
+          const interval = setInterval(() => {
+            setTransitionCountdown(prev => {
+              if (prev <= 1) {
+                clearInterval(interval);
+                mulaiTantangan(daftar);
+                return 0;
+              }
+              return prev - 1;
+            });
+          }, 1000);
+        };
+
+        async function mulaiTantangan(daftar) {
+          allAudioChunksRef.current = [];
+          try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              fullStreamRef.current = stream;
+              const preferredMime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "";
+              const recorder = new MediaRecorder(stream, preferredMime ? { mimeType: preferredMime } : {});
+              recorder.ondataavailable = e => { if (e.data.size > 0) allAudioChunksRef.current.push(e.data); };
+              fullRecorderRef.current = recorder;
+              recorder.start();
+            }
+          } catch (e) {}
+
+          setView("ACTIVE");
+          setFase("persiapan");
+          setSisaWaktu(modeCepat ? 5 : level.persiapan);
+        }
+
+        useEffect(() => {
+          if (view !== "ACTIVE") return;
+          if (fase === "jawaban") return;
+
+          if (sisaWaktu <= 0) {
+            if (fase === "persiapan") mulaiMenjawab();
+            else if (fase === "menjawab") selesaiMenjawab(true);
+            return;
+          }
+
+          const id = setTimeout(() => setSisaWaktu(s => Math.max(s - 1, 0)), 1000);
+          return () => clearTimeout(id);
+        }, [view, fase, sisaWaktu]);
+
+        async function mulaiMenjawab() {
+          try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+              const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+              streamRef.current = stream;
+              const recorder = new MediaRecorder(stream);
+              recorder.onstop = () => { if (streamRef.current) streamRef.current.getTracks().forEach(t => t.stop()); };
+              recorderRef.current = recorder;
+              recorder.start();
+            }
+            setFase("menjawab");
+            setSisaWaktu(modeCepat ? 30 : level.jawab);
+          } catch (e) {
+            setFase("menjawab");
+            setSisaWaktu(modeCepat ? 30 : level.jawab);
+          }
+        }
+
+        function selesaiMenjawab(otomatis = false) {
+          if (recorderRef.current && recorderRef.current.state !== "inactive") recorderRef.current.stop();
+          
+          const target = modeCepat ? 30 : level.jawab;
+          const durasi = otomatis ? target : Math.max(target - sisaWaktu, 1);
+          setDurasiJawaban(curr => [...curr, durasi]);
+          setLastDuration(durasi);
+          
+          if (nomor + 1 >= pertanyaan.length) {
+            if (fullRecorderRef.current && fullRecorderRef.current.state !== "inactive") fullRecorderRef.current.stop();
+            setView("RESULT");
+          } else {
+            setFase("jawaban");
+            setStepCountdown(3);
+            const interval = setInterval(() => {
+              setStepCountdown(prev => {
+                if (prev <= 1) {
+                  clearInterval(interval);
+                  lanjutPertanyaan();
+                  return 0;
+                }
+                return prev - 1;
+              });
+            }, 1000);
+          }
+        }
+
+        function lanjutPertanyaan() {
+          setNomor(n => n + 1);
+          setFase("persiapan");
+          setSisaWaktu(modeCepat ? 5 : level.persiapan);
+        }
+
+        async function simpanRiwayat() {
+          if (!isLoggedIn) return;
+          setIsSaving(true);
+          const formData = new FormData();
+          formData.append("action", "save_challenge");
+          formData.append("challenge_type", modeCepat ? "Mode Respon Cepat" : simulasi.nama);
+          formData.append("level_name", currentRules.nama);
+          formData.append("question_count", pertanyaan.length);
+          formData.append("prompt", pertanyaan.map((item, index) => `${index + 1}. ${item.teks}`).join("\n"));
+          formData.append("prep_seconds", currentRules.persiapan);
+          formData.append("speak_seconds", currentRules.jawab);
+          formData.append("actual_seconds", waktuTotal);
+          formData.append("score", Math.round(progres));
+          formData.append("completed", 1);
+          if (allAudioChunksRef.current.length > 0) {
+            formData.append("audio", new Blob(allAudioChunksRef.current, { type: "audio/webm" }), "challenge.webm");
+          }
+
+          try {
+            const res = await fetch("Latihan.php", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.status) {
+              setIsSaved(true);
+              setPracticeHistoryId(data.practice_history_id);
+              window.prependChallengeHistory?.(data.item);
+            }
+          } catch (e) {} finally { setIsSaving(false); }
+        }
+
+        async function submitToMentor() {
+          if (!practiceHistoryId || !isLoggedIn) return;
+          setIsSubmitted(false);
+          const formData = new FormData();
+          formData.append("action", "submit_to_mentor");
+          formData.append("practice_history_id", practiceHistoryId);
+          formData.append("feature_type", "challenge");
+          try {
+            const res = await fetch("Latihan.php", { method: "POST", body: formData });
+            const data = await res.json();
+            if (data.status) setIsSubmitted(true);
+          } catch (e) {}
+        }
+
+        if (view === "TRANSITION") {
+          return (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#10204f]/95 text-white backdrop-blur-xl">
+              <div className="text-center animate-in fade-in zoom-in duration-500">
+                <div className="mb-4 text-sm font-black uppercase tracking-[0.3em] text-[#d2a06b]">Simulasi Akan Dimulai</div>
+                <div className="text-[180px] font-black leading-none">{transitionCountdown > 0 ? transitionCountdown : 'MULAI'}</div>
+                <div className="mt-8 space-y-2">
+                  <div className="text-2xl font-black">{modeCepat ? "Mode Respon Cepat" : simulasi.nama}</div>
+                  <div className="text-sm font-bold opacity-60">Level: {currentRules.nama} • {pertanyaan.length} Pertanyaan</div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (view === "ACTIVE") {
+          const aktif = pertanyaan[nomor];
+          return (
+            <div className="fixed inset-0 z-[9999] flex flex-col bg-[#f7f7fc]">
+              <div className="flex items-center justify-between bg-white px-8 py-4 shadow-sm">
+                <div className="flex items-center gap-6">
+                  <div className="h-12 w-12 rounded-2xl bg-[#10204f] flex items-center justify-center text-white text-xl">{simulasi.personaIcon}</div>
+                  <div>
+                    <div className="text-[10px] font-black uppercase tracking-widest text-[#d2a06b]">{modeCepat ? "MODE RESPON CEPAT" : simulasi.nama}</div>
+                    <div className="text-lg font-black text-[#10204f]">{simulasi.persona}</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-8">
+                  <div className="text-right">
+                    <div className="text-[10px] font-black text-[#667085] uppercase tracking-wider">Progres Simulasi</div>
+                    <div className="text-lg font-black text-[#10204f]">Pertanyaan {nomor + 1} <span className="text-xs opacity-40">dari {pertanyaan.length}</span></div>
+                    <div className="text-[10px] font-bold text-[#d2a06b]">{Math.round((nomor / pertanyaan.length) * 100)}% Selesai</div>
+                  </div>
+                  <div className="h-10 w-[2px] bg-slate-100"></div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-black text-[#667085] uppercase">{fase === "persiapan" ? "Persiapan" : "Bicara"}</div>
+                    <div className={`text-4xl font-black tabular-nums ${fase === "menjawab" ? "text-red-500" : "text-[#10204f]"}`}>{formatTime(sisaWaktu)}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="h-1.5 w-full bg-slate-100">
+                <div className="h-full bg-[#d2a06b] transition-all duration-500" style={{ width: `${progres}%` }}></div>
+              </div>
+
+              <main className="flex-1 flex gap-8 p-12 overflow-hidden" style={{ width: '100%', marginLeft: 0 }}>
+                <div className="flex-1 flex flex-col items-center justify-center">
+                  {fase === "jawaban" ? (
+                    <div className="text-center animate-in fade-in zoom-in duration-300">
+                      <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl text-green-600">✓</div>
+                      <h2 className="text-3xl font-black text-[#10204f]">Jawaban Berhasil Disimpan</h2>
+                      <p className="text-lg font-bold text-[#667085] mb-8">Durasi: {lastDuration} Detik</p>
+                      <div className="text-sm font-black uppercase tracking-widest text-[#d2a06b]">Bersiap ke pertanyaan berikutnya</div>
+                      <div className="text-6xl font-black text-[#10204f] mt-4">{stepCountdown}</div>
+                    </div>
+                  ) : (
+                    <div className="w-full max-w-4xl">
+                      <div className="mb-12">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-lg">{simulasi.personaIcon}</div>
+                          <span className="text-sm font-black text-[#667085] uppercase tracking-widest">{simulasi.persona}</span>
+                        </div>
+                        <div className="bg-white p-10 rounded-[40px] rounded-tl-none shadow-sm border border-slate-100 relative">
+                          <div className="text-3xl font-bold text-[#10204f] leading-relaxed italic">"{aktif.teks}"</div>
+                          <div className="absolute -left-3 top-0 w-6 h-6 bg-white border-l border-t border-slate-100 transform -rotate-45"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <div className={`inline-flex items-center gap-3 rounded-full px-8 py-4 text-sm font-black transition-all ${fase === "menjawab" ? "bg-red-50 text-red-600 animate-pulse border border-red-100 shadow-lg shadow-red-500/10" : "bg-[#fffaf3] text-[#d2a06b] border border-[#f2d7b8]"}`}>
+                          {fase === "menjawab" ? <><span className="h-3 w-3 rounded-full bg-red-600"></span> SEDANG MEREKAM JAWABAN</> : "TAHAP PERSIAPAN"}
+                        </div>
+                        <p className="mt-8 text-xl font-bold text-[#667085]">
+                          {fase === "persiapan" ? "Gunakan waktu ini untuk menyusun poin jawaban Anda..." : "Bicaralah dengan tenang, jelas, and penuh percaya diri."}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <aside className="w-80 space-y-6">
+                  <div className="simulation-sidebar">
+                    <h4><span>💡</span> Tips Menjawab</h4>
+                    <div className="space-y-4">
+                      {(simulasi.tips || ["Jawab dengan jelas", "Gunakan contoh nyata", "Jaga kontak mata"]).map((tip, i) => (
+                        <div key={i} className="tip-item">
+                          <span>✓</span> {tip}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="simulation-sidebar">
+                    <h4><span>🎯</span> Fokus Penilaian</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {simulasi.fokus.map(f => (
+                        <span key={f} className="bg-[#10204f] text-white text-[10px] font-black px-3 py-1.5 rounded-lg">✓ {f}</span>
+                      ))}
+                    </div>
+                  </div>
+                </aside>
+              </main>
+
+              <div className="bg-white border-t border-slate-100 p-8 flex justify-center gap-4">
+                <button className="btn btn-muted px-10 font-black text-sm" onClick={() => { if(confirm("Batalkan simulasi? Progres tidak akan disimpan.")) { setView("PREP"); if (fullStreamRef.current) fullStreamRef.current.getTracks().forEach(t => t.stop()); } }}>Batalkan Latihan</button>
+                {fase === "menjawab" && <button className="btn btn-danger px-16 py-5 text-xl font-black shadow-xl shadow-red-500/20" onClick={() => selesaiMenjawab(false)}>Selesai Menjawab</button>}
+              </div>
+            </div>
+          );
+        }
+
+        if (view === "RESULT") {
+          return (
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#10204f]/95 p-6 text-white backdrop-blur-xl">
+              <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto no-scrollbar rounded-[40px] bg-white text-[#10204f] shadow-2xl">
+                <div className="p-8 md:p-12 text-center">
+                  <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-green-100 text-5xl text-green-600 animate-bounce">✓</div>
+                  <h2 className="text-4xl font-black tracking-tight mb-2">🎉 Simulasi Selesai!</h2>
+                  <p className="text-lg font-bold text-[#667085] mb-8">Luar biasa! Kamu telah menyelesaikan tantangan {simulasi.nama}.</p>
+                  
+                  <div className="flex items-center justify-center gap-4 mb-10">
+                    <div className="xp-badge"><span>✨</span> +120 XP</div>
+                    <div className="xp-badge" style={{ background: '#ecfdf3', borderColor: '#abefc6', color: '#027a48' }}><span>🔥</span> Streak 7 Hari</div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div className="rounded-[32px] bg-[#f8fafc] border border-[#eef2f7] p-8 text-left">
+                      <div className="topic-label mb-6 text-center">Statistik Sesi</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Pertanyaan</span>
+                          <strong className="text-xl">{pertanyaan.length}</strong>
+                        </div>
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Durasi</span>
+                          <strong className="text-xl">{waktuTotal}s</strong>
+                        </div>
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Tingkat</span>
+                          <strong className="text-lg">{currentRules.nama}</strong>
+                        </div>
+                        <div className="score-item border-none bg-white p-4 rounded-2xl shadow-sm text-center">
+                          <span className="text-[10px] uppercase font-black text-[#667085]">Status</span>
+                          <strong className="text-xl text-[#027a48]">Lulus</strong>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="streak-card flex flex-col justify-center items-center shadow-xl shadow-[#10204f]/20">
+                      <div className="text-sm font-black text-[#d2a06b] mb-4 uppercase tracking-widest">Level Speaking</div>
+                      <div className="relative h-24 w-24 flex items-center justify-center mb-4">
+                        <svg className="absolute inset-0 h-full w-full -rotate-90">
+                          <circle cx="48" cy="48" r="40" stroke="rgba(255,255,255,0.1)" strokeWidth="8" fill="none" />
+                          <circle cx="48" cy="48" r="40" stroke="#d2a06b" strokeWidth="8" fill="none" strokeDasharray="251.2" strokeDashoffset={251.2 - (251.2 * 0.68)} strokeLinecap="round" />
+                        </svg>
+                        <span className="text-2xl font-black">68%</span>
+                      </div>
+                      <div className="bg-[#d2a06b] px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">+8% Naik</div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4">
+                    <button className="btn btn-primary py-5 text-xl font-black shadow-xl shadow-[#d2a06b]/20" onClick={simpanRiwayat} disabled={isSaving || isSaved}>
+                      {isSaving ? 'Menyimpan...' : isSaved ? '✓ Tersimpan di Riwayat' : '💾 Simpan & Selesaikan'}
+                    </button>
+                    {isSaved && (
+                      <button className="btn py-5 text-xl font-black text-white shadow-xl shadow-green-500/20 transition-all hover:scale-[1.02]" style={{ background: '#027a48' }} onClick={submitToMentor} disabled={isSubmitted}>
+                        {isSubmitted ? '✓ Terkirim ke Mentor' : '📤 Kirim ke Mentor'}
+                      </button>
+                    )}
+                    <button className="btn btn-muted py-4 font-black text-sm" onClick={() => setView("PREP")}>Kembali ke Menu Utama</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        return (
+          <div className="panel">
+            <div className="panel-title">
+              <div>
+                <h2 className="text-3xl font-black">Tantangan Bicara</h2>
+                <p>Uji kemampuan bicara spontan Anda melalui simulasi percakapan interaktif.</p>
+              </div>
+              <span className="status-pill border border-slate-200">MODE SIMULASI AKTIF</span>
+            </div>
+
+            <div className="challenge-layout mb-8">
+              <div className="control-box">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="m-0 text-sm font-black uppercase tracking-wider text-[#667085]">Pilih Jenis Simulasi</h3>
+                  {modeCepat && <span className="rounded-full bg-[#d2a06b] px-3 py-1 text-[10px] font-black text-white">RESPON CEPAT AKTIF</span>}
+                </div>
+                <div className="option-grid">
+                  {simulasiPercakapan.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      className={`option-card transition-all duration-300 ${!modeCepat && simulasi.id === item.id ? "active scale-[1.02] border-[#d2a06b] shadow-lg shadow-[#d2a06b]/10" : "hover:border-slate-300"}`}
+                      onClick={() => { setSimulasi(item); setModeCepat(false); }}
+                    >
+                      <div className="text-2xl mb-2">{item.personaIcon}</div>
+                      <strong className="text-sm font-black">{item.nama}</strong>
+                    </button>
+                  ))}
+                  <button type="button" className={`option-card transition-all duration-300 ${modeCepat ? "active scale-[1.02] border-[#d2a06b] shadow-lg shadow-[#d2a06b]/10" : "hover:border-slate-300"}`} onClick={() => setModeCepat(true)}>
+                    <div className="text-2xl mb-2">⚡</div>
+                    <strong className="text-sm font-black">Respon Cepat</strong>
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="control-box">
+                  <h3 className="m-0 text-sm font-black uppercase tracking-wider text-[#667085] mb-4">Tingkat Kesulitan</h3>
+                  <div className="flex gap-3">
+                    {tingkatKesulitan.map((item) => (
+                      <button
+                        key={item.nama}
+                        type="button"
+                        className={`flex-1 rounded-xl py-3 text-sm font-black transition-all ${level.nama === item.nama ? "bg-[#10204f] text-white shadow-lg shadow-[#10204f]/20" : "bg-white text-slate-500 ring-1 ring-slate-200 hover:ring-slate-300"}`}
+                        onClick={() => setLevel(item)}
+                      >
+                        {item.nama}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-[40px] border border-[#f2d7b8] bg-[#fffaf3] p-10 shadow-sm relative overflow-hidden">
+                  <div className="relative z-10">
+                    <div className="flex items-center gap-5 mb-8">
+                      <div className="h-16 w-16 rounded-3xl bg-[#d2a06b] flex items-center justify-center text-white text-3xl shadow-xl shadow-[#d2a06b]/20">{modeCepat ? '⚡' : simulasi.personaIcon}</div>
+                      <div>
+                        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#d2a06b] mb-1">Simulasi Briefing</div>
+                        <h3 className="text-2xl font-black text-[#10204f] uppercase tracking-tight m-0">{modeCepat ? "Tantangan Respon Cepat" : simulasi.nama}</h3>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-8">
+                      <div className="text-[10px] font-black text-[#667085] uppercase tracking-widest mb-3">Tujuan Latihan</div>
+                      <p className="text-base font-bold leading-relaxed text-[#10204f]">
+                        {modeCepat 
+                          ? "Latih spontanitas maksimal dengan menjawab pertanyaan acak dalam waktu terbatas."
+                          : `Anda akan mengikuti simulasi ${simulasi.nama.toLowerCase()}. Jawablah setiap pertanyaan dari ${simulasi.persona} secara terstruktur and profesional.`}
+                      </p>
+                    </div>
+
+                    <div className="mb-8">
+                      <div className="text-[10px] font-black text-[#667085] uppercase tracking-widest mb-4">Target Kompetensi</div>
+                      <div className="flex flex-wrap gap-2">
+                        {(modeCepat ? ["Spontanitas", "Kecepatan", "Improvisasi", "Ketajaman"] : simulasi.fokus).map(f => (
+                          <span key={f} className="rounded-xl bg-white border border-[#f2d7b8] px-4 py-2 text-xs font-black text-[#10204f]">✓ {f}</span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="mb-10 grid grid-cols-3 gap-4">
+                      <div className="text-center">
+                        <span className="text-[10px] font-black text-[#667085] uppercase block mb-1">Pertanyaan</span>
+                        <strong className="text-xl text-[#10204f]">{currentRules.jumlah}</strong>
+                      </div>
+                      <div className="text-center border-x border-[#f2d7b8]">
+                        <span className="text-[10px] font-black text-[#667085] uppercase block mb-1">Persiapan</span>
+                        <strong className="text-xl text-[#10204f]">{currentRules.persiapan}s</strong>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-[10px] font-black text-[#667085] uppercase block mb-1">Menjawab</span>
+                        <strong className="text-xl text-[#10204f]">{currentRules.jawab}s</strong>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <button 
+                        className="btn btn-primary w-full py-5 text-2xl font-black shadow-2xl shadow-[#d2a06b]/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        onClick={startSimulationFlow}
+                      >
+                        🎯 MULAI SIMULASI
+                      </button>
+                      <p className="text-center text-[11px] font-black text-[#667085] uppercase tracking-wider">Siapkan mikrofon Anda sebelum memulai</p>
+                    </div>
+                  </div>
+                  <div className="absolute -right-10 -bottom-10 text-[200px] font-black opacity-[0.03] pointer-events-none">{simulasi.personaIcon}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("conversation-challenge-root")).render(<TantanganPercakapan />);
+    })();
+  </script>
+
+  <script type="text/babel">
+    const { useEffect: useEff, useMemo: useMem, useRef: useRefC, useState: useSt } = React;
+
+    const cameraTopics = [
+      "Ceritakan pengalaman paling berkesan saat berbicara di depan orang.",
+      "Jelaskan mengapa eye contact penting dalam public speaking.",
+      "Presentasikan ide kegiatan kelas dalam satu menit.",
+      "Ceritakan cara kamu membangun rasa percaya diri.",
+      "Berikan opini singkat tentang pentingnya bahasa tubuh.",
+      "Simulasikan pembukaan sebagai MC acara sekolah."
+    ];
+
+    const cameraDurations = [
+      { label: "1 minute", seconds: 60 },
+      { label: "3 minutes", seconds: 180 },
+      { label: "5 minutes", seconds: 300 }
+    ];
+
+    const cameraHistoryFromDB = <?= json_encode($cameraHistory, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+    const cameraMentorInfo = <?= json_encode($mentorInfo['camera'], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
+
+    const simulationModes = [
+      {
+        name: "Presentation",
+        objective: "Sampaikan ide utama dengan pembuka, tiga poin, dan penutup yang jelas.",
+        tip: "Gunakan gesture tangan saat berpindah poin."
+      },
+      {
+        name: "Interview",
+        objective: "Jawab dengan struktur singkat: situasi, tindakan, dan hasil.",
+        tip: "Tatap kamera seperti sedang melihat pewawancara."
+      },
+      {
+        name: "MC Opening",
+        objective: "Buka acara dengan salam, perkenalan, and energi yang ramah.",
+        tip: "Mulai dengan senyum dan intonasi naik di kalimat pembuka."
+      }
+    ];
+
+    const focusItems = ["Eye contact", "Facial expression", "Body language", "Confidence"];
+
+    function formatCameraTime(seconds) {
+      const mins = String(Math.floor(seconds / 60)).padStart(2, "0");
+      const secs = String(seconds % 60).padStart(2, "0");
+      return `${mins}:${secs}`;
+    }
+
+    function CameraPracticeDashboard() {
+      const liveVideoRef = useRefC(null);
+      const replayVideoRef = useRefC(null);
+      const mediaRecorderRef = useRefC(null);
+      const streamRef = useRefC(null);
+      const chunksRef = useRefC([]);
+      const timerRef = useRefC(null);
+      const elapsedRef = useRefC(0);
+      const recordedBlobRef = useRefC(null);
+
+      const [selectedDuration, setSelectedDuration] = useSt(60);
+      const [topic, setTopic] = useSt(cameraTopics[0]);
+      const [isRecording, setIsRecording] = useSt(false);
+      const [elapsed, setElapsed] = useSt(0);
+      const [recordedUrl, setRecordedUrl] = useSt("");
+      const [statusMessage, setStatusMessage] = useSt("Camera dan microphone akan aktif saat latihan dimulai.");
+      // Build initial history from DB records
+      const dbHistory = cameraHistoryFromDB.map((item) => ({
+        id: `db-${item.id}`,
+        dbId: item.id,
+        topic: item.topic,
+        date: new Date(item.created_at.replace(" ", "T")).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
+        duration: item.duration_seconds,
+        videoUrl: item.video_path || "",
+        confidence: item.simulation_mode || "Practice"
+      }));
+      const [history, setHistory] = useSt(dbHistory);
+      const [activeMode, setActiveMode] = useSt(simulationModes[0]);
+      const [focusProgress, setFocusProgress] = useSt({
+        "Eye contact": false,
+        "Facial expression": false,
+        "Body language": false,
+        "Confidence": false
+      });
+      const [cameraReady, setCameraReady] = useSt(false);
+      const [micReady, setMicReady] = useSt(false);
+      const [isSaving, setIsSaving] = useSt(false);
+      const [isSaved, setIsSaved] = useSt(false);
+      const [practiceHistoryId, setPracticeHistoryId] = useSt(null);
+      const [isSubmitted, setIsSubmitted] = useSt(false);
+
+      const remainingTime = Math.max(selectedDuration - elapsed, 0);
+      const progress = Math.min((elapsed / selectedDuration) * 100, 100);
+      const recordingStatus = isRecording ? "RECORDING" : recordedUrl ? "FINISHED" : "READY";
+      const speakingTip = isRecording
+        ? activeMode.tip
+        : "Siapkan posisi kamera sejajar mata dan pastikan bahu terlihat natural.";
+
+      const randomTopic = () => {
+        const nextTopics = cameraTopics.filter((item) => item !== topic);
+        const nextTopic = nextTopics[Math.floor(Math.random() * nextTopics.length)] || cameraTopics[0];
+        setTopic(nextTopic);
+      };
+
+      const attachStream = (stream) => {
+        streamRef.current = stream;
+        setCameraReady(stream.getVideoTracks().length > 0);
+        setMicReady(stream.getAudioTracks().length > 0);
+        if (liveVideoRef.current) {
+          liveVideoRef.current.srcObject = stream;
+        }
+      };
+
+      const stopTracks = () => {
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach((track) => track.stop());
+          streamRef.current = null;
+        }
+        setCameraReady(false);
+        setMicReady(false);
+      };
+
+      const stopRecording = () => {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+        setIsRecording(false);
+
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+          mediaRecorderRef.current.stop();
+        } else {
+          stopTracks();
+        }
+      };
+
+      const startRecording = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+          attachStream(stream);
+          chunksRef.current = [];
+          recordedBlobRef.current = null;
+          setRecordedUrl("");
+          setElapsed(0);
+          elapsedRef.current = 0;
+          setIsSaved(false);
+          setIsSubmitted(false);
+          setPracticeHistoryId(null);
+
+          const preferredMime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9,opus")
+            ? "video/webm;codecs=vp9,opus"
+            : MediaRecorder.isTypeSupported("video/webm")
+              ? "video/webm"
+              : "";
+          const recorder = preferredMime ? new MediaRecorder(stream, { mimeType: preferredMime }) : new MediaRecorder(stream);
+          mediaRecorderRef.current = recorder;
+
+          recorder.ondataavailable = (event) => {
+            if (event.data.size > 0) chunksRef.current.push(event.data);
+          };
+
+          recorder.onstop = () => {
+            const blob = new Blob(chunksRef.current, { type: preferredMime || "video/webm" });
+            recordedBlobRef.current = blob;
+            const videoUrl = URL.createObjectURL(blob);
+            setRecordedUrl(videoUrl);
+            stopTracks();
+            setStatusMessage("Recording selesai. Simpan riwayat untuk menyimpan video ke server.");
+          };
+
+          recorder.start();
+          setIsRecording(true);
+          setStatusMessage("Recording berjalan. Jaga eye contact dan bahasa tubuh.");
+
+          timerRef.current = setInterval(() => {
+            setElapsed((current) => {
+              const next = current + 1;
+              elapsedRef.current = Math.min(next, selectedDuration);
+              if (next >= selectedDuration) setTimeout(stopRecording, 0);
+              return Math.min(next, selectedDuration);
+            });
+          }, 1000);
+        } catch (error) {
+          setStatusMessage("Camera atau microphone tidak bisa diakses. Periksa izin browser.");
+        }
+      };
+
+      const saveCameraPractice = async () => {
+        if (!recordedBlobRef.current) {
+          setStatusMessage("Belum ada rekaman video yang bisa disimpan.");
+          return;
+        }
+        if (!isLoggedIn) {
+          setStatusMessage("Silakan login terlebih dahulu agar riwayat tersimpan ke akun.");
+          return;
+        }
+
+        setIsSaving(true);
+        setStatusMessage("Menyimpan video ke server...");
+
+        try {
+          const formData = new FormData();
+          formData.append("action", "save_camera_practice");
+          formData.append("topic", topic);
+          formData.append("simulation_mode", activeMode.name);
+          formData.append("duration", elapsedRef.current || selectedDuration);
+          formData.append("video", recordedBlobRef.current, "camera_practice.webm");
+
+          const response = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await response.json();
+
+          if (!data.status) {
+            setStatusMessage(data.message || "Gagal menyimpan riwayat camera practice.");
+            setIsSaving(false);
+            return;
+          }
+
+          setIsSaved(true);
+          setPracticeHistoryId(data.practice_history_id || null);
+
+          // Add to history list with server path
+          const newItem = {
+            id: `db-${data.practice_history_id}`,
+            dbId: data.practice_history_id,
+            topic: data.item.topic,
+            date: new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" }),
+            duration: data.item.duration_seconds,
+            videoUrl: data.item.video_path,
+            confidence: data.item.simulation_mode || "Practice"
+          };
+          setHistory((current) => [newItem, ...current]);
+          setStatusMessage(data.message + " Klik 'Kirim ke Mentor' untuk penilaian.");
+        } catch (error) {
+          setStatusMessage("Terjadi kesalahan saat menyimpan riwayat camera practice.");
+        }
+        setIsSaving(false);
+      };
+
+      const submitToMentor = async () => {
+        if (!practiceHistoryId) {
+          setStatusMessage("Simpan riwayat camera practice terlebih dahulu.");
+          return;
+        }
+        if (!isLoggedIn) {
+          setStatusMessage("Silakan login terlebih dahulu.");
+          return;
+        }
+
+        setStatusMessage("Mengirim latihan ke mentor...");
+
+        try {
+          const formData = new FormData();
+          formData.append("action", "submit_to_mentor");
+          formData.append("practice_history_id", practiceHistoryId);
+          formData.append("feature_type", "camera");
+
+          const response = await fetch("Latihan.php", { method: "POST", body: formData });
+          const data = await response.json();
+
+          if (!data.status) {
+            setStatusMessage(data.message || "Gagal mengirim ke mentor.");
+            return;
+          }
+
+          setIsSubmitted(true);
+          setStatusMessage(data.message);
+        } catch (error) {
+          setStatusMessage("Terjadi kesalahan saat mengirim ke mentor.");
+        }
+      };
+
+      const replayVideo = (videoUrl) => {
+        if (!videoUrl) return;
+        setRecordedUrl(videoUrl);
+        setTimeout(() => replayVideoRef.current?.play(), 100);
+      };
+
+      useEff(() => {
+        return () => {
+          clearInterval(timerRef.current);
+          stopTracks();
+        };
+      }, []);
+
+      const instruction = useMem(() => {
+        if (isRecording) return "Bicara menghadap kamera, jaga gestur tetap natural, and gunakan jeda yang jelas.";
+        return "Pilih durasi dan topik, lalu mulai recording untuk melatih ekspresi, eye contact, and body language.";
+      }, [isRecording]);
+
+      const toggleFocus = (item) => {
+        setFocusProgress((current) => ({ ...current, [item]: !current[item] }));
+      };
+
+      return (
+        <div className="space-y-6">
+          <section className="camera-card p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <div className="text-sm font-black uppercase tracking-wide text-[#d2a06b]">Camera Speaking Practice</div>
+                <h2 className="mt-2 text-3xl font-extrabold text-[#10204f]">Latihan dengan webcam</h2>
+                <p className="mt-2 text-sm font-semibold leading-6 text-[#667085]">Latih ekspresi, eye contact, body language, and confidence langsung dari browser.</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 {cameraMentorInfo && <div className="camera-status-pill live">Mentor: {cameraMentorInfo.name}</div>}
