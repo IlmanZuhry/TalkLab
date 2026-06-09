@@ -1,13 +1,83 @@
 <?php
+if (!defined('TALKLAB_SESSION_LIFETIME')) {
+	define('TALKLAB_SESSION_LIFETIME', 28800);
+}
+
+function talklab_configure_session(){
+	if (session_status() !== PHP_SESSION_NONE) {
+		return;
+	}
+
+	ini_set('session.gc_maxlifetime', (string) TALKLAB_SESSION_LIFETIME);
+	ini_set('session.cookie_lifetime', (string) TALKLAB_SESSION_LIFETIME);
+	ini_set('session.use_strict_mode', '1');
+	ini_set('session.gc_probability', '1');
+	ini_set('session.gc_divisor', '100');
+
+	$sessionSavePath = __DIR__ . '/sessions';
+	if (!is_dir($sessionSavePath)) {
+		@mkdir($sessionSavePath, 0775, true);
+	}
+	ini_set('session.save_path', $sessionSavePath);
+
+	$params = session_get_cookie_params();
+	session_set_cookie_params([
+		'lifetime' => TALKLAB_SESSION_LIFETIME,
+		'path' => $params['path'] ?: '/',
+		'domain' => $params['domain'] ?? '',
+		'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+		'httponly' => true,
+		'samesite' => 'Lax',
+	]);
+}
+
+function talklab_refresh_session_cookie(){
+	if (headers_sent() || session_status() !== PHP_SESSION_ACTIVE) {
+		return;
+	}
+
+	$params = session_get_cookie_params();
+	setcookie(session_name(), session_id(), [
+		'expires' => time() + TALKLAB_SESSION_LIFETIME,
+		'path' => $params['path'] ?: '/',
+		'domain' => $params['domain'] ?? '',
+		'secure' => (bool) $params['secure'],
+		'httponly' => true,
+		'samesite' => $params['samesite'] ?? 'Lax',
+	]);
+}
+
+function talklab_start_session(){
+	if (session_status() !== PHP_SESSION_ACTIVE) {
+		talklab_configure_session();
+		session_start();
+	}
+
+	$now = time();
+	if (!empty($_SESSION['__last_activity']) && ($now - (int) $_SESSION['__last_activity']) > TALKLAB_SESSION_LIFETIME) {
+		session_unset();
+		session_destroy();
+		talklab_configure_session();
+		session_start();
+	}
+
+	$_SESSION['__last_activity'] = $now;
+	talklab_refresh_session_cookie();
+}
+
+talklab_configure_session();
+talklab_start_session();
+
 class manz{
-	var $talkhost = "localhost";
+	var $talkhost = "127.0.0.1";
     var $user = "root";
     var $pass = "";
     var $dbname = "talklab";
+    var $port = 3307;
 	public mysqli $koneksi;
 	
 	function __construct(){
-		$this->koneksi=mysqli_connect($this->talkhost,$this->user,$this->pass,$this->dbname);
+		$this->koneksi=mysqli_connect($this->talkhost,$this->user,$this->pass,$this->dbname,$this->port);
 		if(mysqli_connect_errno()){
 			echo"Koneksi gagal:".mysqli_connect_error();
 		}
@@ -82,30 +152,35 @@ class manz{
 
 	// Set variabel session PHP dari data user
 	public function setSessionFromUser($row){
-		if (session_status() == PHP_SESSION_NONE) session_start();
+		talklab_start_session();
+		session_regenerate_id(true);
 		$_SESSION['name'] = $row['Nama'];
 		$_SESSION['username'] = $row['Username'];
 		$_SESSION['user_id'] = $row['Id_User'];
 		$_SESSION['foto'] = $row['Foto'] ?? '';
 		$_SESSION['bio'] = $row['Bio'] ?? '';
+		$_SESSION['__login_at'] = time();
 	}
 
 	// Bantuan logout (menghapus session)
 	public function logout(){
-		if (session_status() == PHP_SESSION_NONE) session_start();
+		talklab_start_session();
 		session_unset();
+		if (session_id()) {
+			setcookie(session_name(), '', time() - 3600, '/');
+		}
 		session_destroy();
 	}
 
 	// Periksa apakah sudah login
 	public function isLoggedIn(){
-		if (session_status() == PHP_SESSION_NONE) session_start();
+		talklab_start_session();
 		return !empty($_SESSION['user_id']);
 	}
 
 	// Pastikan session dimulai (dipanggil sebelum output)
 	public function ensureSession(){
-		if (session_status() == PHP_SESSION_NONE) session_start();
+		talklab_start_session();
 	}
 
 	// Kembalikan data user saat ini dari session (atau false jika tidak ada)

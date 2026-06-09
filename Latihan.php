@@ -292,6 +292,13 @@ $topics = [
       z-index: 1;
     }
 
+    .feature-icon svg,
+    .mic-orb svg {
+      width: 32px;
+      height: 32px;
+      fill: currentColor;
+    }
+
     .feature-card[data-feature="challenge"] .feature-icon { background: #6d2d59; }
     .feature-card[data-feature="ai"] .feature-icon { background: #b8752b; }
 
@@ -555,6 +562,11 @@ $topics = [
       isolation: isolate;
     }
 
+    .mic-orb svg {
+      width: 68px;
+      height: 68px;
+    }
+
     .mic-orb::before,
     .mic-orb::after {
       content: "";
@@ -646,6 +658,37 @@ $topics = [
       background: #d2a06b;
       border-radius: 999px;
       transition: width 0.2s;
+    }
+
+    .save-notice {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 0 0 16px;
+      padding: 14px 16px;
+      border: 1px solid #fedf89;
+      border-radius: 14px;
+      background: #fffaeb;
+      color: #7a4b00;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+    }
+
+    .save-notice.is-hidden {
+      display: none;
+    }
+
+    .save-notice a {
+      flex: 0 0 auto;
+      border-radius: 10px;
+      background: #10204f;
+      color: #fff;
+      padding: 9px 13px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 900;
     }
 
     audio {
@@ -963,10 +1006,15 @@ $topics = [
             </div>
           </div>
 
+          <div class="save-notice <?= $currentUser ? 'is-hidden' : '' ?>" id="loginNotice">
+            <span>Latihan tetap bisa dicoba, tetapi riwayat hanya tersimpan setelah kamu login.</span>
+            <a href="login.php" target="_blank" rel="noopener">Masuk</a>
+          </div>
+
           <div class="action-row">
             <button class="btn btn-primary" type="button" id="startBtn">Mulai Latihan</button>
             <button class="btn btn-danger" type="button" id="stopBtn" disabled>Selesai</button>
-            <button class="btn btn-dark" type="button" id="saveBtn" disabled>Simpan Riwayat</button>
+            <button class="btn btn-dark" type="button" id="saveBtn" disabled><?= $currentUser ? 'Simpan Riwayat' : 'Login untuk Simpan' ?></button>
           </div>
 
           <div class="result-box" id="resultBox">
@@ -1069,11 +1117,16 @@ $topics = [
             <div class="meter-fill" id="challengeMeterFill"></div>
           </div>
 
+          <div class="save-notice <?= $currentUser ? 'is-hidden' : '' ?>" id="challengeLoginNotice">
+            <span>Challenge bisa dijalankan tanpa login, tetapi skor hanya tersimpan setelah kamu login.</span>
+            <a href="login.php" target="_blank" rel="noopener">Masuk</a>
+          </div>
+
           <div class="action-row">
             <button class="btn btn-primary" type="button" id="newChallengeBtn">Challenge Baru</button>
             <button class="btn btn-dark" type="button" id="startChallengeBtn">Mulai Challenge</button>
             <button class="btn btn-danger" type="button" id="finishChallengeBtn" disabled>Selesai Bicara</button>
-            <button class="btn btn-muted" type="button" id="saveChallengeBtn" disabled>Simpan Challenge</button>
+            <button class="btn btn-muted" type="button" id="saveChallengeBtn" disabled><?= $currentUser ? 'Simpan Challenge' : 'Login untuk Simpan' ?></button>
           </div>
 
           <div class="result-box" id="challengeResultBox">
@@ -1155,6 +1208,8 @@ $topics = [
     const resultDuration = document.getElementById("resultDuration");
     const messageBox = document.getElementById("messageBox");
     const historyList = document.getElementById("historyList");
+    const loginNotice = document.getElementById("loginNotice");
+    const challengeLoginNotice = document.getElementById("challengeLoginNotice");
     const featureCards = document.querySelectorAll(".feature-card");
     const voiceSection = document.getElementById("voiceSection");
     const challengeSection = document.getElementById("challengeSection");
@@ -1238,6 +1293,27 @@ $topics = [
     function setChallengeMessage(type, text) {
       challengeMessageBox.className = `toast ${type}`;
       challengeMessageBox.textContent = text;
+    }
+
+    const voiceIconSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2Z"/></svg>';
+    const featureIcons = {
+      voice: voiceIconSvg,
+      challenge: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 1H9v2h6V1Zm-4 13h2V8h-2v6Zm1 8a9 9 0 1 1 0-18 9 9 0 0 1 0 18Zm0-2a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/></svg>',
+      ai: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 10.5V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-3.5l4 4v-11l-4 4ZM15 17H5V7h10v10Z"/></svg>'
+    };
+
+    featureCards.forEach(card => {
+      const icon = card.querySelector(".feature-icon");
+      if (icon && featureIcons[card.dataset.feature]) {
+        icon.innerHTML = featureIcons[card.dataset.feature];
+      }
+    });
+    micOrb.innerHTML = voiceIconSvg;
+
+    function showLoginExpiredMessage(setter) {
+      if (loginNotice) loginNotice.classList.remove("is-hidden");
+      if (challengeLoginNotice) challengeLoginNotice.classList.remove("is-hidden");
+      setter("error", "Sesi login habis. Buka login di tab baru, lalu kembali ke halaman ini untuk menyimpan ulang.");
     }
 
     function switchFeature(feature) {
@@ -1542,6 +1618,8 @@ $topics = [
       }
 
       if (!isLoggedIn) {
+        if (loginNotice) loginNotice.classList.remove("is-hidden");
+        if (challengeLoginNotice) challengeLoginNotice.classList.remove("is-hidden");
         setMessage("error", "Silakan login terlebih dahulu agar riwayat latihan tersimpan ke akun.");
         return;
       }
@@ -1560,6 +1638,13 @@ $topics = [
           method: "POST",
           body: formData
         });
+
+        if (response.status === 401) {
+          saveBtn.disabled = false;
+          showLoginExpiredMessage(setMessage);
+          return;
+        }
+
         const data = await response.json();
 
         if (!data.status) {
@@ -1572,7 +1657,7 @@ $topics = [
         setMessage("success", data.message);
       } catch (error) {
         saveBtn.disabled = false;
-        setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan.");
+        setMessage("error", "Terjadi kesalahan saat menyimpan riwayat latihan. Rekaman tetap tersedia untuk dicoba simpan ulang.");
       }
     }
 
@@ -1604,6 +1689,7 @@ $topics = [
       }
 
       if (!isLoggedIn) {
+        if (challengeLoginNotice) challengeLoginNotice.classList.remove("is-hidden");
         setChallengeMessage("error", "Silakan login terlebih dahulu agar riwayat challenge tersimpan ke akun.");
         return;
       }
@@ -1627,6 +1713,13 @@ $topics = [
           method: "POST",
           body: formData
         });
+
+        if (response.status === 401) {
+          saveChallengeBtn.disabled = false;
+          showLoginExpiredMessage(setChallengeMessage);
+          return;
+        }
+
         const data = await response.json();
 
         if (!data.status) {
@@ -1639,7 +1732,7 @@ $topics = [
         setChallengeMessage("success", data.message);
       } catch (error) {
         saveChallengeBtn.disabled = false;
-        setChallengeMessage("error", "Terjadi kesalahan saat menyimpan riwayat challenge.");
+        setChallengeMessage("error", "Terjadi kesalahan saat menyimpan riwayat challenge. Hasil challenge tetap tersedia untuk dicoba simpan ulang.");
       }
     }
 
