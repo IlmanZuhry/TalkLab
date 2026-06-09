@@ -92,6 +92,7 @@ if ($currentUser) {
         foreach ($userPostComments as $comment) {
             $recentActivities[] = [
                 'type' => 'comment_reply',
+            'text' => 'Kamu mendapat balasan komentar: "' . substr($comment['content'], 0, 40) . '..."',
             'time' => $comment['created_at']
         ];
     }

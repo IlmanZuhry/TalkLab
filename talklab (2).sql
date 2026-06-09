@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.3
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Waktu pembuatan: 08 Jun 2026 pada 17.38
+-- Host: 127.0.0.1
+-- Waktu pembuatan: 09 Jun 2026 pada 02.26
 -- Versi server: 10.4.32-MariaDB
--- Versi PHP: 8.2.12
+-- Versi PHP: 8.1.25
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Basis data: `talklab`
+-- Database: `talklab`
 --
 
 -- --------------------------------------------------------
@@ -39,6 +39,22 @@ CREATE TABLE `ai_feedback_history` (
   `filler_count` int(10) UNSIGNED NOT NULL,
   `speaking_speed` int(10) UNSIGNED NOT NULL,
   `feedback` text NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `camera_practice_history`
+--
+
+CREATE TABLE `camera_practice_history` (
+  `id` int(10) UNSIGNED NOT NULL,
+  `user_id` varchar(6) NOT NULL,
+  `topic` varchar(255) NOT NULL,
+  `simulation_mode` varchar(60) DEFAULT NULL,
+  `duration_seconds` int(10) UNSIGNED NOT NULL,
+  `video_path` varchar(255) NOT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -192,11 +208,23 @@ CREATE TABLE `material_videos` (
 --
 
 INSERT INTO `material_videos` (`id`, `material_id`, `title`, `video_url`, `script`, `order_index`) VALUES
-(1, 'vokal', '1. Artikulasi Dasar dan Resonansi', 'https://youtu.be/-2NnNomW68k?si=m_7WFa0C5o3_c5Yz', 'Video penjelasan tentang artikulasi.', 1),
-(2, 'vokal', '2. Teknik Pernapasan', 'https://youtu.be/YhmbAxzxamo?si=C1EWqw5oIzZf-GjR', 'Pernapasan diafragma membantu suara menjadi lebih bertenaga dan stabil.', 2),
-(3, 'vokal', '3. 8 Teknik Vokal', 'https://youtu.be/VGFVkRpv-SE?si=kDH2-PPod_9r27hT', 'Delapan teknik vokal dalam public speaking.', 3),
-(4, 'postur_tubuh', '1. Pentingnya Postur Tubuh', 'https://youtu.be/Wb2iQ1pTIf4?si=R95-rLST_yO49H8W', 'Postur tubuh menentukan kepercayaan diri.', 1),
-(5, 'kontak_mata', 'Kuasai Kontak Mata', 'https://youtu.be/327_7IO9Mog?si=S_1ZUCUko5AO2xGf', 'Tes', 1);
+(1, 'vokal', '1. Artikulasi Dasar dan Resonansi', 'https://youtu.be/-2NnNomW68k?si=m_7WFa0C5o3_c5Yz', 'Video ini menjelaskan betapa pentingnya teknik vokal (cara penyampaian) saat berbicara di depan umum, karena elemen vokal dan visual jauh lebih berpengaruh daripada sekadar kata-kata (verbal) menurut teori psikologi komunikasi.\r\n\r\nBerikut adalah 5 teknik vokal utama yang dibahas untuk menjadi pembicara yang baik:\r\n\r\nVolume Suara: Bicaralah dengan lantang agar audiens bisa mendengarkan dengan jelas dan nyaman tanpa harus berusaha keras. Volume juga menunjukkan tingkat keyakinan pembicara.\r\n\r\nKecepatan (Pacing): Kendalikan kecepatan bicara, jangan terlalu cepat atau lambat (ideal: 120-150 kata per menit). Kecepatan juga bisa disesuaikan dengan jenis materi dan siapa audiensnya.\r\n\r\nNada (Pitch): Sesuaikan nada bicara dengan situasi. Nada rendah digunakan untuk situasi formal dan profesional (berwibawa), nada sedang untuk komunikasi sehari-hari, dan nada tinggi untuk mengekspresikan emosi.\r\n\r\nArtikulasi: Pengucapan kata-kata harus jelas dengan membuka mulut yang benar. Disarankan melakukan senam wajah, pemanasan lidah, dan latihan tongue twister sebelum tampil.\r\n\r\nIntonasi (Vocal Variety): Jangan berbicara dengan nada datar. Gunakan dinamika, penekanan pada kata-kata penting, serta penjiwaan agar penyampaian menjadi lebih menarik.\r\n\r\nBonus Teknik: Gunakan Pauses (Jeda) di antara kalimat untuk memberikan waktu audiens mencerna informasi dan memberikan efek dramatis atau penasaran pada poin penting yang ingin disampaikan.', 1),
+(2, 'vokal', '2. Teknik Pernapasan', 'https://youtu.be/YhmbAxzxamo?si=C1EWqw5oIzZf-GjR', 'Video ini membahas tentang masalah pernapasan yang sering terjadi saat seseorang merasa gugup atau tertekan ketika berbicara di depan umum, dan bagaimana cara mengatasinya.\r\n\r\nBerikut adalah penjelasan singkat dari isi video tersebut:\r\n\r\nMasalah saat Gugup: Ketika merasa cemas atau stres, pernapasan kita cenderung menjadi dangkal, kacau, atau bahkan kita tanpa sadar menahan napas. Hal ini memotong suplai oksigen ke otak dan memicu pelepasan hormon stres (seperti kortisol dan adrenalin).\r\n\r\nDampaknya: Jantung berdetak kencang, berkeringat, pikiran menjadi kosong, dan kita merasa seolah otak dan lidah (kemampuan verbal) tidak terhubung (nge-blank). Tubuh masuk ke mode \"bertarung atau lari\" (fight or flight).\r\n\r\nSolusinya (Pernapasan Diafragma): Solusi untuk mengatasi rasa gugup tersebut adalah dengan melakukan pernapasan perut atau pernapasan diafragma.\r\n\r\nCara Melakukannya:\r\n\r\nTarik napas dalam-dalam hingga udara mengisi perut sepenuhnya (perut mengembang).\r\n\r\nTahan napas tersebut selama kurang lebih 3-5 detik.\r\n\r\nHembuskan udara secara perlahan hingga perut benar-benar kempis.\r\n\r\nTahan sebentar sebelum menarik napas kembali.\r\n\r\nManfaat Pernapasan Diafragma: Cara ini dapat mengaktifkan saraf vagus yang memberikan sinyal relaksasi pada tubuh. Selain itu, teknik ini meningkatkan suplai oksigen, membantu kita berpikir lebih jernih, dan menenangkan sistem saraf yang memicu kepanikan, sehingga kita bisa lebih fokus saat presentasi.', 2),
+(3, 'vokal', '3. 8 Teknik Vokal', 'https://youtu.be/VGFVkRpv-SE?si=kDH2-PPod_9r27hT', 'video ini, ia membagikan 8 teknik vokal penting untuk menyempurnakan public speaking, melengkapi elemen komunikasi non-verbal yang sangat krusial saat tampil:\r\n\r\nBerikut adalah penjelasan ke-8 teknik tersebut:\r\n\r\nNapas / Pernapasan: Menggunakan teknik pernapasan diafragma sangat penting untuk kontrol suara. Seorang pembicara disarankan bisa menahan dan mengatur napas minimal 18 detik tanpa terputus untuk menghasilkan kualitas suara yang baik tanpa terengah-engah.\r\n\r\nVolume Suara: Mengatur besar-kecilnya suara. Harus disesuaikan dengan jumlah peserta, luas ruangan, dan kualitas perangkat audio (sound system). Suara harus terdengar jelas hingga ke peserta di kursi paling belakang.\r\n\r\nPace (Tempo): Kecepatan saat berbicara. Gunakan tempo yang dinamis (kadang cepat, kadang lambat). Perlambat tempo bicara Anda saat menyebutkan nama, istilah asing, atau poin yang sangat penting agar audiens lebih fokus.\r\n\r\nKekhasan (Irama / Ketukan): Berbicara layaknya bernyanyi yang memiliki irama. Memiliki ketukan dan keteraturan berbicara membuat penyampaian materi terasa memiliki \"bumbu\" yang enak didengar.\r\n\r\nPause (Jeda): Berhenti sejenak di tengah pembicaraan. Teknik ini sangat berguna untuk menciptakan rasa penasaran, efek dramatis, atau membiarkan audiens mencerna apa yang baru saja disampaikan sebelum lanjut ke poin berikutnya.\r\n\r\nAksentuasi (Stressing/Penekanan): Memberikan tekanan atau penonjolan pada kata atau kalimat tertentu. Hal ini berguna untuk meyakinkan audiens, menarik perhatian mereka kembali, dan mencegah kebosanan dari nada bicara yang terlalu datar.\r\n\r\nFrasering (Pemenggalan Kalimat): Memahami kapan harus berhenti mengambil napas sesuai tanda baca (koma dan titik). Mengambil napas secara teratur di titik yang tepat mencegah Anda berbicara terburu-buru atau kehabisan napas.\r\n\r\nInflection: Perubahan nada suara (dari tinggi ke rendah, atau rendah ke tinggi). Misalnya, sengaja merendahkan volume suara hingga setengah berbisik untuk menarik kembali perhatian penuh audiens saat membagikan suatu \"rahasia\" atau hal penting.', 3),
+(5, 'kontak_mata', '1. Kuasai Kontak Mata', 'https://youtu.be/327_7IO9Mog?si=S_1ZUCUko5AO2xGf', 'Video ini menekankan bahwa 70% dari komunikasi kita bergantung pada bahasa tubuh (body language), termasuk kontak mata, bukan sekadar kata-kata yang keluar dari mulut.\r\n\r\nBerikut adalah 5 tips dasar menguasai kontak mata yang dijelaskan dalam video:\r\n\r\nGunakan Dahi dan Alis: Jangan hanya berbicara dengan mulut yang bergerak, tapi bicaralah dengan mata dan wajahmu. Mainkan alis dan kerutkan dahi agar ekspresi dan emosi saat berbicara lebih hidup dan terasa oleh lawan bicara.\r\n\r\nTatap Maksimal 5-7 Detik: Saat berbicara empat mata, tahan kontak mata sekitar 5 sampai 7 detik. Jika kurang dari 5 detik, kamu akan terkesan tidak peduli. Namun, jika menatap lebih dari 7-10 detik tanpa henti, lawan bicara bisa merasa terintimidasi dan tidak nyaman.\r\n\r\nTatap Semua Orang dalam Grup Diskusi: Saat kamu berbicara di dalam grup (misal 4-5 orang), bagikan pandangan matamu ke semua orang secara bergantian. Jangan hanya terpaku pada satu orang, karena anggota grup yang lain akan merasa diabaikan dan tidak dianggap penting.\r\n\r\nFokus pada Lawan Bicara: Ketika ada orang yang sedang berbicara denganmu, fokuslah padanya. Jangan sibuk bermain HP atau melihat ke arah lain, karena itu akan memberikan kesan bahwa orang tersebut tidak penting bagimu.\r\n\r\nBeri Jeda Saat Menatap: Sebagai pendengar, jangan terus-menerus menatap tajam tanpa henti. Berikan jeda sekitar 1-2 detik dengan membuang pandangan ke atas, bawah, atau samping. Sambil membuang pandangan, kamu bisa memberikan anggukan untuk menunjukkan bahwa kamu masih mendengarkan dan mengerti.', 1),
+(6, 'postur_tubuh', '1. Anatomi & Posisi Artikulator', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Di bagian ini kita pelajari struktur mulut, lidah, bibir, dan rahang serta posisi artikulator yang memengaruhi pengucapan. Memahami anatomi membuat latihan artikulasi lebih efektif.', 1),
+(7, 'postur_tubuh', '2. Sikap Berdiri yang Kokoh (Grounding)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Teknik memposisikan kaki agar seimbang, menjaga bahu tetap tegap, dan menghindari postur tubuh yang membungkuk atau menumpu pada satu kaki saja.', 2),
+(8, 'postur_tubuh', '3. Gestur Tangan yang Bermakna', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Panduan area ideal untuk menggerakkan tangan saat berbicara (biasanya di area dada hingga perut), cara menggunakan telapak tangan yang terbuka, serta cara menghilangkan kebiasaan fidgeting (memasukkan tangan ke saku, memainkan jari, atau meremas tangan)', 3),
+(9, 'postur_tubuh', '4. Bahasa Tubuh Terbuka vs Tertutup', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Pemahaman tentang pentingnya menghindari gerakan yang terkesan defensif atau memblokir audiens (seperti bersedekap dada) dan cara mengadopsi postur yang lebih mengundang (open posture)', 4),
+(10, 'postur_tubuh', '5. Pergerakan Berarah (Purposeful Movement)', '', 'Teknik memanfaatkan ruang atau panggung. Membahas kapan waktu yang tepat untuk melangkah (misalnya saat transisi ke poin baru) agar tidak terkesan mondar-mandir tanpa tujuan akibat rasa gugup', 5),
+(11, 'kontak_mata', '2. Teknik Distribusi Pandangan (Scanning Ruangan)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Mengajarkan cara membagi kontak mata secara merata ke seluruh audiens. Kamu bisa memasukkan teknik seperti membagi ruangan menjadi 3 zona (kiri, tengah, kanan) atau menggunakan pola \"Z\" atau \"W\" saat menyapu pandangan, agar semua audiens merasa dilibatkan.', 2),
+(12, 'kontak_mata', '3. Trik Mengatasi Gugup Menatap Mata', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Panduan khusus bagi pemula yang masih canggung menatap mata audiens secara langsung. Misalnya, mengajarkan trik untuk menatap area dahi atas, pangkal hidung, atau area triangle zone di wajah audiens sebagai alternatif sementara yang tetap terlihat natural dari jauh.', 3),
+(14, 'kontak_mata', '4. Durasi Menatap yang Ideal (Aturan 3-5 Detik)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Membahas berapa lama kita harus menahan kontak mata dengan satu orang sebelum beralih ke orang lain. Ini penting agar tatapan tidak terkesan terlalu singkat (terlihat tidak peduli/gugup) atau terlalu lama (mengintimidasi audiens)', 4),
+(15, 'intonasi_suara', '1. Menghindari Suara Monoton (Vocal Variety)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Pengenalan dasar mengapa suara yang datar membuat audiens cepat bosan, dan cara menyuntikkan emosi (seperti antusiasme atau empati) ke dalam nada bicara agar terdengar lebih natural dan dinamis.', 1),
+(16, 'intonasi_suara', '2. Seni Penekanan Kata (Aksentuasi)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Teknik memberikan penekanan atau stressing pada kata-kata kunci dalam satu kalimat. Ini membantu audiens langsung menangkap poin terpenting tanpa harus menebak-nebak.', 2),
+(17, 'vokal', '3. Mengatur Tempo Bicara (Pacing)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Panduan tentang kapan harus berbicara lebih cepat (untuk membangun semangat dan energi) dan kapan harus melambat (untuk menjelaskan data, istilah baru, atau pesan yang krusial).', 3),
+(18, 'intonasi_suara', '4. Kekuatan Jeda (The Power of Pause)', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Mengajarkan bahwa diam sejenak bukanlah sebuah kesalahan. Jeda (pause) sangat berguna untuk menciptakan efek dramatis, membiarkan audiens mencerna informasi, sekaligus memberi waktu bagi pembicara untuk mengambil napas.', 4),
+(19, 'intonasi_suara', 'Bermain dengan Nada (Pitch):', 'https://www.w3schools.com/html/mov_bbb.mp4', 'Cara menyesuaikan tinggi rendahnya suara dengan konteks acara. Misalnya, menggunakan nada yang lebih rendah dan dalam untuk membangun wibawa di acara formal, atau nada yang sedikit lebih tinggi untuk menyapa audiens dengan ramah.', 5);
 
 -- --------------------------------------------------------
 
@@ -215,9 +243,7 @@ CREATE TABLE `material_video_progress` (
 --
 
 INSERT INTO `material_video_progress` (`user_id`, `video_id`, `created_at`) VALUES
-('7NA83J', 1, '2026-06-05 14:51:49'),
-('AGBI29', 1, '2026-06-05 14:27:35'),
-('AGBI29', 5, '2026-06-05 14:48:14');
+('AGBI29', 1, '2026-06-09 07:24:41');
 
 -- --------------------------------------------------------
 
@@ -378,6 +404,7 @@ CREATE TABLE `speaking_challenge_history` (
   `actual_seconds` int(10) UNSIGNED NOT NULL,
   `score` int(10) UNSIGNED NOT NULL,
   `completed` tinyint(1) NOT NULL DEFAULT 1,
+  `audio_path` varchar(255) DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -408,7 +435,7 @@ INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Userna
 ('P4IL4M', 'Tata ASep', 'Thailand', '2004-06-16', 'ASEP', '$2y$10$swIXtui7ZbiU.8W7fAm4qezbWLuMCDf9tj2dEctBOGcee42M91RM2', 'uploads/profile_photos/P4IL4M_1780238409.jpg', 'yang penting bicara aja dulu');
 
 --
--- Indeks untuk tabel yang dibuang
+-- Indexes for dumped tables
 --
 
 --
@@ -417,6 +444,13 @@ INSERT INTO `users` (`Id_User`, `Nama`, `Tempat_Lahir`, `Tanggal_Lahir`, `Userna
 ALTER TABLE `ai_feedback_history`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_ai_feedback_user` (`user_id`);
+
+--
+-- Indeks untuk tabel `camera_practice_history`
+--
+ALTER TABLE `camera_practice_history`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_camera_user` (`user_id`);
 
 --
 -- Indeks untuk tabel `ebooks`
@@ -487,7 +521,7 @@ ALTER TABLE `mentor_reviews`
 --
 ALTER TABLE `mentor_submissions`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_practice_submission` (`practice_history_id`),
+  ADD UNIQUE KEY `unique_practice_feature` (`practice_history_id`,`feature_type`),
   ADD KEY `idx_mentor_submission_user` (`user_id`),
   ADD KEY `idx_mentor_submission_mentor` (`mentor_id`),
   ADD KEY `idx_mentor_submission_status` (`status`);
@@ -541,6 +575,12 @@ ALTER TABLE `ai_feedback_history`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT untuk tabel `camera_practice_history`
+--
+ALTER TABLE `camera_practice_history`
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `ebooks`
 --
 ALTER TABLE `ebooks`
@@ -568,7 +608,7 @@ ALTER TABLE `material_progress`
 -- AUTO_INCREMENT untuk tabel `material_videos`
 --
 ALTER TABLE `material_videos`
-  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT untuk tabel `mentor_accounts`
@@ -621,6 +661,12 @@ ALTER TABLE `speaking_challenge_history`
 --
 ALTER TABLE `ai_feedback_history`
   ADD CONSTRAINT `fk_ai_feedback_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `camera_practice_history`
+--
+ALTER TABLE `camera_practice_history`
+  ADD CONSTRAINT `fk_camera_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`Id_User`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `ebook_activity`
